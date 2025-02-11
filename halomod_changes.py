@@ -4,6 +4,8 @@ import hmf as hmf
 import matplotlib.pyplot as plt
 from hmf import cached_quantity, parameter, get_mdl
 from scipy.interpolate import InterpolatedUnivariateSpline as spline
+from numba import njit, prange
+
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
     def __init__(self, xi_dm: np.ndarray, nu: np.ndarray, z: float):
@@ -120,4 +122,39 @@ class AngularCF_NL(hm.AngularCF):
             **self.exclusion_params,
         )
 
+
+
+@njit(parallel=True)
+def w_IC(ang_theta, ang_func,x_deg, y_deg, angular_distance):
+
+    N_samples = int(1e8)
+    x1 = np.random.uniform(
+        -x_deg*angular_distance * 2*np.pi/360/ 2,
+        x_deg*angular_distance * 2*np.pi/360 / 2,
+        N_samples,
+    )
+    x2 = np.random.uniform(
+        -x_deg*angular_distance * 2*np.pi/360 / 2,
+        x_deg*angular_distance * 2*np.pi/360 / 2,
+        N_samples,
+    )
+    y1 = np.random.uniform(
+        -y_deg*angular_distance * 2*np.pi/360 / 2,
+        y_deg*angular_distance * 2*np.pi/360 / 2,
+        N_samples,
+    )
+    y2 = np.random.uniform(
+        -y_deg*angular_distance * 2*np.pi/360 / 2,
+        y_deg*angular_distance * 2*np.pi/360 / 2,
+        N_samples,
+    )
+
+    integral_sum = 0.0
+    for i in prange(N_samples):  # Parallel loop
+        theta = np.sqrt(
+            x1[i]**2 + x2[i]**2 + y1[i]**2 + y2[i]**2) / angular_distance
+
+        integral_sum += np.interp(theta, ang_theta, ang_func)
+
+    return integral_sum / N_samples
 
