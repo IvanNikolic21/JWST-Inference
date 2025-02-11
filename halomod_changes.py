@@ -16,17 +16,25 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
     def Mcol(self):
         """The nonlinear mass, nu(Mstar) = 1."""
 
-        nu = spline(self.hmf_loc.nu, self.hmf_loc.m, k=5)
+        nu = spline(
+            np.sqrt(self.hmf_loc.nu),
+            self.hmf_loc.m,
+            k=5
+        )
         return nu(1)
 
     def Mnl(self):
-        print(self.hmf_loc.sigma)
-        nu = spline(self.hmf_loc.nu, self.hmf_loc.m, k=5)
+        """The collapsed mass, nu(Mstar) = delta_c."""
+
+        nu = spline(
+            np.sqrt(self.hmf_loc.nu),
+            self.hmf_loc.m,
+            k=5
+        )
         return nu(self.hmf_loc.delta_c)
 
     def bias_scale(self):
-        print(self.xi_dm)
-        print(self.nu)
+
         K0 = -0.0697
         k1 = 1.1682
         k2 = 4.7577
@@ -35,18 +43,18 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
         l1 = 1.4023
         l2 = 0.5823
         l3 = -0.1030
-        alphaM = np.log10(self.hmf_loc.delta_c) / np.log10( self.Mnl() / self.Mcol()) 
-        print(alphaM)
+        alphaM = np.log10(self.hmf_loc.delta_c) / np.log10( self.Mnl() / self.Mcol())
+
         bias = (
             1 + K0 * np.log10(
                 1+(self.xi_dm[:,np.newaxis])**k1
-            ) * ((self.nu[np.newaxis,:]) ** k2) * (1 + k3 / alphaM)
+            ) * ((np.sqrt(self.nu)[np.newaxis,:]) ** k2) * (1 + k3 / alphaM)
         ) * (
             1 + L0 * np.log10(
                 1+(self.xi_dm[:,np.newaxis])**l1
-            ) * ((self.nu[np.newaxis,:]) ** l2) * (1 + l3 / alphaM)
+            ) * ((np.sqrt(self.nu)[np.newaxis,:]) ** l2) * (1 + l3 / alphaM)
         )
-        print(bias)
+
         return bias
 
 class AngularCF_NL(hm.AngularCF):
@@ -55,7 +63,6 @@ class AngularCF_NL(hm.AngularCF):
     @parameter("model")
     def sd_bias_model(self, val):
         """Model of Scale Dependant Bias."""
-        print("Here we are")
         if val is None:
             return None
         else:
@@ -69,11 +76,9 @@ class AngularCF_NL(hm.AngularCF):
     @cached_quantity
     def sd_bias(self):
         """A class containing relevant methods to calculate scale-dependent bias corrections."""
-        print(self.sd_bias_model)
         if self.sd_bias_model is None:
             return None
         else:
-            print(issubclass(self.sd_bias_model,Bias_nonlin))
             if issubclass(self.sd_bias_model,Bias_nonlin):
                 return self.sd_bias_model(
                     xi_dm=self.corr_halofit_mm_fnc(self._r_table), nu=self.nu, z=self.z, **self.sd_bias_params
@@ -85,7 +90,7 @@ class AngularCF_NL(hm.AngularCF):
     @cached_quantity
     def sd_bias_correction(self):
         """Return the correction for scale dependancy of bias."""
-        print("Starting correction")
+
         if self.sd_bias is not None:
             return self.sd_bias.bias_scale()
         else:
@@ -96,7 +101,7 @@ class AngularCF_NL(hm.AngularCF):
         densityfunc = self.dndm[self._tm] * self.total_occupation[self._tm] / self.mean_tracer_den
 
         if self.sd_bias_model is not None:
-            print(self.sd_bias_model, issubclass(self.sd_bias_model,Bias_nonlin))
+
             if issubclass(self.sd_bias_model,Bias_nonlin):
                 bias = (self.sd_bias_correction * self.halo_bias)[:, self._tm]
             
