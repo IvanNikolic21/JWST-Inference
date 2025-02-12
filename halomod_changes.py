@@ -158,3 +158,71 @@ def w_IC(ang_theta, ang_func,x_deg, y_deg, angular_distance):
 
     return integral_sum / N_samples
 
+class My_HOD(hm.hod.Zheng05):
+    """
+    Five-parameter model of Zheng (2005).
+
+    Parameters
+    ----------
+    stellar_mass_min : float, default = 8.75
+        Minimum mass of halo that supports a central galaxy
+    stellar_mass_sigma: float, default = 0.3
+    fstar_scale: float, default=1
+    others: same as Zheng+05
+
+    References
+    ----------
+    .. [1] Zheng, Z. et al., "Theoretical Models of the Halo Occupation Distribution:
+           Separating Central and Satellite Galaxies ",
+           https://ui.adsabs.harvard.edu/abs/2005ApJ...633..791Z.
+
+    """
+
+    _defaults = {
+        'stellar_mass_min':8.75,
+        'stellar_mass_sigma':0.05,
+        'fstar_scale':1,
+        'fstar_scale_sat':1,
+        'stellar_mass_sigma_sat':0.3,
+        'M1': 11.5,
+        'alpha':0.50,
+        'M_min':10.0,
+        'sig_logm':0.05,
+        'M_0':12.0,
+        'M_1':13.0,
+    }
+
+    def _central_occupation(self, m):
+        """Amplitude of central tracer at mass M."""
+        print(self.params["stellar_mass_sigma"])
+        return 0.5 * erfc(
+            -(
+                np.log10(m)-np.log10(
+                    ms_mh(10**self.params["stellar_mass_min"],
+                          fstar_scale=self.params["fstar_scale"]
+                         )
+                )
+            )/self.params["stellar_mass_sigma"] / np.sqrt(2)
+        )
+
+    def _satellite_occupation(self, m):
+        """Amplitude of satellite tracer at mass M."""
+        ns = np.zeros_like(m)
+        ns_0 = np.zeros_like(m)
+
+        ns_0[m > 10 ** self.params["M_0"]] = (
+            (m[m > 10 ** self.params["M_0"]] - 10 ** self.params["M_0"]) / 10 ** self.params["M_1"]
+        ) ** self.params["alpha"]
+
+        ns[m > 10 ** self.params["M_0"]] = 0.5 * erfc(
+                -(
+                    np.log10(m[m > 10 ** self.params["M_0"]])-np.log10(
+                        ms_mh(10**self.params["stellar_mass_min"],
+                              fstar_scale=self.params["fstar_scale_sat"]
+                             )
+                    )
+                )/self.params["stellar_mass_sigma_sat"] / np.sqrt(2)
+            ) * (m[m > 10 ** self.params["M_0"]]/self.params["M1"])**self.params["alpha"]
+
+        return ns
+
