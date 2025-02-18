@@ -134,7 +134,7 @@ class AngularCF_NL(hm.AngularCF):
 @njit(parallel=True)
 def w_IC(ang_theta, ang_func,x_deg, y_deg, angular_distance):
     #print(x_deg, y_deg)
-    N_samples = int(1e6)
+    N_samples = int(1e5)
     x1 = np.random.uniform(
         -x_deg*angular_distance * 2*np.pi/360/ 2,
         x_deg*angular_distance * 2*np.pi/360 / 2,
@@ -345,12 +345,13 @@ def my_likelihood(params):
             'stellar_mass_sigma_sat':sig_shmr,
         }
     )
+    ang_th = angular_gal.theta
+    ang_ang = angular_gal.angular_corr_gal
     w_IC_instance = w_IC(
-        angular_gal.theta,
-        angular_gal.angular_corr_gal,
+        ang_th,
+        ang_ang,
         41.5/60,46.6/60,940.29997 
     )    
-    print(w_IC_instance)
     like = 0
 
     #    thethats87_pos,
@@ -359,10 +360,9 @@ def my_likelihood(params):
     for i_theta,ts in enumerate(thethats87_pos):
         wi = np.interp(
             ts,
-            angular_gal.theta/2/np.pi * 360,
-            angular_gal.angular_corr_gal - w_IC_instance
+            ang_th/2/np.pi * 360,
+            ang_ang - w_IC_instance
         )
-        print(ts, wi)
         # compare model and data with gaussian likelihood:
         like += -0.5 * (((wi - wthethats87_pos[i_theta] )/wsig87_pos[i_theta])**2)
     return like
