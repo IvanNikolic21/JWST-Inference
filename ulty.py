@@ -325,6 +325,18 @@ wthethats87_pos = [
 wsig87_pos = [
     float(i) for i,j in zip(cons_wsig[1],cons_wtheta[1]) if float(j)>0
 ]
+angular_gal = AngularCF_NL(
+    **fid_params,
+    hod_params={
+        'stellar_mass_min': 8.75,
+        'stellar_mass_sigma': 0.3,
+        'fstar_scale': 10 ** 0.0,
+        'alpha': 1.0,
+        'M1': 13.5,
+        'fstar_scale_sat': 10 ** 0,
+        'stellar_mass_sigma_sat': 0.3,
+    }
+)
 def my_likelihood(params):
     fs_sc, sig_shmr, m1 = params
     # compute intensity at every x position according to the model
@@ -333,9 +345,7 @@ def my_likelihood(params):
     #     10**fs_sc,
     #     m1,
     # )
-    angular_gal = AngularCF_NL(
-        **fid_params,
-        hod_params={
+    angular_gal.hod_params = {
             'stellar_mass_min':8.75,
             'stellar_mass_sigma':sig_shmr,
             'fstar_scale':10**fs_sc,
@@ -344,7 +354,6 @@ def my_likelihood(params):
             'fstar_scale_sat':10**fs_sc,
             'stellar_mass_sigma_sat':sig_shmr,
         }
-    )
     ang_th = angular_gal.theta
     ang_ang = angular_gal.angular_corr_gal
     w_IC_instance = w_IC(
