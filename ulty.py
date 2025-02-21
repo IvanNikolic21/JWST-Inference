@@ -10,33 +10,35 @@ from scipy.special import erfc
 from numba import njit, prange
 import ultranest
 
+hmf_loc = hmf.MassFunction(z=9.25)
+
 class Bias_nonlin(hm.bias.ScaleDepBias):
     def __init__(self, xi_dm: np.ndarray, nu: np.ndarray, z: float):
         self.xi_dm = xi_dm
         self.nu = nu
         self.z = z
-        self.hmf_loc = hmf.MassFunction(self.z)
+        #self.hmf_loc = hmf.MassFunction(self.z)
         super().__init__(self.xi_dm)
 
     def Mcol(self):
         """The nonlinear mass, nu(Mstar) = 1."""
 
         nu = spline(
-            np.sqrt(self.hmf_loc.nu),
+            np.sqrt(hmf_loc.nu),
             #self.hmf_loc.delta_c / self.hmf_loc.sigma,
-            self.hmf_loc.m,
+            hmf_loc.m,
             k=5
         )
         return nu(1)
 
     def Mnl(self):
         nu = spline(
-            np.sqrt(self.hmf_loc.nu),
+            np.sqrt(hmf_loc.nu),
             #self.hmf_loc.delta_c / self.hmf_loc.sigma,
             self.hmf_loc.m,
             k=5
         )
-        return nu(self.hmf_loc.delta_c)
+        return nu(hmf_loc.delta_c)
 
     def bias_scale(self):
         K0 = -0.0697
@@ -47,7 +49,7 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
         l1 = 1.4023
         l2 = 0.5823
         l3 = -0.1030
-        alphaM = np.log10(self.hmf_loc.delta_c) / np.log10( self.Mnl() / self.Mcol()) 
+        alphaM = np.log10(hmf_loc.delta_c) / np.log10( self.Mnl() / self.Mcol())
         #print(alphaM, np.log10( self.Mnl() / self.Mcol()))
         bias = (
             1 + K0 * np.log10(
