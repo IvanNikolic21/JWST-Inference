@@ -35,7 +35,7 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
         nu = spline(
             np.sqrt(hmf_loc.nu),
             #self.hmf_loc.delta_c / self.hmf_loc.sigma,
-            self.hmf_loc.m,
+            hmf_loc.m,
             k=5
         )
         return nu(hmf_loc.delta_c)
