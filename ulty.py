@@ -277,21 +277,31 @@ fid_params = {
 
 param_names = ['fstar_norm', 'log_scat_SHMR', 'M1']
 
+
 def my_prior_transform(cube):
     params = cube.copy()
-
     # transform location parameter: uniform prior
     lo = -1
-    hi = 1
-    params[0] = cube[0] * (hi - lo) + lo
+    hi = 2
+
+    if len(np.shape(cube)) > 1:
+        params[:, 0] = cube[:, 0] * (hi - lo) + lo
+    else:
+        params[0] = cube[0] * (hi - lo) + lo
 
     lo = 0.01
-    hi = 2.0
-    params[1] = cube[1] * (hi - lo) + lo    
+    hi = 1.5
+    if len(np.shape(cube)) > 1:
+        params[:, 1] = cube[:, 1] * (hi - lo) + lo
+    else:
+        params[1] = cube[1] * (hi - lo) + lo
 
     lo = 11
     hi = 14
-    params[2] = cube[2] * (hi - lo) + lo
+    if len(np.shape(cube)) > 1:
+        params[:, 2] = cube[:, 2] * (hi - lo) + lo
+    else:
+        params[2] = cube[2] * (hi - lo) + lo
 
     return params
 
@@ -339,47 +349,90 @@ angular_gal = AngularCF_NL(
         'stellar_mass_sigma_sat': 0.3,
     }
 )
+
+
 def my_likelihood(params):
-    fs_sc, sig_shmr, m1 = params
+    if len(np.shape(params)) > 1:
+        fs_sc = params[:, 0]
+        sig_shmr = params[:, 1]
+        m1 = params[:, 2]
+
+    else:
+        fs_sc, sig_shmr, m1 = params
+
     # compute intensity at every x position according to the model
     # print(
     #     sig_shmr,
     #     10**fs_sc,
     #     m1,
     # )
-    angular_gal.hod_params = {
-            'stellar_mass_min':8.75,
-            'stellar_mass_sigma':sig_shmr,
-            'fstar_scale':10**fs_sc,
-            'alpha':1.0,
-            'M1':m1,
-            'fstar_scale_sat':10**fs_sc,
-            'stellar_mass_sigma_sat':sig_shmr,
-        }
-    ang_th = angular_gal.theta
-    ang_ang = angular_gal.angular_corr_gal
-    w_IC_instance = w_IC(
-        ang_th,
-        ang_ang,
-        41.5/60,46.6/60,940.29997 
-    )    
-    like = 0
 
-    #    thethats87_pos,
-    # wthethats87_pos,
-    # wsig87_pos
-    for i_theta,ts in enumerate(thethats87_pos):
-        wi = np.interp(
-            ts,
-            ang_th/2/np.pi * 360,
-            ang_ang - w_IC_instance
+    def angy(fi, si, mi):
+        angular_gal.hod_params = {
+            'stellar_mass_min': 8.75,
+            'stellar_mass_sigma': si,
+            'fstar_scale': 10 ** fi,
+            'alpha': 1.0,
+            'M1': mi,
+            'fstar_scale_sat': 10 ** fi,
+            'stellar_mass_sigma_sat': si,
+        }
+        ang_th = angular_gal.theta
+        ang_ang = angular_gal.angular_corr_gal
+        w_IC_instance = w_IC(
+            ang_th,
+            ang_ang,
+            41.5 / 60, 46.6 / 60, 940.29997
         )
-        # compare model and data with gaussian likelihood:
-        like += -0.5 * (((wi - wthethats87_pos[i_theta] )/wsig87_pos[i_theta])**2)
+        like = 0
+
+        #    thethats87_pos,
+        # wthethats87_pos,
+        # wsig87_pos
+        for i_theta, ts in enumerate(thethats87_pos):
+            wi = np.interp(
+                ts,
+                ang_th / 2 / np.pi * 360,
+                ang_ang - w_IC_instance
+            )
+            # compare model and data with gaussian likelihood:
+            like += -0.5 * (((wi - wthethats87_pos[i_theta]) / wsig87_pos[
+                i_theta]) ** 2)
+
+        angular_gal.hod_params = {
+            'stellar_mass_min': 9.0,
+            'stellar_mass_sigma': si,
+            'fstar_scale': 10 ** fi,
+            'alpha': 1.0,
+            'M1': mi,
+            'fstar_scale_sat': 10 ** fi,
+            'stellar_mass_sigma_sat': si,
+        }
+        ang_th = angular_gal.theta
+        ang_ang = angular_gal.angular_corr_gal
+        w_IC_instance = w_IC(
+            ang_th,
+            ang_ang,
+            41.5 / 60, 46.6 / 60, 940.29997
+        )
+        for i_theta, ts in enumerate(thethats90_pos):
+            wi = np.interp(
+                ts,
+                ang_th / 2 / np.pi * 360,
+                ang_ang - w_IC_instance
+            )
+            # compare model and data with gaussian likelihood:
+            like += -0.5 * (((wi - wthethats90_pos[i_theta]) / wsig90_pos[
+                i_theta]) ** 2)
+        return like
+
+    vecy = np.vectorize(angy)
+    like = vecy(fs_sc, sig_shmr, m1)
+
     return like
 
 sampler = ultranest.ReactiveNestedSampler(
-    param_names, my_likelihood, my_prior_transform
+    param_names, my_likelihood, my_prior_transform, vectorized=True
 )
 result = sampler.run()
 
