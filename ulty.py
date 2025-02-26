@@ -337,6 +337,17 @@ wthethats87_pos = [
 wsig87_pos = [
     float(i) for i,j in zip(cons_wsig[1],cons_wtheta[1]) if float(j)>0
 ]
+
+thethats90_pos = [
+    float(i) for i,j in zip(cons_theta[2],cons_wtheta[2]) if float(j)>0
+]
+wthethats90_pos = [
+    float(i) for i,j in zip(cons_wtheta[2],cons_wtheta[2]) if float(j)>0
+]
+wsig90_pos = [
+    float(i) for i,j in zip(cons_wsig[2],cons_wtheta[2]) if float(j)>0
+]
+
 angular_gal = AngularCF_NL(
     **fid_params,
     hod_params={
