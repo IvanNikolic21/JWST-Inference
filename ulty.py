@@ -443,8 +443,8 @@ def my_likelihood(params):
     return like
 
 sampler = ultranest.ReactiveNestedSampler(
-    param_names, my_likelihood, my_prior_transform, vectorized=True, log_dir='/home/inikolic/projects/UVLF_FMs/run_speed/', max_iters=1000,
+    param_names, my_likelihood, my_prior_transform, vectorized=True, log_dir='/home/inikolic/projects/UVLF_FMs/run_speed/',
 )
-result = sampler.run(log_interval=3, dlogz=1.0,dKL=1.0, frac_remain=0.2)
+result = sampler.run(log_interval=3, dlogz=1.0,dKL=1.0, frac_remain=0.2,  max_iters=800)
 
 sampler.print_results()
