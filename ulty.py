@@ -10,13 +10,19 @@ from scipy.special import erfc
 from numba import njit, prange
 import ultranest
 
-hmf_loc = hmf.MassFunction(z=9.25)
+hmf_loc_9 = hmf.MassFunction(z=9.25)
+hmf_loc_7 = hmf.MassFunction(z=7.0)
+
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
     def __init__(self, xi_dm: np.ndarray, nu: np.ndarray, z: float):
         self.xi_dm = xi_dm
         self.nu = nu
         self.z = z
+        if z == 9.25:
+            hmf_loc = hmf_loc_9
+        elif z == 7.0:
+            hmf_loc = hmf_loc_7
         #self.hmf_loc = hmf.MassFunction(self.z)
         super().__init__(self.xi_dm)
 
@@ -348,6 +354,38 @@ wsig90_pos = [
     float(i) for i,j in zip(cons_wsig[2],cons_wtheta[2]) if float(j)>0
 ]
 
+
+cons_ndgal_z7 = [
+    i.strip().split() for i in open(
+        dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin8.0-10.5_conservative_ndgal.dat"
+    ).readlines()
+]
+cons_theta_z7 = [
+    i.strip().split() for i in open(
+        dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin8.0-10.5_conservative_theta.dat"
+    ).readlines()
+]
+cons_wtheta_z7 = [
+    i.strip().split() for i in open(
+        dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin8.0-10.5_conservative_wtheta.dat"
+    ).readlines()
+]
+cons_wsig_z7 = [
+    i.strip().split() for i in open(
+        dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin8.0-10.5_conservative_wsig.dat"
+    ).readlines()
+]
+
+thethats90_pos_z7 = [
+    float(i) for i,j in zip(cons_theta[2],cons_wtheta[2]) if float(j)>0
+]
+wthethats90_pos_z7 = [
+    float(i) for i,j in zip(cons_wtheta[2],cons_wtheta[2]) if float(j)>0
+]
+wsig90_pos_z7 = [
+    float(i) for i,j in zip(cons_wsig[2],cons_wtheta[2]) if float(j)>0
+]
+
 angular_gal = AngularCF_NL(
     **fid_params,
     hod_params={
@@ -445,6 +483,6 @@ def my_likelihood(params):
 sampler = ultranest.ReactiveNestedSampler(
     param_names, my_likelihood, my_prior_transform, vectorized=True, log_dir='/home/inikolic/projects/UVLF_FMs/run_speed/',
 )
-result = sampler.run(dlogz=10,dKL=0.5, frac_remain=0.1,  max_iters=2000)
+result = sampler.run(dlogz=10,dKL=0.5, frac_remain=0.5)
 
 sampler.print_results()
