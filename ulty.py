@@ -23,6 +23,8 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
             hmf_loc = hmf_loc_9
         elif z == 7.0:
             hmf_loc = hmf_loc_7
+        else:
+            hmf_loc = hmf_loc_9
         #self.hmf_loc = hmf.MassFunction(self.z)
         super().__init__(self.xi_dm)
 
