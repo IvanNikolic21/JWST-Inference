@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from hmf import cached_quantity, parameter, get_mdl
 from scipy.interpolate import InterpolatedUnivariateSpline as spline
 from scipy.special import erfc
-
+import pymultinest
     
 from numba import njit, prange
 import ultranest
@@ -482,9 +482,19 @@ def my_likelihood(params):
 
     return like
 
-sampler = ultranest.ReactiveNestedSampler(
-    param_names, my_likelihood, my_prior_transform, vectorized=True, log_dir='/home/inikolic/projects/UVLF_FMs/run_speed/',
-)
-result = sampler.run(dlogz=10,dKL=0.5, frac_remain=0.5)
 
-sampler.print_results()
+result = pymultinest.solve(
+    LogLikelihood=my_likelihood,
+    Prior=my_prior_transform,
+    n_dims=3,
+    outputfiles_basename="/home/user/Documents/projects/UVLF_clust/github/JWST-Inference/ulty.py"
+)
+
+
+
+# sampler = ultranest.ReactiveNestedSampler(
+#     param_names, my_likelihood, my_prior_transform, vectorized=True, log_dir='/home/inikolic/projects/UVLF_FMs/run_speed/',
+# )
+# result = sampler.run(dlogz=10,dKL=0.5, frac_remain=0.5)
+#
+# sampler.print_results()
