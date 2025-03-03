@@ -287,31 +287,31 @@ param_names = ['fstar_norm', 'log_scat_SHMR', 'M1']
 
 
 def my_prior_transform(cube,ndim, nparams):
-    params = cube.copy()
+    #params = cube
     # transform location parameter: uniform prior
     lo = -1
     hi = 2
 
     if len(np.shape(cube)) > 1:
-        params[:, 0] = cube[:, 0] * (hi - lo) + lo
+        cube[:, 0] = cube[:, 0] * (hi - lo) + lo
     else:
-        params[0] = cube[0] * (hi - lo) + lo
+        cube[0] = cube[0] * (hi - lo) + lo
 
     lo = 0.01
     hi = 1.5
     if len(np.shape(cube)) > 1:
-        params[:, 1] = cube[:, 1] * (hi - lo) + lo
+        cube[:, 1] = cube[:, 1] * (hi - lo) + lo
     else:
-        params[1] = cube[1] * (hi - lo) + lo
+        cube[1] = cube[1] * (hi - lo) + lo
 
     lo = 11
     hi = 14
     if len(np.shape(cube)) > 1:
-        params[:, 2] = cube[:, 2] * (hi - lo) + lo
+        cube[:, 2] = cube[:, 2] * (hi - lo) + lo
     else:
-        params[2] = cube[2] * (hi - lo) + lo
+        cube[2] = cube[2] * (hi - lo) + lo
 
-    return params
+    return cube
 
 dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
 
