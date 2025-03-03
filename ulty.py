@@ -487,7 +487,7 @@ result = pymultinest.solve(
     LogLikelihood=my_likelihood,
     Prior=my_prior_transform,
     n_dims=3,
-    outputfiles_basename="/home/user/Documents/projects/UVLF_clust/github/JWST-Inference/ulty.py"
+    outputfiles_basename="/home/user/Documents/projects/UVLF_FMs/run_speed/"
 )
 
 
