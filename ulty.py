@@ -292,24 +292,24 @@ def my_prior_transform(cube,ndim, nparams):
     lo = -1
     hi = 2
 
-    if len(np.shape(cube)) > 1:
-        cube[:, 0] = cube[:, 0] * (hi - lo) + lo
-    else:
-        cube[0] = cube[0] * (hi - lo) + lo
+    # if len(np.shape(cube)) > 1:
+    #     cube[:, 0] = cube[:, 0] * (hi - lo) + lo
+    # else:
+    cube[0] = cube[0] * (hi - lo) + lo
 
     lo = 0.01
     hi = 1.5
-    if len(np.shape(cube)) > 1:
-        cube[:, 1] = cube[:, 1] * (hi - lo) + lo
-    else:
-        cube[1] = cube[1] * (hi - lo) + lo
+    # if len(np.shape(cube)) > 1:
+    #     cube[:, 1] = cube[:, 1] * (hi - lo) + lo
+    # else:
+    cube[1] = cube[1] * (hi - lo) + lo
 
     lo = 11
     hi = 14
-    if len(np.shape(cube)) > 1:
-        cube[:, 2] = cube[:, 2] * (hi - lo) + lo
-    else:
-        cube[2] = cube[2] * (hi - lo) + lo
+    # if len(np.shape(cube)) > 1:
+    #     cube[:, 2] = cube[:, 2] * (hi - lo) + lo
+    # else:
+    cube[2] = cube[2] * (hi - lo) + lo
 
     return cube
 
@@ -404,13 +404,15 @@ angular_gal = AngularCF_NL(
 
 def my_likelihood(cube, ndim, nparams, lnew):
     params = cube
-    if len(np.shape(params)) > 1:
-        fs_sc = params[:, 0]
-        sig_shmr = params[:, 1]
-        m1 = params[:, 2]
-
-    else:
-        fs_sc, sig_shmr, m1 = params
+    # if len(np.shape(params)) > 1:
+    #     fs_sc = params[:, 0]
+    #     sig_shmr = params[:, 1]
+    #     m1 = params[:, 2]
+    #
+    # else:
+    fs_sc = params[0]
+    sig_shmr = params[1]
+    m1 = params[2]
 
     # compute intensity at every x position according to the model
     # print(
