@@ -286,7 +286,7 @@ fid_params = {
 param_names = ['fstar_norm', 'log_scat_SHMR', 'M1']
 
 
-def my_prior_transform(cube):
+def my_prior_transform(cube,ndim, nparams):
     params = cube.copy()
     # transform location parameter: uniform prior
     lo = -1
@@ -402,7 +402,8 @@ angular_gal = AngularCF_NL(
 )
 
 
-def my_likelihood(params):
+def my_likelihood(cube, ndim, nparams, lnew):
+    params = cube.copy()
     if len(np.shape(params)) > 1:
         fs_sc = params[:, 0]
         sig_shmr = params[:, 1]
