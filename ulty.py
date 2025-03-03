@@ -403,7 +403,7 @@ angular_gal = AngularCF_NL(
 
 
 def my_likelihood(cube, ndim, nparams, lnew):
-    params = cube.copy()
+    params = cube
     if len(np.shape(params)) > 1:
         fs_sc = params[:, 0]
         sig_shmr = params[:, 1]
