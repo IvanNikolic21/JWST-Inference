@@ -483,10 +483,11 @@ def my_likelihood(params):
     return like
 
 
-result = pymultinest.solve(
+result = pymultinest.run(
     LogLikelihood=my_likelihood,
     Prior=my_prior_transform,
     n_dims=3,
+    use_MPI=True,
     outputfiles_basename="/home/user/Documents/projects/UVLF_FMs/run_speed/"
 )
 
