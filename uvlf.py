@@ -10,8 +10,26 @@ import pymultinest
 from numba import njit, prange
 import ultranest
 
-from ulty import ms_mh_flattening
+def ms_mh_flattening(mh, fstar_scale=1, alpha_star_low=0.5):
+    """
+        Get scaling relations for SHMR based on Davies+in prep.
+        Parameters
+        ----------
+        mh: float,
+            halo mass at which we're evaluating the relation.
+        Returns
+        ----------
+        ms_mean: floats; optional,
+            a and b coefficient of the relation.
+    """
+    f_star_mean = fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
+    f_star_mean /= (mh / 2.6e11) ** (-alpha_star_low) + (mh / 2.6e11) ** 0.61
+    return f_star_mean * mh
 
+def ms_mh(ms, fstar_scale=1):
+    mhs = np.logspace(5,15,500)
+    mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale)
+    return 10**np.interp(np.log10(ms), np.log10(mss), np.log10(mhs))
 
 def SFMS(Mstar, SFR_norm=1, z=9.25):
     """
