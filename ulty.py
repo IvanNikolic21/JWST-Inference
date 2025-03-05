@@ -505,6 +505,7 @@ result = pymultinest.run(
     evidence_tolerance= 0.5,
     multimodal= False,
     n_iter_before_update=20,
+    max_iter=1000,#just to get some results
 )
 
 
