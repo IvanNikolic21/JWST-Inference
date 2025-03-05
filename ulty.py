@@ -13,6 +13,8 @@ import ultranest
 hmf_loc_9 = hmf.MassFunction(z=9.25)
 hmf_loc_7 = hmf.MassFunction(z=7.0)
 
+from uvlf import SFMS, kUV, Muv_Luv, uv_calc, UV_calc, like_UV
+
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
     def __init__(self, xi_dm: np.ndarray, nu: np.ndarray, z: float):
@@ -176,7 +178,7 @@ def w_IC(ang_theta, ang_func,x_deg, y_deg, angular_distance):
     return integral_sum / N_samples
 
 
-def ms_mh_flattening(mh, fstar_scale=1):
+def ms_mh_flattening(mh, fstar_scale=1, alpha_star_low=0.5):
     """
         Get scaling relations for SHMR based on Davies+in prep.
         Parameters
@@ -188,9 +190,10 @@ def ms_mh_flattening(mh, fstar_scale=1):
         ms_mean: floats; optional,
             a and b coefficient of the relation.
     """
-    f_star_mean = fstar_scale * 0.0076 * (2.6e11 / 1e10) ** 0.5
-    f_star_mean /= (mh / 2.6e11) ** -0.5 + (mh / 2.6e11) ** 0.61
+    f_star_mean = fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
+    f_star_mean /= (mh / 2.6e11) ** (-alpha_star_low) + (mh / 2.6e11) ** 0.61
     return f_star_mean * mh
+
 def ms_mh(ms, fstar_scale=1):
     mhs = np.logspace(5,15,500)
     mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale)
@@ -310,6 +313,16 @@ def my_prior_transform(cube,ndim, nparams):
     #     cube[:, 2] = cube[:, 2] * (hi - lo) + lo
     # else:
     cube[2] = cube[2] * (hi - lo) + lo
+
+    #SFMS sigma
+    lo = 0.01
+    hi = 1.5
+    cube[3] = cube[3] * (hi - lo) + lo
+
+    #t_star
+    lo = 0.01
+    hi = 0.99
+    cube[4] = cube[4] * (hi - lo) + lo
 
     return cube
 
@@ -486,12 +499,26 @@ def my_likelihood(cube, ndim, nparams, lnew):
     return like
 
 
+def like_calc(
+    cube, ndim, nparams, lnew
+):
+    like_clust = my_likelihood(cube, ndim, nparams, lnew)
+    #fi, asi, s_sfri,s_shmri, tsti
+    like_uv = like_UV(
+        cube[0],
+        0.5,
+        cube[3],
+        cube[2],
+        cube[4],
+    )
+    return like_clust + like_uv
+
 result = pymultinest.run(
-    LogLikelihood=my_likelihood,
+    LogLikelihood=like_calc,
     Prior=my_prior_transform,
-    n_dims=3,
+    n_dims=5,
     use_MPI=True,
-    outputfiles_basename="/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_2/",
+    outputfiles_basename="/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_uvlf/",
     importance_nested_sampling = False,
     sampling_efficiency= 0.8,
     evidence_tolerance= 0.5,
