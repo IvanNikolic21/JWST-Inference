@@ -491,7 +491,12 @@ result = pymultinest.run(
     Prior=my_prior_transform,
     n_dims=3,
     use_MPI=True,
-    outputfiles_basename="/home/inikolic/projects/UVLF_FMs/run_speed/run_mult/"
+    outputfiles_basename="/home/inikolic/projects/UVLF_FMs/run_speed/run_mult/",
+    importance_nested_sampling = False,
+    sampling_efficiency= 0.8,
+    evidence_tolerance= 0.5,
+    multimodal= False,
+    n_iter_before_update=20,
 )
 
 
