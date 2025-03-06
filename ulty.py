@@ -268,7 +268,7 @@ fid_params = {
     'sd_bias_params':{'z':9.25},
 }
 
-param_names = ['fstar_norm', 'log_scat_SHMR', 'M1']
+param_names = ['fstar_norm', 'sigma_SHMR', 'alpha_star', 'sigma_SFMS', 't_star']
 
 
 def my_prior_transform(cube,ndim, nparams):
@@ -289,11 +289,16 @@ def my_prior_transform(cube,ndim, nparams):
     # else:
     cube[1] = cube[1] * (hi - lo) + lo
 
-    lo = 11
-    hi = 14
-    # if len(np.shape(cube)) > 1:
-    #     cube[:, 2] = cube[:, 2] * (hi - lo) + lo
-    # else:
+    # lo = 11
+    # hi = 14
+    # # if len(np.shape(cube)) > 1:
+    # #     cube[:, 2] = cube[:, 2] * (hi - lo) + lo
+    # # else:
+    # cube[2] = cube[2] * (hi - lo) + lo
+
+    # alpha_star
+    lo = 0.0
+    hi = 1.0
     cube[2] = cube[2] * (hi - lo) + lo
 
     #SFMS sigma
@@ -407,7 +412,6 @@ def my_likelihood(cube, ndim, nparams, lnew):
     # else:
     fs_sc = params[0]
     sig_shmr = params[1]
-    m1 = params[2]
 
     # compute intensity at every x position according to the model
     # print(
@@ -416,15 +420,12 @@ def my_likelihood(cube, ndim, nparams, lnew):
     #     m1,
     # )
 
-    def angy(fi, si, mi):
+    def angy(fi, si):
         angular_gal.hod_params = {
             'stellar_mass_min': 8.75,
             'stellar_mass_sigma': si,
             'fstar_scale': 10 ** fi,
             'alpha': 1.0,
-            'M1': mi,
-            'fstar_scale_sat': 10 ** fi,
-            'stellar_mass_sigma_sat': si,
         }
         ang_th = angular_gal.theta
         ang_ang = angular_gal.angular_corr_gal
@@ -439,23 +440,22 @@ def my_likelihood(cube, ndim, nparams, lnew):
         # wthethats87_pos,
         # wsig87_pos
         for i_theta, ts in enumerate(thethats87_pos):
-            wi = np.interp(
-                ts,
-                ang_th / 2 / np.pi * 360,
-                ang_ang - w_IC_instance
-            )
-            # compare model and data with gaussian likelihood:
-            like += -0.5 * (((wi - wthethats87_pos[i_theta]) / wsig87_pos[
-                i_theta]) ** 2)
+            if ts>0.003:
+
+                wi = np.interp(
+                    ts,
+                    ang_th / 2 / np.pi * 360,
+                    ang_ang - w_IC_instance
+                )
+                # compare model and data with gaussian likelihood:
+                like += -0.5 * (((wi - wthethats87_pos[i_theta]) / wsig87_pos[
+                    i_theta]) ** 2)
 
         angular_gal.hod_params = {
             'stellar_mass_min': 9.0,
             'stellar_mass_sigma': si,
             'fstar_scale': 10 ** fi,
             'alpha': 1.0,
-            'M1': mi,
-            'fstar_scale_sat': 10 ** fi,
-            'stellar_mass_sigma_sat': si,
         }
         ang_th = angular_gal.theta
         ang_ang = angular_gal.angular_corr_gal
@@ -465,18 +465,20 @@ def my_likelihood(cube, ndim, nparams, lnew):
             41.5 / 60, 46.6 / 60, 940.29997
         )
         for i_theta, ts in enumerate(thethats90_pos):
-            wi = np.interp(
-                ts,
-                ang_th / 2 / np.pi * 360,
-                ang_ang - w_IC_instance
-            )
-            # compare model and data with gaussian likelihood:
-            like += -0.5 * (((wi - wthethats90_pos[i_theta]) / wsig90_pos[
-                i_theta]) ** 2)
+            if ts>0.003:
+
+                wi = np.interp(
+                    ts,
+                    ang_th / 2 / np.pi * 360,
+                    ang_ang - w_IC_instance
+                )
+                # compare model and data with gaussian likelihood:
+                like += -0.5 * (((wi - wthethats90_pos[i_theta]) / wsig90_pos[
+                    i_theta]) ** 2)
         return like
 
     vecy = np.vectorize(angy)
-    like = vecy(fs_sc, sig_shmr, m1)
+    like = vecy(fs_sc, sig_shmr)
 
     return like
 
@@ -488,9 +490,9 @@ def like_calc(
     #fi, asi, s_sfri,s_shmri, tsti
     like_uv = like_UV(
         cube[0],
-        0.5,
-        cube[3],
         cube[2],
+        cube[1],
+        cube[3],
         cube[4],
     )
     return like_clust + like_uv
