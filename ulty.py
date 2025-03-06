@@ -10,7 +10,7 @@ from astropy.cosmology import Planck18 as cosmo
 
 from numba import njit, prange
 import ultranest
-
+from astropy import units as u
 hmf_loc_9 = hmf.MassFunction(z=9.25)
 hmf_loc_7 = hmf.MassFunction(z=7.0)
 

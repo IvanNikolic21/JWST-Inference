@@ -7,7 +7,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline as spline
 from scipy.special import erfc
 import pymultinest
 from astropy.cosmology import Planck18 as cosmo
-
+from astropy import units as u
 from numba import njit, prange
 import ultranest
 
