@@ -6,6 +6,7 @@ from hmf import cached_quantity, parameter, get_mdl
 from scipy.interpolate import InterpolatedUnivariateSpline as spline
 from scipy.special import erfc
 import pymultinest
+from astropy.cosmology import Planck18 as cosmo
 
 from numba import njit, prange
 import ultranest
