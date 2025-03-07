@@ -85,6 +85,7 @@ class LikelihoodAngBase():
             M_thresh = 8.75
         else:
             M_thresh = 9.0
+        print(fstar_scale)
 
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
