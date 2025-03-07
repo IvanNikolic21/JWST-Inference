@@ -54,6 +54,7 @@ class LikelihoodAngBase():
         )
 
     def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
+        print(p, np.array(p), np.shape(np.array(p)))
         dic_params = dict.fromkeys(self.params, p)
 
         if "alpha" in dic_params:
@@ -85,7 +86,6 @@ class LikelihoodAngBase():
             M_thresh = 8.75
         else:
             M_thresh = 9.0
-        print(fstar_scale)
 
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
