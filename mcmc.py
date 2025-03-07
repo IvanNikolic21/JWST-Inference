@@ -248,6 +248,9 @@ def run_mcmc(
         for i in range(ndim):
             cube[i] = cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0]
 
+        print(cube)
+        return cube
+
     result = pymultinest.run(
         LogLikelihood=likelihood,
         Prior=prior,
