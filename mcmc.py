@@ -244,12 +244,13 @@ def run_mcmc(
         return lnL
 
 
-    def prior(cube, ndim, nparams):
+    def prior(cube, ndim):
         print(cube)
         print(cube[0])
+        params = []
         for i in range(ndim):
-            cube[i] = cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0]
-
+            params.append( cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0])
+        cube = np.array(params).copy()
         return cube
 
     result = pymultinest.run(
