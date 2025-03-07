@@ -54,9 +54,9 @@ class LikelihoodAngBase():
         )
 
     def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
-        print(p, np.shape(p))
-        dic_params = dict.fromkeys(self.params, p)
-
+        dic_params = {}
+        for index,pary in enumerate(self.params):
+            dic_params[pary] = p[index]
         if "alpha" in dic_params:
             alpha = dic_params["alpha"]
         else:
