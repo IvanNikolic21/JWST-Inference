@@ -54,7 +54,7 @@ class LikelihoodAngBase():
         )
 
     def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
-        print(p, np.array(p), np.shape(np.array(p)))
+        print(p, np.shape(p))
         dic_params = dict.fromkeys(self.params, p)
 
         if "alpha" in dic_params:
@@ -213,7 +213,6 @@ def run_mcmc(
     observations_inst = Observations(ang, uvlf)
 
     def likelihood(p, ndim, nparams, lnew):
-        print("This is p", p)
         lnL = 0
         for li in likelihoods:
             if li == "Ang_z9_m87":
@@ -249,7 +248,6 @@ def run_mcmc(
         for i in range(ndim):
             cube[i] = cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0]
 
-        print(cube)
         return cube
 
     result = pymultinest.run(
