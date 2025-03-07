@@ -11,7 +11,7 @@ import ultranest
 hmf_loc_9 = hmf.MassFunction(z=9.25)
 hmf_loc_7 = hmf.MassFunction(z=7.0)
 
-from uvlf import like_UV, ms_mh
+from uvlf import ms_mh
 
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
