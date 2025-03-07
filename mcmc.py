@@ -45,7 +45,7 @@ class LikelihoodAngBase():
             hod_params={
                 'stellar_mass_min': 8.75,
                 'stellar_mass_sigma': 0.3,
-            '   fstar_scale': 10 ** 0.0,
+                'fstar_scale': 10 ** 0.0,
                 'alpha': 1.0,
                 'M1': 13.5,
                 'fstar_scale_sat': 10 ** 0,
