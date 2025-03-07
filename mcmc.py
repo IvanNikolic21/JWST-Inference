@@ -128,7 +128,10 @@ class LikelihoodUVLFBase():
         self.params = params
 
     def call_likelihood(self, p, muvs=None, uvlf=None, sig=None):
-        dic_params = dict.fromkeys(self.params, p)
+        #dic_params = dict.fromkeys(self.params, p)
+        dic_params = {}
+        for index,pary in enumerate(self.params):
+            dic_params[pary] = p[index]
 
         if "fstar_scale" in dic_params:
             fstar_scale = dic_params["fstar_scale"]
