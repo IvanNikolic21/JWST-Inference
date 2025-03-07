@@ -1,3 +1,5 @@
+import numpy as np
+
 dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
 
 
@@ -46,5 +48,17 @@ class Observations():
         ]
         return thethats90_pos, wthethats90_pos, wsig90_pos
 
+    def get_obs_uvlf_z11_McLeod23(self):
+        McL_Muvs = np.array(
+            [-22.57,-21.80,-20.80,-20.05,-19.55,-18.85,-18.23]
+        )
+        McL_uvlf = np.array(
+            [0.012,0.128,1.251,3.951,9.713,23.490,63.080]
+        )*1e-5
+        Mcl_sig = np.array(
+            [0.010,0.128,0.424,1.319, 4.170,9.190,28.650]
+        )*1e-5
+
+        return McL_Muvs, McL_uvlf, Mcl_sig
 
 
