@@ -244,7 +244,7 @@ def run_mcmc(
         return lnL
 
 
-    def prior(cube, ndim):
+    def prior(cube, ndim, nparams):
         print(cube)
         print(cube[0])
         params = []
