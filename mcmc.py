@@ -264,4 +264,4 @@ if __name__ == "__main__":
 
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors)
+    run_mcmc(likelihoods, params, priors=priors)
