@@ -131,28 +131,28 @@ def UV_calc(
 
     return uvlf
 
-def like_UV(fi, asi, s_sfri,s_shmri, tsti):
-    McL_Muvs = np.array(
-        [-22.57,-21.80,-20.80,-20.05,-19.55,-18.85,-18.23]
-    )
-    McL_uvlf = np.array(
-        [0.012,0.128,1.251,3.951,9.713,23.490,63.080]
-    )*1e-5
-    Mcl_sig = np.array(
-        [0.010,0.128,0.424,1.319, 4.170,9.190,28.650]
-    )*1e-5
-    lnL = 0
-    preds = UV_calc(
-        McL_Muvs,
-        np.log10(hmf_loc.m),
-        hmf_loc.dndlnm,
-        f_star_norm=10**fi,
-        alpha_star=asi,
-        sigma_SHMR = s_shmri,
-        sigma_SFMS = s_sfri,
-        t_star = tsti,
-    )
-    for index, muvi in enumerate(McL_Muvs):
-        lnL += -0.5 * (((preds[index] - McL_uvlf[index]) / Mcl_sig[
-                index]) ** 2)
-    return lnL
+# def like_UV(fi, asi, s_sfri,s_shmri, tsti):
+#     McL_Muvs = np.array(
+#         [-22.57,-21.80,-20.80,-20.05,-19.55,-18.85,-18.23]
+#     )
+#     McL_uvlf = np.array(
+#         [0.012,0.128,1.251,3.951,9.713,23.490,63.080]
+#     )*1e-5
+#     Mcl_sig = np.array(
+#         [0.010,0.128,0.424,1.319, 4.170,9.190,28.650]
+#     )*1e-5
+#     lnL = 0
+#     preds = UV_calc(
+#         McL_Muvs,
+#         np.log10(hmf_loc.m),
+#         hmf_loc.dndlnm,
+#         f_star_norm=10**fi,
+#         alpha_star=asi,
+#         sigma_SHMR = s_shmri,
+#         sigma_SFMS = s_sfri,
+#         t_star = tsti,
+#     )
+#     for index, muvi in enumerate(McL_Muvs):
+#         lnL += -0.5 * (((preds[index] - McL_uvlf[index]) / Mcl_sig[
+#                 index]) ** 2)
+#     return lnL
