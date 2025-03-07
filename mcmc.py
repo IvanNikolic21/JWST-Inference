@@ -212,7 +212,8 @@ def run_mcmc(
 
     observations_inst = Observations(ang, uvlf)
 
-    def likelihood(p, ndim, nparams):
+    def likelihood(p, ndim, nparams, lnew):
+        print("This is p", p)
         lnL = 0
         for li in likelihoods:
             if li == "Ang_z9_m87":
