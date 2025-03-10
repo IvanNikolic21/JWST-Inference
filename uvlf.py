@@ -13,7 +13,7 @@ import ultranest
 
 
 hmf_loc = hmf.MassFunction(z=11)
-def ms_mh_flattening(mh, fstar_scale=1, alpha_star_low=0.5):
+def ms_mh_flattening(mh, fstar_scale = 1.0, alpha_star_low = 0.5):
     """
         Get scaling relations for SHMR based on Davies+in prep.
         Parameters
@@ -34,7 +34,7 @@ def ms_mh(ms, fstar_scale=1):
     mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale)
     return 10**np.interp(np.log10(ms), np.log10(mss), np.log10(mhs))
 
-def SFMS(Mstar, SFR_norm=1, z=9.25):
+def SFMS(Mstar, SFR_norm = 1., z=9.25):
     """
         the functon returns SFR from Main sequence
     """
@@ -108,8 +108,11 @@ def UV_calc(
         sigma_SFMS=0.3,
         t_star=0.5,
 ):
-    msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
-                            fstar_scale=f_star_norm)
+    msss = ms_mh_flattening(
+        10 ** masses_hmf,
+        alpha_star_low=alpha_star,
+        fstar_scale= 10 ** f_star_norm
+    )
     sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=11)
     muvs = Muv_Luv(kUV(sfrs))
 

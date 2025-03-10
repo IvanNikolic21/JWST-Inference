@@ -162,13 +162,14 @@ class LikelihoodUVLFBase():
         preds = UV_calc(
             muvs,
             np.log10(self.hmf_loc.m),
-            self.hmf_loc.dndlnm,
+            self.hmf_loc.dndlnm * cosmo.h ** 3,
             f_star_norm=10 ** fstar_scale,
             alpha_star=alpha_star,
             sigma_SHMR=sigma_SHMR,
             sigma_SFMS=sigma_SFMS,
             t_star=t_star,
         )
+
         for index, muvi in enumerate(muvs):
             lnL += -0.5 * (((preds[index] - uvlf[index]) / sig[
                 index]) ** 2)
