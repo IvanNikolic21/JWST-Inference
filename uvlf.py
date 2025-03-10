@@ -57,6 +57,34 @@ def Muv_Luv(Luv):
     return -2.5 * np.log10(Luv) + 51.6
 
 
+def sigma_SFR_variable(Mstar, norm=0.0, a_sig_SFR=-0.11654893):
+    """
+        Variable scatter of SFR-Mstar relation.
+        It's based on FirstLight database.
+    Parameters
+    ----------
+    Mstar: stellar mass at which the relation is taken
+
+    Returns
+    -------
+    sigma: sigma of the relation
+    """
+    # a_sig_SFR = -0.11654893
+    b_sig_SFR = 1.35289501
+    #     sigma = a_sig_SFR * np.log10(Mstar) + b_sig_SFR
+
+    Mstar = np.asarray(Mstar)  # Convert input to a numpy array if not already
+
+    sigma = a_sig_SFR * np.log10(Mstar) + b_sig_SFR
+    sigma[Mstar > 10 ** 10] = 0.18740570999999995
+
+    return sigma + norm
+
+
+#     if Mstar > 10**10:
+#         return 0.18740570999999995 - norm
+#     else:
+#         return sigma - norm
 
 @njit(parallel=True)
 def uv_calc(
@@ -83,17 +111,19 @@ def uv_calc(
 #         12.0,
 #         N_samples,
 #     )
-    ppred = 1 / np.sqrt(sigma_SFMS**2 + sigma_SHMR**2) * np.sqrt(2)
     #msss = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
 
     log_ms_int = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
+    sig_int = np.interp(log_ms_int, np.log10(msss), sigma_SFMS)
     muvs_int = np.interp(log_mhs_int, masses_hmf, muvs)
     integral_sum = 0.0
     for i in prange(N_samples):  # Parallel loop
         dnd = np.interp(log_mhs_int[i], masses_hmf, dndm)
+        ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2) * np.sqrt(2)
+
 #         print(dnd)
         #exp = np.exp(-(Muv-muvs_int[i])**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
-        exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
+        exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sig_int[i]**2 + sigma_SHMR**2))
         integral_sum += dnd * ppred * exp
     return integral_sum / N_samples * 7
 
@@ -105,25 +135,22 @@ def UV_calc(
         f_star_norm=1.0,
         alpha_star=0.5,
         sigma_SHMR=0.3,
-        sigma_SFMS=0.3,
+        sigma_SFMS_norm=0.0,
         t_star=0.5,
+        a_sig_SFR = -0.11654893
 ):
-    msss = ms_mh_flattening(
-        10 ** masses_hmf,
-        alpha_star_low=alpha_star,
-        fstar_scale= 10 ** f_star_norm
-    )
+    msss = ms_mh_flattening(masses_hmf, alpha_star_low=alpha_star,
+                            fstar_scale=10**f_star_norm)
     sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=11)
     muvs = Muv_Luv(kUV(sfrs))
-
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
-
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm = sigma_SFMS_norm, a_sig_SFR=a_sig_SFR)
     uvlf = [uv_calc(
         muvi,
         masses_hmf,
         dndm,
-        sigma_SFMS=sigma_SFMS,
+        sigma_SFMS=sigma_SFMS_var,
         sigma_SHMR=sigma_SHMR,
         sfr_obs_log=sfr_obs_log[index],
         ms_obs_log=ms_obs_log[index],

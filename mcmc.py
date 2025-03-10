@@ -116,6 +116,7 @@ class LikelihoodAngBase():
                     i_theta]) ** 2)
         return like
 
+
 class LikelihoodUVLFBase():
     """
     To be filled
@@ -123,14 +124,15 @@ class LikelihoodUVLFBase():
     -------
 
     """
+
     def __init__(self, params):
         self.hmf_loc = hmf.MassFunction(z=11)
         self.params = params
 
     def call_likelihood(self, p, muvs=None, uvlf=None, sig=None):
-        #dic_params = dict.fromkeys(self.params, p)
+        # dic_params = dict.fromkeys(self.params, p)
         dic_params = {}
-        for index,pary in enumerate(self.params):
+        for index, pary in enumerate(self.params):
             dic_params[pary] = p[index]
 
         if "fstar_scale" in dic_params:
@@ -143,10 +145,10 @@ class LikelihoodUVLFBase():
         else:
             sigma_SHMR = 0.3
 
-        if "sigma_SFMS" in dic_params:
-            sigma_SFMS = dic_params["sigma_SFMS"]
+        if "sigma_SFMS_norm" in dic_params:
+            sigma_SFMS_norm = dic_params["sigma_SFMS_norm"]
         else:
-            sigma_SFMS = 0.3
+            sigma_SFMS_norm = 0.0
 
         if "t_star" in dic_params:
             t_star = dic_params["t_star"]
@@ -158,18 +160,24 @@ class LikelihoodUVLFBase():
         else:
             alpha_star = 0.5
 
+        if "a_sig_SFR" in dic_params:
+            a_sig_SFR = dic_params["a_sig_SFR"]
+        else:
+            a_sig_SFR = -0.11654893
+
         lnL = 0
+
         preds = UV_calc(
             muvs,
             np.log10(self.hmf_loc.m),
-            self.hmf_loc.dndlnm * cosmo.h ** 3,
+            self.hmf_loc.dndlnm,
             f_star_norm=10 ** fstar_scale,
             alpha_star=alpha_star,
             sigma_SHMR=sigma_SHMR,
-            sigma_SFMS=sigma_SFMS,
+            sigma_SFMS_norm=sigma_SFMS_norm,
             t_star=t_star,
+            a_sig_SFR=a_sig_SFR,
         )
-
         for index, muvi in enumerate(muvs):
             lnL += -0.5 * (((preds[index] - uvlf[index]) / sig[
                 index]) ** 2)
@@ -268,11 +276,11 @@ if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["Ang_z9_m87", "Ang_z9_m9", "UVLF_z11_McLeod23"]
     likelihoods = ["UVLF_z11_McLeod23"]
-    params = ["fstar_scale", "alpha_star_low", "t_star", "sigma_SHMR", "sigma_SFMS"]
+    params = ["fstar_scale", "alpha_star_low", "t_star", "sigma_SHMR", "sigma_SFMS_norm"]
     priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
 
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
-
+    #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
     run_mcmc(likelihoods, params, priors=priors)
