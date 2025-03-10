@@ -248,8 +248,7 @@ def run_mcmc(
 
 
     def prior(cube, ndim, nparams):
-        print(cube)
-        print(cube[0])
+
         params = []
         for i in range(ndim):
             params.append( cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0])
