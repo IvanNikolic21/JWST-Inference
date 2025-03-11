@@ -53,6 +53,7 @@ class LikelihoodAngBase():
                 'stellar_mass_min': 8.75,
                 'stellar_mass_sigma': 0.3,
                 'fstar_scale': 10 ** 0.0,
+                'alpha_star_low': 0.5,
                 'alpha': 1.0,
                 'M1': 13.5,
                 'fstar_scale_sat': 10 ** 0,
@@ -89,6 +90,11 @@ class LikelihoodAngBase():
         else:
             sigma_SHMR = 0.3
 
+        if "alpha_star_low" in dic_params
+            alpha_star_low = dic_params["alpha_star_low"]
+        else:
+            alpha_star_low = 0.5
+
         if obs=="Ang_z9_m87":
             M_thresh = 8.75
         else:
@@ -99,6 +105,7 @@ class LikelihoodAngBase():
             'stellar_mass_sigma': sigma_SHMR,
             'fstar_scale': 10 ** fstar_scale,
             'alpha': alpha,
+            'alpha_star_low': alpha_star_low,
             'M1': M_1,
             'M_0': M_0,
         }

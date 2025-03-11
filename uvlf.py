@@ -29,9 +29,9 @@ def ms_mh_flattening(mh, fstar_scale = 1.0, alpha_star_low = 0.5):
     f_star_mean /= (mh / 2.6e11) ** (-alpha_star_low) + (mh / 2.6e11) ** 0.61
     return f_star_mean * mh
 
-def ms_mh(ms, fstar_scale=1):
+def ms_mh(ms, fstar_scale=1, alpha_star_low=0.5):
     mhs = np.logspace(5,15,500)
-    mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale)
+    mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale, alpha_star_low=alpha_star_low)
     return 10**np.interp(np.log10(ms), np.log10(mss), np.log10(mhs))
 
 def SFMS(Mstar, SFR_norm = 1., z=9.25):

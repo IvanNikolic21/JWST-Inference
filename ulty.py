@@ -209,6 +209,7 @@ class My_HOD(hm.hod.Zheng05):
         'sig_logm':0.05,
         'M_0':12.0,
         'M_1':13.0,
+        'alpha_star_low':0.5,
     }    
 
     def _central_occupation(self, m):
@@ -218,7 +219,8 @@ class My_HOD(hm.hod.Zheng05):
             -(
                 np.log10(m)-np.log10(
                     ms_mh(10**self.params["stellar_mass_min"],
-                          fstar_scale=self.params["fstar_scale"]
+                          fstar_scale=self.params["fstar_scale"],
+                          alpha_star_low=self.params["alpha_star_low"]
                          )
                 )
             )/self.params["stellar_mass_sigma"] / np.sqrt(2)
@@ -237,7 +239,8 @@ class My_HOD(hm.hod.Zheng05):
                 -(
                     np.log10(m[m > 10 ** self.params["M_0"]])-np.log10(
                         ms_mh(10**self.params["stellar_mass_min"],
-                              fstar_scale=self.params["fstar_scale_sat"]
+                              fstar_scale=self.params["fstar_scale_sat"],
+                              alpha_star_low=self.params["alpha_star_low"],
                              )
                     )
                 )/self.params["stellar_mass_sigma_sat"] / np.sqrt(2)
