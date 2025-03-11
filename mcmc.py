@@ -274,7 +274,7 @@ def run_mcmc(
     result = pymultinest.run(
         LogLikelihood=likelihood,
         Prior=prior,
-        n_dims=5,
+        n_dims=len(params),
         **mult_params
     )
 
