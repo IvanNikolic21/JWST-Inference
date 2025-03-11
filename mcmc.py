@@ -37,6 +37,13 @@ class LikelihoodAngBase():
             'bias_model': "Tinker10",
             'sd_bias_model': Bias_nonlin,
             'sd_bias_params': {'z': 9.25},
+            'transfer_model': "EH",
+            'rnum': 30,
+            'rmin': 0.1,
+            'rmax': 30,
+            'dr_table': 0.1,
+            'dlnk': 0.1,
+            'dlog10m': 0.05,
         }
         self.params = params
 
@@ -117,7 +124,7 @@ class LikelihoodAngBase():
         return like
 
 
-class LikelihoodUVLFBase():
+class LikelihoodUVLFBase:
     """
     To be filled
     Returns
