@@ -90,7 +90,7 @@ class LikelihoodAngBase():
         else:
             sigma_SHMR = 0.3
 
-        if "alpha_star_low" in dic_params
+        if "alpha_star_low" in dic_params:
             alpha_star_low = dic_params["alpha_star_low"]
         else:
             alpha_star_low = 0.5
