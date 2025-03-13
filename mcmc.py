@@ -152,7 +152,7 @@ class LikelihoodUVLFBase:
         if "fstar_scale" in dic_params:
             fstar_scale = dic_params["fstar_scale"]
         else:
-            fstar_scale = 10 ** 0.0
+            fstar_scale = 0.0
 
         if "sigma_SHMR" in dic_params:
             sigma_SHMR = dic_params["sigma_SHMR"]
