@@ -211,12 +211,13 @@ def run_mcmc(
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
-        "outputfiles_basename": "/home/inikolic/projects/UVLF_FMs/run_speed/run_ang/",
+        "outputfiles_basename": "/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_3/",
         "importance_nested_sampling": False,
         "sampling_efficiency": 0.8,
         "evidence_tolerance": 0.5,
         "multimodal": False,
         "n_iter_before_update": 20,
+        'n_live_points': 100,
     }
     if mult_params is None:
         mult_params = mult_params_fid
@@ -289,12 +290,12 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["Ang_z9_m87", "Ang_z9_m9", "UVLF_z11_McLeod23"]
-    likelihoods = ["Ang_z9_m87"]
-    #likelihoods = ["UVLF_z11_McLeod23"]
-    #params = ["fstar_scale", "alpha_star_low", "t_star", "sigma_SHMR", "sigma_SFMS_norm"]
-    params = ["fstar_scale", "sigma_SHMR", "alpha_star_low"]
-    #priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
-    priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
+    #likelihoods = ["Ang_z9_m87"]
+    likelihoods = ["UVLF_z11_McLeod23"]
+    params = ["fstar_scale", "alpha_star_low", "t_star", "sigma_SHMR", "sigma_SFMS_norm"]
+    #params = ["fstar_scale", "sigma_SHMR", "alpha_star_low"]
+    priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
+    #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
