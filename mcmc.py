@@ -214,7 +214,7 @@ def run_mcmc(
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
-        "outputfiles_basename": "/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_3/",
+        "outputfiles_basename": "/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_4/",
         "importance_nested_sampling": False,
         "sampling_efficiency": 0.8,
         "evidence_tolerance": 0.5,
