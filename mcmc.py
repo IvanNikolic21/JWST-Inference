@@ -1,7 +1,7 @@
 import numpy as np
 import halomod as hm
 import hmf as hmf
-
+import time
 import pymultinest
 from astropy.cosmology import Planck18 as cosmo
 
@@ -180,7 +180,7 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         lnL = 0
-
+        t0 = time.time()
         preds = UV_calc(
             muvs,
             np.log10(self.hmf_loc.m),
@@ -192,6 +192,9 @@ class LikelihoodUVLFBase:
             t_star=t_star,
             a_sig_SFR=a_sig_SFR,
         )
+
+        t1 = time.time()
+        print("Time now:",t1-t0)
         for index, muvi in enumerate(muvs):
             lnL += -0.5 * (((preds[index] - uvlf[index]) / sig[
                 index]) ** 2)

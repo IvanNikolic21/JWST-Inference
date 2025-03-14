@@ -139,7 +139,7 @@ def UV_calc(
         t_star=0.5,
         a_sig_SFR = -0.11654893
 ):
-    msss = ms_mh_flattening(masses_hmf, alpha_star_low=alpha_star,
+    msss = ms_mh_flattening(10**masses_hmf, alpha_star_low=alpha_star,
                             fstar_scale=f_star_norm)
     sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=11)
     muvs = Muv_Luv(kUV(sfrs))
