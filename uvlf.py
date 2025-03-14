@@ -100,7 +100,7 @@ def uv_calc(
     muvs=None,
 ):
     #print(x_deg, y_deg)
-    N_samples = int(1e5)
+    N_samples = int(1e4)
     log_mhs_int = np.random.uniform(
         7.0,
         14.0,
