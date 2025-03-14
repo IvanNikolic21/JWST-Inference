@@ -190,7 +190,7 @@ class LikelihoodUVLFBase:
             sigma_SHMR=sigma_SHMR,
             sigma_SFMS_norm=sigma_SFMS_norm,
             t_star=t_star,
-            a_sig_SFR=a_sig_SFR,
+            a_sig_SFR=0.0,
         )
 
         t1 = time.time()
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "sigma_SFMS_norm"]
     #params = ["fstar_scale", "sigma_SHMR", "alpha_star_low"]
-    priors = [(-1.0,1.0), (0.01,1.0), (0.01,1.0)]
+    priors = [(-1.0,1.0), (0.01,1.0), (-0.15,0.3)]
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
