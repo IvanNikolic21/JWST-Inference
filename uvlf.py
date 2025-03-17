@@ -57,7 +57,7 @@ def Muv_Luv(Luv):
     return -2.5 * np.log10(Luv) + 51.6
 
 
-def sigma_SFR_variable(Mstar, norm=0.0, a_sig_SFR=-0.11654893):
+def sigma_SFR_variable(Mstar, norm=0.18740570999999995, a_sig_SFR=-0.11654893):
     """
         Variable scatter of SFR-Mstar relation.
         It's based on FirstLight database.
@@ -70,13 +70,13 @@ def sigma_SFR_variable(Mstar, norm=0.0, a_sig_SFR=-0.11654893):
     sigma: sigma of the relation
     """
     # a_sig_SFR = -0.11654893
-    b_sig_SFR = 1.35289501
+    #b_sig_SFR = 1.35289501
     #     sigma = a_sig_SFR * np.log10(Mstar) + b_sig_SFR
 
     Mstar = np.asarray(Mstar)  # Convert input to a numpy array if not already
 
-    sigma = a_sig_SFR * np.log10(Mstar) + b_sig_SFR
-    sigma[Mstar > 10 ** 10] = 0.18740570999999995
+    sigma = a_sig_SFR * np.log10(Mstar/1e10) + norm
+    sigma[Mstar > 10 ** 10] = norm
 
     return sigma + norm
 

@@ -180,7 +180,6 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         lnL = 0
-        t0 = time.time()
         preds = UV_calc(
             muvs,
             np.log10(self.hmf_loc.m),
@@ -193,8 +192,6 @@ class LikelihoodUVLFBase:
             a_sig_SFR=0.0,
         )
 
-        t1 = time.time()
-        print("Time now:",t1-t0)
         for index, muvi in enumerate(muvs):
             lnL += -0.5 * (((preds[index] - uvlf[index]) / sig[
                 index]) ** 2)
@@ -297,7 +294,7 @@ if __name__ == "__main__":
     likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "sigma_SFMS_norm"]
     #params = ["fstar_scale", "sigma_SHMR", "alpha_star_low"]
-    priors = [(-1.0,1.0), (0.01,1.0), (-0.15,0.3)]
+    priors = [(-1.0,1.0), (0.01,1.0), (0.01,1.0)]
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
