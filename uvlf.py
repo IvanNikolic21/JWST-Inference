@@ -78,7 +78,7 @@ def sigma_SFR_variable(Mstar, norm=0.18740570999999995, a_sig_SFR=-0.11654893):
     sigma = a_sig_SFR * np.log10(Mstar/1e10) + norm
     sigma[Mstar > 10 ** 10] = norm
 
-    return sigma + norm
+    return sigma
 
 
 #     if Mstar > 10**10:

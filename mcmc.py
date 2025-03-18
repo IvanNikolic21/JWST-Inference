@@ -62,9 +62,15 @@ class LikelihoodAngBase():
         )
 
     def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
+
+        paramida = []
+        for i in range(len(priors)):
+            paramida.append(p[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
+
         dic_params = {}
-        for index,pary in enumerate(self.params):
-            dic_params[pary] = p[index]
+        for index, pary in enumerate(self.params):
+            dic_params[pary] = paramida[index]
+
         if "alpha" in dic_params:
             alpha = dic_params["alpha"]
         else:
@@ -145,9 +151,13 @@ class LikelihoodUVLFBase:
 
     def call_likelihood(self, p, muvs=None, uvlf=None, sig=None):
         # dic_params = dict.fromkeys(self.params, p)
+        paramida = []
+        for i in range(len(priors)):
+            paramida.append(p[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
+
         dic_params = {}
         for index, pary in enumerate(self.params):
-            dic_params[pary] = p[index]
+            dic_params[pary] = paramida[index]
 
         if "fstar_scale" in dic_params:
             fstar_scale = dic_params["fstar_scale"]
