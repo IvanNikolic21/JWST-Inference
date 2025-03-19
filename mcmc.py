@@ -4,7 +4,7 @@ import hmf as hmf
 import time
 import pymultinest
 from astropy.cosmology import Planck18 as cosmo
-
+import json
 import ultranest
 
 from uvlf import UV_calc
@@ -217,11 +217,11 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_4/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
-        "outputfiles_basename": "/home/inikolic/projects/UVLF_FMs/run_speed/run_mult_4/",
+        "outputfiles_basename": output_filename,
         "importance_nested_sampling": False,
         "sampling_efficiency": 0.8,
         "evidence_tolerance": 0.5,
@@ -229,6 +229,13 @@ def run_mcmc(
         "n_iter_before_update": 20,
         'n_live_points': 200,
     }
+
+    prior_pars = dict(zip(params, priors))
+    with open(
+            output_filename + 'priors_params.json',
+            'w') as f:
+        json.dump(prior_pars, f)
+
     if mult_params is None:
         mult_params = mult_params_fid
     else:
