@@ -146,7 +146,7 @@ class LikelihoodUVLFBase:
     """
 
     def __init__(self, params):
-        self.hmf_loc = hmf.MassFunction(z=11)
+        self.hmf_loc = hmf.MassFunction(z=11, Mmin=7,Mmax=15, dlog10m=0.05)
         self.params = params
 
     def call_likelihood(self, p, muvs_o=None, uvlf_o=None, sig_o=None):
