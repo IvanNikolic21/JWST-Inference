@@ -149,7 +149,7 @@ class LikelihoodUVLFBase:
         self.hmf_loc = hmf.MassFunction(z=11)
         self.params = params
 
-    def call_likelihood(self, p, muvs=None, uvlf=None, sig=None):
+    def call_likelihood(self, p, muvs_o=None, uvlf_o=None, sig_o=None):
         # dic_params = dict.fromkeys(self.params, p)
         paramida = []
         for i in range(len(priors)):
@@ -191,7 +191,7 @@ class LikelihoodUVLFBase:
 
         lnL = 0
         preds = UV_calc(
-            muvs,
+            muvs_o,
             np.log10(self.hmf_loc.m),
             self.hmf_loc.dndlnm,
             f_star_norm=10 ** fstar_scale,
@@ -202,8 +202,8 @@ class LikelihoodUVLFBase:
             a_sig_SFR=0.0,
         )
 
-        for index, muvi in enumerate(muvs):
-            lnL += -0.5 * (((preds[index] - uvlf[index]) / sig[
+        for index, muvi in enumerate(muvs_o):
+            lnL += -0.5 * (((preds[index] - uvlf_o[index]) / sig_o[
                 index]) ** 2)
         return lnL
 
@@ -278,12 +278,12 @@ def run_mcmc(
                     sig_w=wsig
                 )
             elif li == "UVLF_z11_McLeod23":
-                muvs, uvlf, sig = observations_inst.get_obs_uvlf_z11_McLeod23()
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
                 lnL+=UVLFBase.call_likelihood(
                     p,
-                    muvs=muvs,
-                    uvlf=uvlf,
-                    sig=sig
+                    muvs=muvs_o,
+                    uvlf=uvlf_o,
+                    sig=sig_o
                 )
         return lnL
 
