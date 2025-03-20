@@ -199,7 +199,7 @@ class LikelihoodUVLFBase:
             sigma_SHMR=sigma_SHMR,
             sigma_SFMS_norm=sigma_SFMS_norm,
             t_star=t_star,
-            a_sig_SFR=0.0,
+            a_sig_SFR=a_sig_SFR,
         )
 
         for index, muvi in enumerate(muvs_o):
