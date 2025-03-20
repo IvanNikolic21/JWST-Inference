@@ -281,9 +281,9 @@ def run_mcmc(
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
                 lnL+=UVLFBase.call_likelihood(
                     p,
-                    muvs=muvs_o,
-                    uvlf=uvlf_o,
-                    sig=sig_o
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o
                 )
         return lnL
 
