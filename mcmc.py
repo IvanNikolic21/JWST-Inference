@@ -355,7 +355,7 @@ def run_mcmc(
 
 if __name__ == "__main__":
     #initialize likelihoods
-    likelihoods = ["Ang_z9_m87", "Ang_z9_m9", "UVLF_z11_McLeod23"]
+    likelihoods = ["UVLF_z11_McLeod23"]
     #likelihoods = ["Ang_z9_m87"]
     #likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
