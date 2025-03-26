@@ -6,7 +6,7 @@ import pymultinest
 from astropy.cosmology import Planck18 as cosmo
 import json
 import ultranest
-
+from scipy.special import erf, erfinv
 from uvlf import UV_calc
 
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
@@ -212,6 +212,7 @@ def run_mcmc(
         params,
         mult_params=None,
         priors=None,
+        covariance=False
 ):
 
     if priors is None:
@@ -287,14 +288,62 @@ def run_mcmc(
                 )
         return lnL
 
+    def phi(x):
+        """Integral of the unit-variance gaussian."""
+        return 0.5 * (1 + erf(x / np.sqrt(2)))
+
+    def phiinv(x):
+        """Inverse of the integral of the unit-variance gaussian."""
+        return np.sqrt(2) * erfinv(2 * x - 1)
+
 
     def prior(cube, ndim, nparams):
+        if covariance:
+            cov_mat = np.loadtxt(
+                '/home/inikolic/projects/UVLF_FMs/priors/cov_matr.txt'
+            )
+            mu = np.loadtxt(
+                '/home/inikolic/projects/UVLF_FMs/priors/means.txt'
+            )
 
-        params = []
-        for i in range(ndim):
-            params.append( cube[i] * (priors[i][1]-priors[i][0]) + priors[i][0])
-        cube = np.array(params).copy()
-        return cube
+            x = np.zeros(len(mu))  # vector of picked prior values
+
+            gp = cube
+            limits = np.copy(priors)
+            mu_i = np.copy(mu)
+            cov_i = np.copy(np.diag(cov_mat))
+            # calculating the inverse of cond. probs
+            for i in range(len(mu)):
+                if i > 0:
+                    mu_i[i] += (cov_mat[:i, i] @ np.linalg.inv(
+                        cov_mat[:i, :i])) @ (
+                                       x[:i] - mu[:i]
+                               )
+                    cov_i[i] = cov_i[i] - (
+                            cov_mat[:i, i] @ np.linalg.inv(cov_mat[:i, :i])
+                    ) @ (cov_mat[i, :i])
+
+                y_min = phi((limits[i][0] - mu_i[i]) / np.sqrt(cov_i[i]))
+                y_max = phi((limits[i][1] - mu_i[i]) / np.sqrt(cov_i[i]))
+                gp[i] = mu_i[i] + np.sqrt(cov_i[i]) * phiinv(
+                    y_min + gp[i] * (y_max - y_min)
+                )
+                x[i] = gp[i]
+
+            for i, k in enumerate(limits):
+                # j = params.index(k)
+                # saving p's for prior params
+                cube[i] = gp[i]
+
+            return cube
+
+        else:
+            params = []
+            for i in range(ndim):
+                params.append(
+                    cube[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
+            cube = np.array(params).copy()
+            return cube
 
     result = pymultinest.run(
         LogLikelihood=likelihood,
@@ -319,4 +368,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True)
