@@ -212,7 +212,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_uv/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/just_prior/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -283,6 +283,8 @@ def run_mcmc(
                     uvlf_o=uvlf_o,
                     sig_o=sig_o
                 )
+            else:
+                lnL+=0 #an option for testing
         return lnL
 
     def phi(x):
@@ -353,7 +355,8 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["Ang_z9_m87", "Ang_z9_m9", "UVLF_z11_McLeod23"]
+    #likelihoods = ["Ang_z9_m87", "Ang_z9_m9", "UVLF_z11_McLeod23"]
+    likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
