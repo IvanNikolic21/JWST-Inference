@@ -63,11 +63,8 @@ class LikelihoodAngBase():
 
     def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
 
-        paramida = []
-        for i in range(len(priors)):
-            paramida.append(p[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
-
         dic_params = {}
+        paramida = p
         for index, pary in enumerate(self.params):
             dic_params[pary] = paramida[index]
 
@@ -151,11 +148,8 @@ class LikelihoodUVLFBase:
 
     def call_likelihood(self, p, muvs_o=None, uvlf_o=None, sig_o=None):
         # dic_params = dict.fromkeys(self.params, p)
-        paramida = []
-        for i in range(len(priors)):
-            paramida.append(p[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
-
         dic_params = {}
+        paramida = p
         for index, pary in enumerate(self.params):
             dic_params[pary] = paramida[index]
 
@@ -259,11 +253,14 @@ def run_mcmc(
 
     def likelihood(p, ndim, nparams, lnew):
         lnL = 0
+        p_new = np.zeros((ndim))
+        for i in range(ndim):
+            p_new[i] = p[i]
         for li in likelihoods:
             if li == "Ang_z9_m87":
                 thet, w, wsig = observations_inst.get_obs_z9_m87()
                 lnL+=AngBase.call_likelihood(
-                    p,
+                    p_new,
                     obs="Ang_z9_m87",
                     thet=thet,
                     w=w,
@@ -272,7 +269,7 @@ def run_mcmc(
             elif li == "Ang_z9_m9":
                 thet, w, wsig = observations_inst.get_obs_z9_m90()
                 lnL+=AngBase.call_likelihood(
-                    p,
+                    p_new,
                     obs="Ang_z9_m9",
                     thet=thet,
                     w=w,
@@ -281,7 +278,7 @@ def run_mcmc(
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
                 lnL+=UVLFBase.call_likelihood(
-                    p,
+                    p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
                     sig_o=sig_o
@@ -299,9 +296,9 @@ def run_mcmc(
 
     def prior(cube, ndim, nparams):
         if covariance:
-            cov_mat = np.loadtxt(
+            cov_mat = 2 * np.loadtxt(
                 '/home/inikolic/projects/UVLF_FMs/priors/cov_matr.txt'
-            )
+            ) #my default is twice the covariance.
             mu = np.loadtxt(
                 '/home/inikolic/projects/UVLF_FMs/priors/means.txt'
             )
