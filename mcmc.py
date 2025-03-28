@@ -206,13 +206,14 @@ def run_mcmc(
         params,
         mult_params=None,
         priors=None,
-        covariance=False
+        covariance=False,
+        diagonal=False,
 ):
 
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_only_87_nocov/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_only_87_diagcov/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -304,7 +305,8 @@ def run_mcmc(
             mu = np.loadtxt(
                 '/home/inikolic/projects/UVLF_FMs/priors/means.txt'
             )
-
+            if diagonal:
+                cov_mat=np.diag(cov_mat.diagonal())
             x = np.zeros(len(mu))  # vector of picked prior values
 
             gp = cube
@@ -370,4 +372,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=False)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True)
