@@ -212,7 +212,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_uv_m87/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_only_87_nocov/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -337,12 +337,14 @@ def run_mcmc(
             return cube
 
         else:
-            params = []
+            # params = []
+            # for i in range(ndim):
+            #     params.append(
+            #         cube[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
+            # #cube = np.array(params).copy()
+            # return cube
             for i in range(ndim):
-                params.append(
-                    cube[i] * (priors[i][1] - priors[i][0]) + priors[i][0])
-            cube = np.array(params).copy()
-            return cube
+                cube[i] = priors[i][0] + cube[i] * (priors[i][1] - priors[i][0])
 
     result = pymultinest.run(
         LogLikelihood=likelihood,
@@ -355,12 +357,12 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["Ang_z9_m87", "UVLF_z11_McLeod23"]
+    likelihoods = ["Ang_z9_m87"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
-    priors = [(-2.0, 1.0), (0.001, 1.0), (0.001, 1.0), (0.0, 1.0), (0.001, 1.2),
+    priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
               (-1.0, 0.5)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
@@ -368,4 +370,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=False)
