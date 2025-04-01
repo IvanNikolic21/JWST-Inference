@@ -61,7 +61,7 @@ class LikelihoodAngBase():
             }
         )
 
-    def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None):
+    def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None, savedir=False):
 
         dic_params = {}
         paramida = p
@@ -131,6 +131,10 @@ class LikelihoodAngBase():
                 # compare model and data with gaussian likelihood:
                 like += -0.5 * (((wi - w[i_theta]) / sig_w[
                     i_theta]) ** 2)
+        if obs=="Ang_z9_m9" and savedir:
+            fname = str(savedir) + 'fs' + str(fstar_scale) + '_sig' + str(
+                sigma_SHMR) + '_al' + str(alpha_star_low) + '.txt'
+            np.savetxt(fname, ang_ang - w_IC_instance)
         return like
 
 
@@ -274,7 +278,8 @@ def run_mcmc(
                     obs="Ang_z9_m9",
                     thet=thet,
                     w=w,
-                    sig_w=wsig
+                    sig_w=wsig,
+                    savedir=output_filename,
                 )
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
