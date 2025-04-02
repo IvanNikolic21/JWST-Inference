@@ -61,7 +61,7 @@ class LikelihoodAngBase():
             }
         )
 
-    def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None, savedir=False):
+    def call_likelihood(self, p, obs="Ang_z9_m87", thet = None, w = None, sig_w=None, savedir=False, no_call=False):
 
         dic_params = {}
         paramida = p
@@ -135,6 +135,8 @@ class LikelihoodAngBase():
             fname = str(savedir) + 'fs' + str(np.round(fstar_scale,8)) + '_sig' + str(
                 np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
             np.savetxt(fname, ang_ang - w_IC_instance)
+        if no_call:
+            return 0
         return like
 
 
@@ -217,7 +219,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_only_90_diagcov/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/uv_only_diagcov_saveang/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -247,7 +249,8 @@ def run_mcmc(
         ang = True
         AngBase = LikelihoodAngBase(params)
     else:
-        ang = False
+        ang = True
+        angBase = LikelihoodAngBase(params)
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
         UVLFBase = LikelihoodUVLFBase(params)
@@ -289,6 +292,19 @@ def run_mcmc(
                     uvlf_o=uvlf_o,
                     sig_o=sig_o
                 )
+                if len(likelihoods) == 1:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    _ = AngBase.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                        no_call=True
+                    )
+
+
             else:
                 lnL+=0 #an option for testing
         return lnL
@@ -364,7 +380,7 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["Ang_z9_m9"]
+    likelihoods = ["UVLF_z11_McLeod23"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
