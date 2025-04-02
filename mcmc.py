@@ -219,7 +219,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/uv_only_diagcov_saveang/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_260326/ang_uv_90_diagcov/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -380,7 +380,7 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23"]
+    likelihoods = ["UVLF_z11_McLeod23", "Ang_z9_m9"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
