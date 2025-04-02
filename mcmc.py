@@ -250,7 +250,7 @@ def run_mcmc(
         AngBase = LikelihoodAngBase(params)
     else:
         ang = True
-        angBase = LikelihoodAngBase(params)
+        AngBase = LikelihoodAngBase(params)
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
         UVLFBase = LikelihoodUVLFBase(params)
