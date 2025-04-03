@@ -137,7 +137,8 @@ def UV_calc(
         sigma_SHMR=0.3,
         sigma_SFMS_norm=0.0,
         t_star=0.5,
-        a_sig_SFR = -0.11654893
+        a_sig_SFR = -0.11654893,
+        z=11,
 ):
     msss = ms_mh_flattening(10**masses_hmf, alpha_star_low=alpha_star,
                             fstar_scale=f_star_norm)

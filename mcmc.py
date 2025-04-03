@@ -148,8 +148,9 @@ class LikelihoodUVLFBase:
 
     """
 
-    def __init__(self, params):
-        self.hmf_loc = hmf.MassFunction(z=11, Mmin=5,Mmax=15, dlog10m=0.05)
+    def __init__(self, params, z):
+        self.z = z
+        self.hmf_loc = hmf.MassFunction(z=z, Mmin=5,Mmax=15, dlog10m=0.05)
         self.params = params
 
     def call_likelihood(self, p, muvs_o=None, uvlf_o=None, sig_o=None):
@@ -200,11 +201,18 @@ class LikelihoodUVLFBase:
             sigma_SFMS_norm=sigma_SFMS_norm,
             t_star=t_star,
             a_sig_SFR=a_sig_SFR,
+            z=self.z,
         )
 
         for index, muvi in enumerate(muvs_o):
-            lnL += -0.5 * (((preds[index] - uvlf_o[index]) / sig_o[
-                index]) ** 2)
+            if isinstance(sig_o[index], tuple):
+                sig_a = 2 * (sig_o[index][0] * sig_o[index][1])/(sig_o[index][0] + sig_o[index][1])
+                sig_b = (sig_o[index][0] - sig_o[index][1])/(sig_o[index][0] + sig_o[index][1])
+
+                lnL += -0.5 * (((preds[index] - uvlf_o[index]) / (sig_a + sig_b * (preds[index] - uvlf_o[index]))) ** 2)
+            else:
+                lnL += -0.5 * (((preds[index] - uvlf_o[index]) / sig_o[
+                    index]) ** 2)
         return lnL
 
 def run_mcmc(
@@ -253,7 +261,10 @@ def run_mcmc(
         AngBase = LikelihoodAngBase(params)
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
-        UVLFBase = LikelihoodUVLFBase(params)
+        UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11)
+    elif "UVLF_z9_Donnan24" in likelihoods:
+        uvlf = True
+        UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9)
     else:
         uvlf = False
 
@@ -286,13 +297,32 @@ def run_mcmc(
                 )
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
-                lnL+=UVLFBase.call_likelihood(
+                lnL+=UVLFBase_Mc11.call_likelihood(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
                     sig_o=sig_o
                 )
-                if len(likelihoods) == 1:
+                if ang==False:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    _ = AngBase.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                        no_call=True
+                    )
+            elif li == "UVLF_z9_Donnan24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Donnan24()
+                lnL+=UVLFBase_Don24.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o
+                )
+                if ang==False and len(likelihoods) == 1:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
                     _ = AngBase.call_likelihood(
                         p_new,

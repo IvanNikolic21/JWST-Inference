@@ -62,6 +62,18 @@ class Observations():
         return McL_Muvs, McL_uvlf, Mcl_sig
 
     def get_obs_uvlf_z9_Donnan24(self):
-        return 0 #finalize this
+        Don_Muvs = np.array(
+            [-20.75,-20.25,-19.75,-19.25,-18.55,-18.05,-17.55]
+        )
+        Don_uvlf = np.array(
+            [12,32,144,235,486,1110,1776]
+        )*1e-6
+        Don_sig_p = np.array(
+            [8,13,30,60,157,310,578]
+        )*1e-6
+        Don_sig_m = np.array(
+            [5,10,28,49,139,310,510]
+        )*1e-6
+        return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
 
 
