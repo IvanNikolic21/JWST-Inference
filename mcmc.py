@@ -239,7 +239,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/UVLF_z9_Don_z11_McL/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/UVLF_z9_Don_zall_McL/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -278,6 +278,15 @@ def run_mcmc(
     if "UVLF_z9_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9)
+    if "UVLF_z10_Donnan24" in likelihoods:
+        uvlf = True
+        UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10)
+    if "UVLF_z11_Donnan24" in likelihoods:
+        uvlf = True
+        UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11)
+    if "UVLF_z12_5_Donnan24" in likelihoods:
+        uvlf = True
+        UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5)
 
 
     observations_inst = Observations(ang, uvlf)
@@ -345,6 +354,30 @@ def run_mcmc(
                         savedir=output_filename,
                         no_call=True
                     )
+            elif li == "UVLF_z10_Donnan24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
+                lnL+=UVLFBase_Don24_10.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o
+                )
+            elif li == "UVLF_z11_Donnan24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
+                lnL+=UVLFBase_Don24_11.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o
+                )
+            elif li == "UVLF_z12_5_Donnan24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
+                lnL+=UVLFBase_Don24_12_5.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o
+                )
 
 
             else:
@@ -422,7 +455,7 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24"]
+    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     #likelihoods = ["Ang_z9_m9"]

@@ -76,4 +76,49 @@ class Observations():
         )*1e-6
         return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
 
+    def get_obs_uvlf_z10_Donnan24(self):
+        Don_Muvs = np.array(
+            [-20.75,-20.25,-19.75,-19.25,-18.55,-18.05,-17.55]
+        )
+        Don_uvlf = np.array(
+            [4,27,92,177,321,686,1278]
+        )*1e-6
+        Don_sig_p = np.array(
+            [10,13,25,53,127,245,486]
+        )*1e-6
+        Don_sig_m = np.array(
+            [4,10,20,45,111,223,432]
+        )*1e-6
+        return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
+
+    def get_obs_uvlf_z11_Donnan24(self):
+        Don_Muvs = np.array(
+            [-21.25,-20.75,-20.25,-19.75,-19.25,-18.75,-18.25]
+        )
+        Don_uvlf = np.array(
+            [7,14,38,100,144,234,641]
+        )*1e-6
+        Don_sig_p = np.array(
+            [9,11,16,37,81,118,361]
+        )*1e-6
+        Don_sig_m = np.array(
+            [5,7,13,30,63,96,281]
+        )*1e-6
+        return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
+
+    def get_obs_uvlf_z12_5_Donnan24(self):
+        Don_Muvs = np.array(
+            [-21.25,-20.75,-20.25,-19.75,-19.25,-18.75,-18.25]
+        )
+        Don_uvlf = np.array(
+            [3,4,16,34,43,80,217]
+        )*1e-6
+        Don_sig_p = np.array(
+            [4,5,9,23,35,51,153]
+        )*1e-6
+        Don_sig_m = np.array(
+            [2,3,6,15,22,36,104]
+        )*1e-6
+        return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
+
 
