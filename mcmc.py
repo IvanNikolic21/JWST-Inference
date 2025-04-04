@@ -252,6 +252,7 @@ def run_mcmc(
         'n_live_points': 1000,
     }
     uvlf = False
+    ang = False
     prior_pars = dict(zip(params, priors))
     with open(
             output_filename + 'priors_params.json',

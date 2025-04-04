@@ -142,7 +142,7 @@ def UV_calc(
 ):
     msss = ms_mh_flattening(10**masses_hmf, alpha_star_low=alpha_star,
                             fstar_scale=f_star_norm)
-    sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=11)
+    sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=z)
     muvs = Muv_Luv(kUV(sfrs))
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
