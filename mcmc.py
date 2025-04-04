@@ -239,7 +239,7 @@ def run_mcmc(
         "n_iter_before_update": 20,
         'n_live_points': 1000,
     }
-
+    uvlf = False
     prior_pars = dict(zip(params, priors))
     with open(
             output_filename + 'priors_params.json',
@@ -262,11 +262,10 @@ def run_mcmc(
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
         UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11)
-    elif "UVLF_z9_Donnan24" in likelihoods:
+    if "UVLF_z9_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9)
-    else:
-        uvlf = False
+
 
     observations_inst = Observations(ang, uvlf)
 
