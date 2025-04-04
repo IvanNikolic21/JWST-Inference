@@ -205,9 +205,9 @@ class LikelihoodUVLFBase:
         )
 
         for index, muvi in enumerate(muvs_o):
-            if isinstance(sig_o[index], tuple):
-                sig_a = 2 * (sig_o[index][0] * sig_o[index][1])/(sig_o[index][0] + sig_o[index][1])
-                sig_b = (sig_o[index][0] - sig_o[index][1])/(sig_o[index][0] + sig_o[index][1])
+            if isinstance(sig_o, tuple):
+                sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
+                sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
 
                 lnL += -0.5 * (((preds[index] - uvlf_o[index]) / (sig_a + sig_b * (preds[index] - uvlf_o[index]))) ** 2)
             else:
