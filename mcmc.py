@@ -8,7 +8,7 @@ import json
 import ultranest
 from scipy.special import erf, erfinv
 from uvlf import UV_calc
-
+import csv
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 
@@ -21,9 +21,20 @@ class LikelihoodAngBase():
     -------
 
     """
-    def __init__(self, params):
+    def __init__(self, params, realistic_Nz=False):
+        if realistic_Nz:
+            with open(
+                    '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105.csv',
+                    newline='') as csvfile:
+                Nz_8_10 = list(
+                    csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
+                )
+
+            p1 = lambda x: np.interp(x,np.array(Nz_8_10)[:,0], np.array(Nz_8_10)[:,1] )
+        else:
+            p1 = lambda x: np.exp(-0.5 * (x - 9.25) ** 2 / 0.5 ** 2)
         fid_params = {
-            'p1':lambda x: np.exp(-0.5*(x-9.25)**2/0.5**2),
+            'p1':p1,
             'zmin': 8,
             'zmax': 10.5,
             'theta_max': 10 ** -0.8,
@@ -222,12 +233,13 @@ def run_mcmc(
         priors=None,
         covariance=False,
         diagonal=False,
+        realistic_Nz=False,
 ):
 
     if priors is None:
         priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/UVLF_z9_Don_z11_McL/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/Ang_m9_realNz/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -255,10 +267,10 @@ def run_mcmc(
 
     if "Ang_z9_m87" in likelihoods or "Ang_z9_m9" in likelihoods:
         ang = True
-        AngBase = LikelihoodAngBase(params)
+        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
         ang = True
-        AngBase = LikelihoodAngBase(params)
+        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
         UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11)
@@ -409,9 +421,10 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24"]
+    #likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
+    likelihoods = ["Ang_z9_m9"]
     params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
@@ -422,4 +435,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True)
