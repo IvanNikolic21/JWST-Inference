@@ -94,10 +94,10 @@ class LikelihoodAngBase():
         else:
             M_1 = 13.5
 
-        if "fstar_scale" in dic_params:
-            fstar_scale = dic_params["fstar_scale"]
+        if "fstar_norm" in dic_params:
+            fstar_norm = dic_params["fstar_norm"]
         else:
-            fstar_scale = 10 ** 0.0
+            fstar_norm = 10 ** 0.0
 
         if "sigma_SHMR" in dic_params:
             sigma_SHMR = dic_params["sigma_SHMR"]
@@ -117,7 +117,7 @@ class LikelihoodAngBase():
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
             'stellar_mass_sigma': sigma_SHMR,
-            'fstar_scale': 10 ** fstar_scale,
+            'fstar_scale': 10 ** fstar_norm,
             'alpha': alpha,
             'alpha_star_low': alpha_star_low,
             'M1': M_1,
@@ -143,7 +143,7 @@ class LikelihoodAngBase():
                 like += -0.5 * (((wi - w[i_theta]) / sig_w[
                     i_theta]) ** 2)
         if obs=="Ang_z9_m9" and savedir:
-            fname = str(savedir) + 'fs' + str(np.round(fstar_scale,8)) + '_sig' + str(
+            fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
                 np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
             np.savetxt(fname, ang_ang - w_IC_instance)
         if no_call:
@@ -171,10 +171,10 @@ class LikelihoodUVLFBase:
         for index, pary in enumerate(self.params):
             dic_params[pary] = paramida[index]
 
-        if "fstar_scale" in dic_params:
-            fstar_scale = dic_params["fstar_scale"]
+        if "fstar_norm" in dic_params:
+            fstar_norm = dic_params["fstar_norm"]
         else:
-            fstar_scale = 0.0
+            fstar_norm = 0.0
 
         if "sigma_SHMR" in dic_params:
             sigma_SHMR = dic_params["sigma_SHMR"]
@@ -206,7 +206,7 @@ class LikelihoodUVLFBase:
             muvs_o,
             np.log10(self.hmf_loc.m),
             self.hmf_loc.dndlnm,
-            f_star_norm=10 ** fstar_scale,
+            f_star_norm=10 ** fstar_norm,
             alpha_star=alpha_star,
             sigma_SHMR=sigma_SHMR,
             sigma_SFMS_norm=sigma_SFMS_norm,
@@ -237,7 +237,7 @@ def run_mcmc(
 ):
 
     if priors is None:
-        priors = [(-1.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
+        priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
     output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/UVLF_z9_Don_zall_McL/"
     #if initialized
@@ -396,10 +396,10 @@ def run_mcmc(
     def prior(cube, ndim, nparams):
         if covariance:
             cov_mat = 2 * np.loadtxt(
-                '/home/inikolic/projects/UVLF_FMs/priors/cov_matr.txt'
+                '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
             ) #my default is twice the covariance.
             mu = np.loadtxt(
-                '/home/inikolic/projects/UVLF_FMs/priors/means.txt'
+                '/home/inikolic/projects/UVLF_FMs/priors/means_goodSMHM.txt'
             )
             if diagonal:
                 cov_mat=np.diag(cov_mat.diagonal())
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     #likelihoods = ["Ang_z9_m9"]
-    params = ["fstar_scale", "sigma_SHMR", "t_star", "alpha_star_low",
+    params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
               (-1.0, 0.5)]

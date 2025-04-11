@@ -13,7 +13,7 @@ import ultranest
 
 
 hmf_loc = hmf.MassFunction(z=11)
-def ms_mh_flattening(mh, fstar_scale = 1.0, alpha_star_low = 0.5):
+def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5):
     """
         Get scaling relations for SHMR based on Davies+in prep.
         Parameters
@@ -25,22 +25,22 @@ def ms_mh_flattening(mh, fstar_scale = 1.0, alpha_star_low = 0.5):
         ms_mean: floats; optional,
             a and b coefficient of the relation.
     """
-    f_star_mean = fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
+    f_star_mean = fstar_norm#fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
     f_star_mean /= (mh / 2.6e11) ** (-alpha_star_low) + (mh / 2.6e11) ** 0.61
     return f_star_mean * mh
 
-def ms_mh(ms, fstar_scale=1, alpha_star_low=0.5):
+def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5):
     mhs = np.logspace(5,15,500)
-    mss = ms_mh_flattening(mhs, fstar_scale=fstar_scale, alpha_star_low=alpha_star_low)
+    mss = ms_mh_flattening(mhs, fstar_norm=fstar_norm, alpha_star_low=alpha_star_low)
     return 10**np.interp(np.log10(ms), np.log10(mss), np.log10(mhs))
 
 def SFMS(Mstar, SFR_norm = 1., z=9.25):
     """
         the functon returns SFR from Main sequence
     """
-    b_SFR = -np.log10(0.43) + np.log10(cosmo.H(z).to(u.yr ** (-1)).value)
+    b_SFR = -np.log10(SFR_norm) + np.log10(cosmo.H(z).to(u.yr ** (-1)).value)
 
-    return Mstar * 10 ** b_SFR * SFR_norm
+    return Mstar * 10 ** b_SFR #* SFR_norm
 
 
 def kUV(SFR):
@@ -141,8 +141,8 @@ def UV_calc(
         z=11,
 ):
     msss = ms_mh_flattening(10**masses_hmf, alpha_star_low=alpha_star,
-                            fstar_scale=f_star_norm)
-    sfrs = SFMS(msss, SFR_norm=0.43 / t_star, z=z)
+                            fstar_norm=f_star_norm)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
     muvs = Muv_Luv(kUV(sfrs))
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
