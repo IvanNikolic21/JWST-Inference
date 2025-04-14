@@ -21,6 +21,22 @@ class Observations():
                     dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin8.0-10.5_conservative_wsig.dat"
                 ).readlines()
             ]
+
+            self.theta_z7 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin6.0-8.0_theta.dat"
+                ).readlines()
+            ]
+            self.wtheta_z7 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin6.0-8.0_wtheta.dat"
+                ).readlines()
+            ]
+            self.wsig_z7 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin6.0-8.0_wsig.dat"
+                ).readlines()
+            ]
         if uvlf:
             pass
 
@@ -49,9 +65,16 @@ class Observations():
         return thethats90_pos, wthethats90_pos, wsig90_pos
 
     def get_obs_z7_m90(self):
-        thethats90_pos = [
-            float(i) for i,j in zip(self.cons_theta[3],self.cons_wtheta[3]) if float(j)>0
+        thethats90_pos_z7 = [
+            float(i) for i,j in zip(self.theta_z7[3],self.wtheta_z7[3]) if float(j)>0
         ]
+        wthethats90_pos_z7 = [
+            float(i) for i,j in zip(self.wtheta_z7[2],self.wtheta_z7[2]) if float(j)>0
+        ]
+        wsig90_pos_z7 = [
+            float(i) for i,j in zip(self.wsig_z7[2],self.wtheta_z7[2]) if float(j)>0
+        ]
+        return thethats90_pos_z7, wthethats90_pos_z7, wsig90_pos_z7
 
     def get_obs_uvlf_z11_McLeod23(self):
         McL_Muvs = np.array(

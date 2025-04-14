@@ -239,7 +239,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/zall_UVLF/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/ang_also_z7/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -310,6 +310,16 @@ def run_mcmc(
                 lnL+=AngBase.call_likelihood(
                     p_new,
                     obs="Ang_z9_m9",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z7_m9":
+                thet, w, wsig = observations_inst.get_obs_z7_m90()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z7_m9",
                     thet=thet,
                     w=w,
                     sig_w=wsig,
@@ -454,10 +464,10 @@ def run_mcmc(
 if __name__ == "__main__":
     #initialize likelihoods
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
+    #likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
-    #likelihoods = ["Ang_z9_m9"]
+    likelihoods = ["Ang_z9_m9", "Ang_z7_m9"]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
