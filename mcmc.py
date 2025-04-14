@@ -288,7 +288,7 @@ def run_mcmc(
         UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5)
 
 
-    observations_inst = Observations(ang, uvlf)
+    observations_inst = Observations(True, True)
 
     def likelihood(p, ndim, nparams, lnew):
         lnL = 0
