@@ -200,8 +200,8 @@ class My_HOD(hm.hod.Zheng05):
     _defaults = {
         'stellar_mass_min':8.75,
         'stellar_mass_sigma':0.05,
-        'fstar_scale':1,
-        'fstar_scale_sat':1,
+        'fstar_norm':1,
+        'fstar_norm_sat':1,
         'stellar_mass_sigma_sat':0.3,
         'M1': 11.5,
         'alpha':0.50,
@@ -219,7 +219,7 @@ class My_HOD(hm.hod.Zheng05):
             -(
                 np.log10(m)-np.log10(
                     ms_mh(10**self.params["stellar_mass_min"],
-                          fstar_scale=self.params["fstar_scale"],
+                          fstar_norm=self.params["fstar_norm"],
                           alpha_star_low=self.params["alpha_star_low"]
                          )
                 )
@@ -239,7 +239,7 @@ class My_HOD(hm.hod.Zheng05):
                 -(
                     np.log10(m[m > 10 ** self.params["M_0"]])-np.log10(
                         ms_mh(10**self.params["stellar_mass_min"],
-                              fstar_scale=self.params["fstar_scale_sat"],
+                              fstar_norm=self.params["fstar_norm_sat"],
                               alpha_star_low=self.params["alpha_star_low"],
                              )
                     )
