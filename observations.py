@@ -48,6 +48,11 @@ class Observations():
         ]
         return thethats90_pos, wthethats90_pos, wsig90_pos
 
+    def get_obs_z7_m90(self):
+        thethats90_pos = [
+            float(i) for i,j in zip(self.cons_theta[3],self.cons_wtheta[3]) if float(j)>0
+        ]
+
     def get_obs_uvlf_z11_McLeod23(self):
         McL_Muvs = np.array(
             [-22.57,-21.80,-20.80,-20.05,-19.55,-18.85,-18.23]

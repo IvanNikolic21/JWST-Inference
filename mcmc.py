@@ -239,7 +239,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_040425/UVLF_z9_Don_zall_McL/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/zall_UVLF/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -270,7 +270,6 @@ def run_mcmc(
         ang = True
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
-        ang = True
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
@@ -469,4 +468,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True)
+    run_mcmc(likelihoods, params, priors=priors)#, covariance=True, diagonal=True, realistic_Nz=True)

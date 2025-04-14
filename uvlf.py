@@ -12,7 +12,7 @@ from numba import njit, prange
 import ultranest
 
 
-hmf_loc = hmf.MassFunction(z=11)
+#hmf_loc = hmf.MassFunction(z=11)
 def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5):
     """
         Get scaling relations for SHMR based on Davies+in prep.
