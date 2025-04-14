@@ -67,7 +67,7 @@ class LikelihoodAngBase():
                 'alpha_star_low': 0.5,
                 'alpha': 1.0,
                 'M1': 13.5,
-                'fstar_scale_sat': 10 ** 0,
+                'fstar_norm_sat': 10 ** 0,
                 'stellar_mass_sigma_sat': 0.3,
             }
         )
