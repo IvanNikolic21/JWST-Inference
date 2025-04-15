@@ -500,4 +500,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors)#, covariance=True, diagonal=True, realistic_Nz=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True)
