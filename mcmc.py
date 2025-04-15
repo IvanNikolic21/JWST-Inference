@@ -21,7 +21,7 @@ class LikelihoodAngBase():
     -------
 
     """
-    def __init__(self, params, realistic_Nz=False):
+    def __init__(self, params, realistic_Nz=False, z=9.25):
         if realistic_Nz:
             with open(
                     '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105.csv',
@@ -29,10 +29,23 @@ class LikelihoodAngBase():
                 Nz_8_10 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
+            with open(
+                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_6_8.csv',
+                newline='') as csvfile:
+                Nz_6_8 = list(
+                    csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
+                )
+
 
             p1 = lambda x: np.interp(x,np.array(Nz_8_10)[:,0], np.array(Nz_8_10)[:,1] )
+            p1_z7 = lambda x: np.interp(x,np.array(Nz_6_8)[:,0], np.array(Nz_6_8)[:,1] )
+            self.p1 = p1
+            self.p1_z7 = p1_z7
         else:
             p1 = lambda x: np.exp(-0.5 * (x - 9.25) ** 2 / 0.5 ** 2)
+            p1_z7 = lambda x: np.exp(-0.5 * (x - 7.0) ** 2 / 0.5 ** 2)
+            self.p1 = p1
+            self.p1_z7 = p1_z7
         fid_params = {
             'p1':p1,
             'zmin': 8,
@@ -114,6 +127,11 @@ class LikelihoodAngBase():
         else:
             M_thresh = 9.0
 
+        if obs=="Ang_z7_m9":
+            p1_chosen = self.p1_z7
+        else:
+            p1_chosen = self.p1
+
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
             'stellar_mass_sigma': sigma_SHMR,
@@ -123,6 +141,7 @@ class LikelihoodAngBase():
             'M1': M_1,
             'M_0': M_0,
         }
+        self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
         ang_ang = self.angular_gal.angular_corr_gal
         w_IC_instance = w_IC(
@@ -145,6 +164,9 @@ class LikelihoodAngBase():
         if obs=="Ang_z9_m9" and savedir:
             fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
                 np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+            np.savetxt(fname, ang_ang - w_IC_instance)
+        elif obs=="Ang_z7_m9" and savedir:
+            fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
             np.savetxt(fname, ang_ang - w_IC_instance)
         if no_call:
             return 0
@@ -266,7 +288,7 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if "Ang_z9_m87" in likelihoods or "Ang_z9_m9" in likelihoods:
+    if "Ang_z9_m87" in likelihoods or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
