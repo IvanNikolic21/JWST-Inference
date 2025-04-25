@@ -249,7 +249,7 @@ class LikelihoodUVLFBase:
                 z=self.z,
                 vect_func=vect_func,
                 bpass_read=bpass_read,
-                SFH_samp=SFH_samp,
+                SFH_samp=sfr_samp_inst,
             )
         else:
             preds = UV_calc(
