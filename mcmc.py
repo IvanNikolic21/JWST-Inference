@@ -599,7 +599,7 @@ if __name__ == "__main__":
     #likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
+    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24", "UVLF_z9_Harikane24"]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
