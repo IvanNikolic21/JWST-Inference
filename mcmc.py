@@ -11,6 +11,7 @@ from uvlf import UV_calc
 import csv
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
+from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp
 
 class LikelihoodAngBase():
     """
@@ -186,7 +187,17 @@ class LikelihoodUVLFBase:
         self.hmf_loc = hmf.MassFunction(z=z, Mmin=5,Mmax=15, dlog10m=0.05)
         self.params = params
 
-    def call_likelihood(self, p, muvs_o=None, uvlf_o=None, sig_o=None):
+    def call_likelihood(
+            self,
+            p,
+            muvs_o=None,
+            uvlf_o=None,
+            sig_o=None,
+            use_BPASS=True,
+            vect_func=None,
+            bpass_read=None,
+            sfr_samp_inst=None,
+):
         # dic_params = dict.fromkeys(self.params, p)
         dic_params = {}
         paramida = p
@@ -224,18 +235,35 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         lnL = 0
-        preds = UV_calc(
-            muvs_o,
-            np.log10(self.hmf_loc.m),
-            self.hmf_loc.dndlnm,
-            f_star_norm=10 ** fstar_norm,
-            alpha_star=alpha_star,
-            sigma_SHMR=sigma_SHMR,
-            sigma_SFMS_norm=sigma_SFMS_norm,
-            t_star=t_star,
-            a_sig_SFR=a_sig_SFR,
-            z=self.z,
-        )
+        if use_BPASS:
+            preds = UV_calc_BPASS(
+                muvs_o,
+                np.log10(self.hmf_loc.m),
+                self.hmf_loc.dndlnm,
+                f_star_norm=10 ** fstar_norm,
+                alpha_star=alpha_star,
+                sigma_SHMR=sigma_SHMR,
+                sigma_SFMS_norm=sigma_SFMS_norm,
+                t_star=t_star,
+                a_sig_SFR=a_sig_SFR,
+                z=self.z,
+                vect_func=vect_func,
+                bpass_read=bpass_read,
+                SFH_samp=SFH_samp,
+            )
+        else:
+            preds = UV_calc(
+                muvs_o,
+                np.log10(self.hmf_loc.m),
+                self.hmf_loc.dndlnm,
+                f_star_norm=10 ** fstar_norm,
+                alpha_star=alpha_star,
+                sigma_SHMR=sigma_SHMR,
+                sigma_SFMS_norm=sigma_SFMS_norm,
+                t_star=t_star,
+                a_sig_SFR=a_sig_SFR,
+                z=self.z,
+            )
 
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
@@ -256,12 +284,13 @@ def run_mcmc(
         covariance=False,
         diagonal=False,
         realistic_Nz=False,
+        use_BPASS=True,
 ):
 
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/all_constraints/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/BPASS_uvlf/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -293,22 +322,44 @@ def run_mcmc(
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
+
+    SFR_samp_11 = None
+    SRF_samp_10 = None
+    SFR_samp_9 = None
+    SFR_samp_12_5 = None
+
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
         UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11)
+        SFR_samp_11 = SFH_sampler(z=11)
     if "UVLF_z9_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9)
+        SFR_samp_9 = SFH_sampler(z=9)
+
     if "UVLF_z10_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10)
+        SFR_samp_10 = SFH_sampler(z=10)
+
     if "UVLF_z11_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11)
+        SFR_samp_11 = SFH_sampler(z=11)
+
+
     if "UVLF_z12_5_Donnan24" in likelihoods:
         uvlf = True
         UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5)
+        SFR_samp_12_5 = SFH_sampler(z=12.5)
 
+
+    if uvlf and use_BPASS:
+        bpass_read = bpass_loader()
+        vect_func = np.vectorize(bpass_read.get_UV)
+    else:
+        bpass_read = None
+        vect_func = None
 
     observations_inst = Observations(True, True)
 
@@ -353,7 +404,11 @@ def run_mcmc(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
-                    sig_o=sig_o
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst = SFR_samp_11,
+                    bpass_read = bpass_read,
+                    vect_func = vect_func,
                 )
                 if ang==False:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -372,7 +427,11 @@ def run_mcmc(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
-                    sig_o=sig_o
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_9,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
                 )
                 if ang==False and len(likelihoods) == 1:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -391,7 +450,11 @@ def run_mcmc(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
-                    sig_o=sig_o
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst = SFR_samp_10,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
                 )
             elif li == "UVLF_z11_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
@@ -399,7 +462,11 @@ def run_mcmc(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
-                    sig_o=sig_o
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_11,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
                 )
             elif li == "UVLF_z12_5_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
@@ -407,7 +474,11 @@ def run_mcmc(
                     p_new,
                     muvs_o=muvs_o,
                     uvlf_o=uvlf_o,
-                    sig_o=sig_o
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_12_5,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
                 )
 
 
@@ -489,7 +560,7 @@ if __name__ == "__main__":
     #likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["Ang_z9_m9", "Ang_z7_m9", "UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
+    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),

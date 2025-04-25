@@ -10,7 +10,11 @@ from astropy.cosmology import Planck18 as cosmo
 from astropy import units as u
 from numba import njit, prange
 import ultranest
-
+from astropy import constants as const
+from astropy.cosmology import z_at_value
+from multiprocessing import Pool
+from scipy.interpolate import splrep, BSpline
+import scipy.integrate as intg
 
 #hmf_loc = hmf.MassFunction(z=11)
 def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5):
@@ -162,28 +166,305 @@ def UV_calc(
 
     return uvlf
 
-# def like_UV(fi, asi, s_sfri,s_shmri, tsti):
-#     McL_Muvs = np.array(
-#         [-22.57,-21.80,-20.80,-20.05,-19.55,-18.85,-18.23]
-#     )
-#     McL_uvlf = np.array(
-#         [0.012,0.128,1.251,3.951,9.713,23.490,63.080]
-#     )*1e-5
-#     Mcl_sig = np.array(
-#         [0.010,0.128,0.424,1.319, 4.170,9.190,28.650]
-#     )*1e-5
-#     lnL = 0
-#     preds = UV_calc(
-#         McL_Muvs,
-#         np.log10(hmf_loc.m),
-#         hmf_loc.dndlnm,
-#         f_star_norm=10**fi,
-#         alpha_star=asi,
-#         sigma_SHMR = s_shmri,
-#         sigma_SFMS = s_sfri,
-#         t_star = tsti,
-#     )
-#     for index, muvi in enumerate(McL_Muvs):
-#         lnL += -0.5 * (((preds[index] - McL_uvlf[index]) / Mcl_sig[
-#                 index]) ** 2)
-#     return lnL
+
+def metalicity_from_FMR(M_star, SFR):
+    """
+    metalicity from Curti+19
+
+    -----
+
+    Function takes in the stellar mass and SFR and outputs the metallicity 12+log(O/H)
+    """
+    Z_0 = 8.779
+    gamma = 0.31
+    beta = 2.1
+    m_0 = 10.11
+    m_1 = 0.56
+    M_0 = 10 ** (m_0 + m_1 * np.log10(SFR))
+    return Z_0 - gamma / beta * np.log10(1 + (M_star / M_0) ** (-beta))
+
+
+def OH_to_mass_fraction(Z_OH):
+    """
+    Convert 12+log(O/H) metalicty to mass fraction one.
+    Very important note! So far I haven't accounted for solar metallicity being
+    0.02!
+    """
+    return 10 ** (Z_OH - 8.69) * 0.02
+
+
+def DeltaZ_z(z):
+    """
+        Evolution of the normalization of FMR. Based on Curti+23.
+    Parameters
+    ----------
+    z: redshift
+
+    Returns
+    -------
+    Delta Z: offset from FMR
+    """
+    a_d = -0.0553952
+    b_d = 0.0635493
+    return a_d * z + b_d
+ang_to_hz = 1/const.c.cgs.value * 1500**2 * 1e-8
+
+class SFH_sampler:
+    """
+        Class that contains Hubble integrals and derivations necessary for SFH
+        calculation. The only reason this is a class is the speed-up.
+    """
+    def __init__(self,z):
+        self.Hubble_now = cosmo.H(z).to(u.yr**-1).value
+        self.ages_SFH = np.array([0] + [10**(6.05 + 0.1 * i) for i in range(1,52)])
+        self.maximum_time = cosmo.lookback_time(30).to(u.yr).value - cosmo.lookback_time(z).to(u.yr).value
+        self.Hubbles = [self.Hubble_now]
+        for self.index_age, age in enumerate(self.ages_SFH):
+            if age>self.maximum_time:
+                self.index_age -= 1
+                break
+            z_age = z_at_value(cosmo.lookback_time, cosmo.lookback_time(z) + age * u.yr)
+            Hubble_age = cosmo.H(z_age).to(u.yr**-1).value
+            self.Hubbles.append(Hubble_age)
+        self.Hubbles = np.array(self.Hubbles)
+
+    def get_SFH_exp(self, Mstar, SFR):
+        """
+            Generate SFH using Mstar and SFR.
+        """
+        t_STAR = Mstar / (SFR * self.Hubble_now**-1)
+        SFR_now = SFR
+        SFH = [SFR]
+        for index,Hub in enumerate(self.Hubbles):
+            SFH.append(SFR_now * np.exp(-(self.ages_SFH[index+1]/t_STAR) * Hub))
+            SFR_now = SFH[index]
+            Mstar -= SFH[-1] * (self.ages_SFH[index+1] - self.ages_SFH[index])
+        return np.array(SFH), self.index_age
+
+def wv_to_freq(wvs):
+    """
+    Converts a wavelength to frequency.
+    Input
+    ----------
+        wvs: scalar or ndarray-like.
+            wavelengths in Angstroms.
+    Output:
+        freq: scalar of ndarray-like.
+            frequencies in Hertz.
+    """
+
+    return const.c.cgs.value / (wvs * 1e-8)
+
+
+def reader(name):
+    """
+    Function that reads and splits a string into separate strings.
+    """
+    return open(name).read().split('\n')
+
+
+def splitter(fp):
+    """Function that splits SEDs. Useful for parallelling."""
+    wv_b = int(1e5)
+    return [
+        [float(fp[i].split()[j]) for i in range(wv_b)] for j in range(1, 52)
+    ]
+
+
+def get_SFH_exp(Mstar, SFR, z):
+    """
+    Get SFH is based on the t_STAR parameter and exponental SFH.
+    Single instance version.
+    """
+    Hubble_now = cosmo.H(z).to(u.yr ** -1).value
+    t_STAR = Mstar / (SFR * Hubble_now ** -1)
+    print("This is t_STAR", t_STAR)
+    # setting maximum time for BPASS
+    ages = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
+    maximum_time = cosmo.lookback_time(30).to(
+        u.yr).value - cosmo.lookback_time(z).to(u.yr).value
+    print("maximum_time is", maximum_time, cosmo.lookback_time(30))
+    SFH = []
+
+    for index_age, age in enumerate(ages):
+        z_age = z_at_value(cosmo.lookback_time,
+                           cosmo.lookback_time(z) + age * u.yr)
+        print(z_age)
+        Hubble_age = cosmo.H(z_age).to(u.yr ** -1).value
+        print(Hubble_age)
+        Hubble_integral = intg.quad(lambda x: (cosmo.H(
+            z_at_value(cosmo.lookback_time,
+                       cosmo.lookback_time(z) + x * u.Myr)).to(
+            u.Myr ** -1).value), 0, age / 10 ** 6)[0]
+        exp_term = np.exp(-(1 / t_STAR) * Hubble_integral)
+        SFH.append(SFR * exp_term * Hubble_age / Hubble_now)
+        if age > maximum_time:
+            index_age -= 1
+            break
+    print("This is SFR", SFR, "and this SFH", SFH)
+    return SFH, index_age
+
+class bpass_loader:
+    """
+    This Class contains all of the properties calculated using BPASS. Class
+    structure is used to improve the speed.
+    """
+
+    def __init__(self, parallel=None,
+                 filename='/home/inikolic/projects/stochasticity/stoc_sampler/BPASS/spectra-bin-imf135_300.a+00.'):
+        """
+        Input
+        ----------
+        parallel : boolean,
+            Whether first processing is parallelized.
+        filename : string,
+            Which BPASS file is used.
+        """
+        self.metal_avail = np.array([1e-5, 1e-4, 1e-3, 0.002, 0.003, 0.004,
+                                     0.006, 0.008, 0.01, 0.014, 0.02, 0.03,
+                                     0.04])
+        self.metal_avail_names = ['zem5', 'zem4', 'z001', 'z002', 'z003',
+                                  'z004', 'z006', 'z008', 'z010', 'z014',
+                                  'z020', 'z030', 'z040']
+
+        self.SEDS_raw = []
+
+        names = []
+        for index, metal_name in enumerate(self.metal_avail_names):
+            names.append(filename + metal_name + '.dat')
+
+        if parallel:
+            pool = Pool(parallel)
+            self.SEDS_raw = pool.map(reader, names)
+        else:
+            for index, name in enumerate(self.metal_avail_names):
+                self.SEDS_raw.append(
+                    open(filename + name + '.dat').read().split('\n'))
+
+        self.wv_b = len(self.SEDS_raw[0]) - 1
+        self.wv = np.linspace(1, 1e5 + 1, self.wv_b + 1)
+        if parallel:
+            pool = Pool(parallel)
+            self.SEDS = pool.map(splitter, self.SEDS_raw)
+            self.SEDS = np.array(self.SEDS)
+        else:
+            self.SEDS = np.array([[[float(fp[i].split()[j]) for i in
+                                    range(self.wv_b)] for j in range(1, 52)] for
+                                  fp in self.SEDS_raw])
+        self.ages = 52
+        self.ag = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
+
+        self.t_star = 0.36
+
+    def get_UV(self, metal, Mstar, SFR, z, SFH_samp=None):
+        """
+        Function returs the specific luminosity at 1500 angstroms averaged over
+        100 angstroms.
+        Input
+        ----------
+            metal : float,
+                Metallicity of the galaxy.
+            Mstar : float,
+                Stellar mass of the galaxy.
+            SFR : float,
+                Star formation rate of the galaxy.
+            z : float,
+                redshift of observation.
+            SFH_samp : boolean,
+                whether SFH is sampled or it's given by previous properties.
+                So far sampling does nothing so it's all the same.
+        Output
+        ----------
+            UV_final : float,
+                UV luminosity in ergs Hz^-1
+        """
+        metal = OH_to_mass_fraction(metal)
+
+        # to get solar metalicity need to take 0.42 according to Strom+18
+
+        metal = metal / 10 ** 0.42
+        print(metal, self.metal_avail)
+        for i, met_cur in enumerate(self.metal_avail):
+            if metal < met_cur:
+                break
+        met_prev = None
+        if i != 0:
+            met_prev = self.metal_avail[i - 1]
+        met_next = self.metal_avail[i]
+
+        # SEDp = self.SEDS[i-1]
+        # SEDn = self.SEDS[i]
+
+        try:
+            if not self.SFH[0] == SFR / 10 ** 6:
+                if SFH_samp is None:
+                    SFH_short, self.index_age = get_SFH_exp(Mstar, SFR, z)
+                else:
+                    SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
+                self.SFH = np.zeros(self.ages - 1)
+                self.SFH[:len(SFH_short)] = np.array(SFH_short)
+                self.SFH /= 1e6
+
+        except AttributeError:  # not even set-up
+
+            if SFH_samp is None:
+                SFH_short, self.index_age = get_SFH_exp(Mstar, SFR, z)
+            else:
+                SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
+            self.SFH = np.zeros(self.ages - 1)
+            self.SFH[:len(SFH_short)] = np.array(SFH_short)
+            self.SFH /= 1e6
+
+        # wv_UV = self.wv[1450:1550]
+        # UV_p = np.zeros(self.ages-1)
+        # UV_n = np.zeros(self.ages-1)
+
+        UVs_all = np.sum(self.SEDS[0:10, :, 1449:1549],
+                         axis=2) / 100 * self.SFH * (
+                              self.ag[1:] - self.ag[:-1]) * ang_to_hz
+        FUVs = np.sum(UVs_all, axis=1)
+        s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
+        UV_final = float(BSpline(*s)(metal))
+
+def UV_calc_BPASS(
+        Muv,
+        masses_hmf,
+        dndm,
+        f_star_norm=1.0,
+        alpha_star=0.5,
+        sigma_SHMR=0.3,
+        sigma_SFMS_norm=0.0,
+        t_star=0.5,
+        a_sig_SFR=-0.11654893,
+        z=11,
+        vect_func = None,
+        bpass_read = None,
+        SFH_samp = None,
+):
+    msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
+                            fstar_norm=f_star_norm)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+
+    Zs = metalicity_from_FMR(msss, sfrs)
+    Zs += DeltaZ_z(z)
+    F_UV = vect_func(Zs, msss, sfrs, z=z, SFH_samp=SFH_samp)
+
+    muvs = Muv_Luv(F_UV * 3.846 * 1e33)
+    sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
+    ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
+                                        a_sig_SFR=a_sig_SFR)
+    uvlf = [uv_calc(
+        muvi,
+        masses_hmf,
+        dndm,
+        sigma_SFMS=sigma_SFMS_var,
+        sigma_SHMR=sigma_SHMR,
+        sfr_obs_log=sfr_obs_log[index],
+        ms_obs_log=ms_obs_log[index],
+        msss=msss,
+        sfrs=sfrs,
+        muvs=muvs,
+    ) for index, muvi in enumerate(Muv)]
+
+    return uvlf
