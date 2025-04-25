@@ -236,8 +236,7 @@ class LikelihoodUVLFBase:
 
         lnL = 0
         if use_BPASS:
-            print("First ")
-            print(vect_func, vect_func(7, 1e9, 1, z=self.z, SFH_samp=sfr_samp_inst))
+
             preds = UV_calc_BPASS(
                 muvs_o,
                 np.log10(self.hmf_loc.m),
@@ -386,12 +385,10 @@ def run_mcmc(
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
         vect_func = np.vectorize(bpass_read.get_UV)
-        print(uvlf, use_BPASS, bpass_read, vect_func,vect_func(7, 1e9, 1, z=10, SFH_samp=SFR_samp_9), bpass_read.get_UV(7, 1e9, 1, z=10, SFH_samp=SFR_samp_9) )
     else:
         bpass_read = None
         vect_func = None
-    assert False
-    print(vect_func, vect_func(7, 1e9, 1, z=10, SFH_samp=SFR_samp_9))
+
 
     observations_inst = Observations(True, True)
 

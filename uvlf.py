@@ -419,6 +419,7 @@ class bpass_loader:
         FUVs = np.sum(UVs_all, axis=1)
         s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
         UV_final = float(BSpline(*s)(metal))
+        return UV_final
 
 def UV_calc_BPASS(
         Muv,
@@ -441,9 +442,7 @@ def UV_calc_BPASS(
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
-    print(Zs, msss,sfrs, z, SFH_samp)
     F_UV = vect_func(Zs, msss, sfrs, z=z, SFH_samp=SFH_samp)
-    print(F_UV)
     muvs = Muv_Luv(F_UV * 3.846 * 1e33)
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
