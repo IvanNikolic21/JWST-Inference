@@ -389,6 +389,7 @@ def run_mcmc(
     else:
         bpass_read = None
         vect_func = None
+    print(vect_func, vect_func(7, 1e9, 1, z=10, SFH_samp=SFR_samp_9))
 
     observations_inst = Observations(True, True)
 
