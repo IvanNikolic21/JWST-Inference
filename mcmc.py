@@ -236,6 +236,8 @@ class LikelihoodUVLFBase:
 
         lnL = 0
         if use_BPASS:
+            print("First ")
+            print(vect_func, vect_func(7, 1e9, 1, z=self.z, SFH_samp=sfr_samp_inst))
             preds = UV_calc_BPASS(
                 muvs_o,
                 np.log10(self.hmf_loc.m),
@@ -519,7 +521,7 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
-
+a
 
             else:
                 lnL+=0 #an option for testing
