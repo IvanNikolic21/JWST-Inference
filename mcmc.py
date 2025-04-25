@@ -267,10 +267,32 @@ class LikelihoodUVLFBase:
 
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
-                sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
-                sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
+                if sig[0][index] < 0.0:
+                    #trick for lower limits for spectroscopic estimates
+                    sig_a = - 2 * (sig_o[0][index] * sig_o[1][index]) / (
+                                sig_o[0][index] + sig_o[1][index])
+                    sig_b = (sig_o[0][index] - sig_o[1][index]) / (
+                                sig_o[0][index] + sig_o[1][index])
+                    lnL += np.log(
+                        0.5*(
+                            1+erf(
+                                (
+                                    (
+                                        (preds[index] - uvlf_o[index]) / np.sqrt(
+                                        2
+                                    )/abs(
+                                            sig_a + sig_b * (preds[index] - uvlf_o[index])
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                else:
+                    sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
+                    sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
 
-                lnL += -0.5 * (((preds[index] - uvlf_o[index]) / (sig_a + sig_b * (preds[index] - uvlf_o[index]))) ** 2)
+                    lnL += -0.5 * (((preds[index] - uvlf_o[index]) / (sig_a + sig_b * (preds[index] - uvlf_o[index]))) ** 2)
             else:
                 lnL += -0.5 * (((preds[index] - uvlf_o[index]) / sig_o[
                     index]) ** 2)
@@ -352,6 +374,11 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5)
         SFR_samp_12_5 = SFH_sampler(z=12.5)
+
+    if "UVLF_z9_Harikane24" in likelihoods:
+        uvlf = True
+        UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9)
+        SFR_samp_9 = SFH_sampler(z=9)
 
 
     if uvlf and use_BPASS:
@@ -477,6 +504,18 @@ def run_mcmc(
                     sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12_5,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z9_Harikane24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Harikane24()
+                lnL+=UVLFBase_Har24_9.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )

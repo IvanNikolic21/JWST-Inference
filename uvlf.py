@@ -278,20 +278,16 @@ def get_SFH_exp(Mstar, SFR, z):
     """
     Hubble_now = cosmo.H(z).to(u.yr ** -1).value
     t_STAR = Mstar / (SFR * Hubble_now ** -1)
-    print("This is t_STAR", t_STAR)
     # setting maximum time for BPASS
     ages = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
     maximum_time = cosmo.lookback_time(30).to(
         u.yr).value - cosmo.lookback_time(z).to(u.yr).value
-    print("maximum_time is", maximum_time, cosmo.lookback_time(30))
     SFH = []
 
     for index_age, age in enumerate(ages):
         z_age = z_at_value(cosmo.lookback_time,
                            cosmo.lookback_time(z) + age * u.yr)
-        print(z_age)
         Hubble_age = cosmo.H(z_age).to(u.yr ** -1).value
-        print(Hubble_age)
         Hubble_integral = intg.quad(lambda x: (cosmo.H(
             z_at_value(cosmo.lookback_time,
                        cosmo.lookback_time(z) + x * u.Myr)).to(
@@ -301,7 +297,6 @@ def get_SFH_exp(Mstar, SFR, z):
         if age > maximum_time:
             index_age -= 1
             break
-    print("This is SFR", SFR, "and this SFH", SFH)
     return SFH, index_age
 
 class bpass_loader:
@@ -383,7 +378,6 @@ class bpass_loader:
         # to get solar metalicity need to take 0.42 according to Strom+18
 
         metal = metal / 10 ** 0.42
-        print(metal, self.metal_avail)
         for i, met_cur in enumerate(self.metal_avail):
             if metal < met_cur:
                 break
@@ -447,8 +441,9 @@ def UV_calc_BPASS(
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
+    print(Zs, msss,sfrs, z, SFH_samp)
     F_UV = vect_func(Zs, msss, sfrs, z=z, SFH_samp=SFH_samp)
-
+    print(F_UV)
     muvs = Muv_Luv(F_UV * 3.846 * 1e33)
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
