@@ -521,7 +521,7 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
-a
+
 
             else:
                 lnL+=0 #an option for testing
