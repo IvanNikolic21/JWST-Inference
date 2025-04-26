@@ -157,11 +157,54 @@ class Observations():
             [6.6 * 1e-6,5.1 * 1e-6,2.9*1e-5,3.5*1e-5]
         )
         Har_sig_p = np.array(
-            [7.1 * 1e-6, 7.0*1e-6, 3.2 * 1e-5, 3.7 * 1e-5]
-        ) * -1 #trick for lower limit
+            [7.1 * 1e-6,-1* 7.0*1e-6, -1*3.2 * 1e-5, -1*3.7 * 1e-5]
+        )  #trick for lower limit
         Har_sig_m = np.array(
-            [4.7 * 1e-6, 3.8 * 1e-6, 2.2 * 1e-5, 2.4 * 1e-5]
-        ) * -1
+            [4.7 * 1e-6, -1* 3.8 * 1e-6, -1* 2.2 * 1e-5, -1* 2.4 * 1e-5]
+        )
         return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 
+    def get_obs_uvlf_z10_Harikane24(self):
+        Har_Muvs = np.array(
+            [-21.6, -20.6, -19.6,-18.6,-17.6]
+        )
+        Har_uvlf = np.array(
+            [1.0 * 1e-6,8.7 * 1e-6,2.6*1e-5,1.9*1e-4, 6.3*1e-4]
+        )
+        Har_sig_p = np.array(
+            [2.3 * 1e-6, -1 * 20.5*1e-6, -1 * 2.8 * 1e-5, 4.7 * 1e-4, 15.8 * 1e-4]
+        )  #trick for lower limit
+        Har_sig_m = np.array(
+            [0.9 * 1e-6, -1 * 8.4 * 1e-6, -1 * 1.8 * 1e-5, 1.9 * 1e-4, 6.3 * 1e-4]
+        )
+        return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 
+    def get_obs_uvlf_z12_Harikane24(self):
+        Har_Muvs = np.array(
+            [-20.5, -20.1, -18.7]
+        )
+        Har_uvlf = np.array(
+            [8.6 * 1e-6,8.8 * 1e-6,6.6*1e-5]
+        )
+        Har_sig_p = np.array(
+            [19.9 * 1e-6,-1* 9.1*1e-6, -1*6.0 * 1e-5]
+        )  #trick for lower limit
+        Har_sig_m = np.array(
+            [7.4 * 1e-6, -1* 5.5 * 1e-6, -1* 4.6 * 1e-5]
+        )
+        return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
+
+    def get_obs_uvlf_z14_Harikane24(self):
+        Har_Muvs = np.array(
+            [-20.8, -19.0]
+        )
+        Har_uvlf = np.array(
+            [3.7 * 1e-5,3.7*1e-5]
+        )
+        Har_sig_p = np.array(
+            [8.7*1e-5, -1*8.7 * 1e-5]
+        )  #trick for lower limit
+        Har_sig_m = np.array(
+            [3.6 * 1e-5, -1* 3.6 * 1e-5]
+        )
+        return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)

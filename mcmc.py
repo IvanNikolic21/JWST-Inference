@@ -381,6 +381,20 @@ def run_mcmc(
         UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9)
         SFR_samp_9 = SFH_sampler(z=9)
 
+    if "UVLF_z10_Harikane24" in likelihoods:
+        uvlf = True
+        UVLFBase_Har24_10 = LikelihoodUVLFBase(params, z=10)
+        SFR_samp_10 = SFH_sampler(z=10)
+
+    if "UVLF_z12_Harikane24" in likelihoods:
+        uvlf = True
+        UVLFBase_Har24_12 = LikelihoodUVLFBase(params, z=12)
+        SFR_samp_12 = SFH_sampler(z=12)
+
+    if "UVLF_z14_Harikane24" in likelihoods:
+        uvlf = True
+        UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14)
+        SFR_samp_14 = SFH_sampler(z=14)
 
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
@@ -522,6 +536,45 @@ def run_mcmc(
                     vect_func=vect_func,
                 )
 
+            elif li == "UVLF_z10_Harikane24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
+                lnL+=UVLFBase_Har24_10.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_10,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+
+            elif li == "UVLF_z12_Harikane24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Harikane24()
+                lnL+=UVLFBase_Har24_12.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_12,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+
+            elif li == "UVLF_z14_Harikane24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Harikane24()
+                lnL+=UVLFBase_Har24_14.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_14,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+
 
             else:
                 lnL+=0 #an option for testing
@@ -601,7 +654,18 @@ if __name__ == "__main__":
     #likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24"]
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
-    likelihoods = ["UVLF_z11_McLeod23", "UVLF_z9_Donnan24", "UVLF_z10_Donnan24","UVLF_z11_Donnan24","UVLF_z12_5_Donnan24", "UVLF_z9_Harikane24"]
+    likelihoods = [
+        "UVLF_z11_McLeod23",
+        "UVLF_z9_Donnan24",
+        "UVLF_z10_Donnan24",
+        "UVLF_z11_Donnan24",
+        "UVLF_z12_5_Donnan24",
+        "UVLF_z9_Harikane24",
+        "UVLF_z10_Harikane24",
+        "UVLF_z12_Harikane24",
+        "UVLF_z14_Harikane24",
+
+    ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
     priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
