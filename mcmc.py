@@ -268,7 +268,7 @@ class LikelihoodUVLFBase:
 
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
-                if sig[0][index] < 0.0:
+                if sig_o[0][index] < 0.0:
                     #trick for lower limits for spectroscopic estimates
                     sig_a = - 2 * (sig_o[0][index] * sig_o[1][index]) / (
                                 sig_o[0][index] + sig_o[1][index])
