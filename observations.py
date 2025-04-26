@@ -162,5 +162,6 @@ class Observations():
         Har_sig_m = np.array(
             [4.7 * 1e-6, 3.8 * 1e-6, 2.2 * 1e-5, 2.4 * 1e-5]
         ) * -1
+        return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 
 
