@@ -313,7 +313,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/BPASS_uvlf/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/BPASS_uvlf_ang/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -664,7 +664,8 @@ if __name__ == "__main__":
         "UVLF_z10_Harikane24",
         "UVLF_z12_Harikane24",
         "UVLF_z14_Harikane24",
-
+        "Ang_z9_m9",
+        "Ang_z7_m9",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
