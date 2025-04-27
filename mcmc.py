@@ -313,7 +313,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/BPASS_uvlf_ang/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/UVonly_Willot23/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -395,6 +395,23 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14)
         SFR_samp_14 = SFH_sampler(z=14)
+
+    if "UVLF_z8_Willot23" in likelihoods:
+        uvlf = True
+        UVLFBase_Wil23_8 = LikelihoodUVLFBase(params, z=8)
+        SFR_samp_8 = SFH_sampler(z=8)
+    if "UVLF_z9_Willot23" in likelihoods:
+        uvlf = True
+        UVLFBase_Wil23_9 = LikelihoodUVLFBase(params, z=9)
+        SFR_samp_9 = SFH_sampler(z=9)
+    if "UVLF_z10_Willot23" in likelihoods:
+        uvlf = True
+        UVLFBase_Wil23_10 = LikelihoodUVLFBase(params, z=10)
+        SFR_samp_10 = SFH_sampler(z=10)
+    if "UVLF_z12_Willot23" in likelihoods:
+        uvlf = True
+        UVLFBase_Wil23_12 = LikelihoodUVLFBase(params, z=12)
+        SFR_samp_12 = SFH_sampler(z=12)
 
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
@@ -574,6 +591,54 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
+            elif li == "UVLF_z8_Willot23":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Willot23()
+                lnL+=UVLFBase_Wil23_8.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_8,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z9_Willot23":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Willot23()
+                lnL+=UVLFBase_Wil23_9.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_9,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z10_Willot23":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Willot23()
+                lnL+=UVLFBase_Wil23_10.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_10,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z12_Willot23":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Willot23()
+                lnL+=UVLFBase_Wil23_12.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_12,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
 
 
             else:
@@ -664,8 +729,12 @@ if __name__ == "__main__":
         "UVLF_z10_Harikane24",
         "UVLF_z12_Harikane24",
         "UVLF_z14_Harikane24",
-        "Ang_z9_m9",
-        "Ang_z7_m9",
+        "UVLF_z8_Willot23",
+        "UVLF_z9_Willot23",
+        "UVLF_z10_Willot23",
+        "UVLF_z12_Willot23",
+        # "Ang_z9_m9",
+        # "Ang_z7_m9",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]

@@ -208,3 +208,81 @@ class Observations():
             [3.6 * 1e-5, -1* 3.6 * 1e-5]
         )
         return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
+
+    def get_obs_uvlf_z8_Willot23(self):
+        Willot_Muvs = np.array(
+            [-20.78, -20.21, -19.68, -19.29, -18.83, -18.27]
+        )
+        Willot_uvlf = np.array(
+            [8.8, 13, 42, 80, 116, 253]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [7.1, 6, 11, 18,28, 79]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [4.4, 6, 11, 18,28, 79]
+        ) * 1e-5
+
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z9_Willot23(self):
+        Willot_Muvs = np.array(
+            [-20.58, -20.30, -19.53, -19.34, -18.89, -18.35]
+        )
+        Willot_uvlf = np.array(
+            [7.1, 9.5, 23, 31, 67, 39]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [7.0, 7.7, 9, 11,24, 52]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [4.0, 4.8, 9, 11,24, 26]
+        ) * 1e-5
+
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z10_Willot23(self):
+        Willot_Muvs = np.array(
+            [
+                -19.28, -18.92
+            ]
+        )
+        Willot_uvlf = np.array(
+            [
+                12.4, 10.0
+            ]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [
+                4.9, 9.9
+            ]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [
+                4.9, 5.7
+            ]
+        ) * 1e-5
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z12_Willot23(self):
+        Willot_Muvs = np.array(
+            [
+                -19.69, -18.80
+            ]
+        )
+        Willot_uvlf = np.array(
+            [
+                2.6, 4.8
+            ]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [
+                3.4, 11.1
+            ]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [
+                1.7, 4.1
+            ]
+        ) * 1e-5
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
