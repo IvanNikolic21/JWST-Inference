@@ -286,3 +286,72 @@ class Observations():
             ]
         ) * 1e-5
         return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z9_8_Whitler25(self):
+        Willot_Muvs = np.array(
+            [
+                -21.4, -20.4, -19.4, -18.4,-17.4
+            ]
+        )
+        Willot_uvlf = np.array(
+            [
+                0.4,3.6,17,78,330
+            ]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [
+                0.45,1.2,3,10,50
+            ]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [
+                0.26,1.1,3,9,40
+            ]
+        ) * 1e-5
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z12_8_Whitler25(self):
+        Willot_Muvs = np.array(
+            [
+                -20.5,-19.5,-18.5,-17.5
+            ]
+        )
+        Willot_uvlf = np.array(
+            [
+                0.84,3.4,29,71
+            ]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [
+                0.63,1.5,6,28
+            ]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [
+                0.43,1.3,6,23
+            ]
+        ) * 1e-5
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
+
+    def get_obs_uvlf_z14_3_Whitler25(self):
+        Willot_Muvs = np.array(
+            [
+                -20.2, -18.9
+            ]
+        )
+        Willot_uvlf = np.array(
+            [
+                3.2,12
+            ]
+        ) * 1e-5
+        Willot_sig_p = np.array(
+            [
+                2.1,7
+            ]
+        ) * 1e-5
+        Willot_sig_m = np.array(
+            [
+                1.5,5
+            ]
+        ) * 1e-5
+        return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
