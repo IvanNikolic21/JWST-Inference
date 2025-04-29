@@ -313,7 +313,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/UVonly_Whitler25/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/UVonly_Finkelstein24/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -426,6 +426,19 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Whitler25_14_3 = LikelihoodUVLFBase(params, z=14.3)
         SFR_samp_14_3 = SFH_sampler(z=14.3)
+
+    if "UVLF_z9_Finkelstein24" in likelihoods:
+        uvlf = True
+        UVLFBase_Fin24_9 = LikelihoodUVLFBase(params, z=9)
+        SFR_samp_9 = SFH_sampler(z=9)
+    if "UVLF_z11_Finkelstein24" in likelihoods:
+        uvlf = True
+        UVLFBase_Fin24_11 = LikelihoodUVLFBase(params, z=11)
+        SFR_samp_11 = SFH_sampler(z=11)
+    if "UVLF_z14_Finkelstein24" in likelihoods:
+        uvlf = True
+        UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14)
+        SFR_samp_14 = SFH_sampler(z=14)
 
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
@@ -689,6 +702,42 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
+            elif li=="UVLF_z9_Finkelstein24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Finkelstein24()
+                lnL+=UVLFBase_Fin24_9.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_9,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z11_Finkelstein24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Finkelstein24()
+                lnL+=UVLFBase_Fin24_11.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_11,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z14_Finkelstein24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Finkelstein24()
+                lnL+=UVLFBase_Fin24_14.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_14,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
 
 
             else:
@@ -786,6 +835,9 @@ if __name__ == "__main__":
         "UVLF_z9_8_Whitler25",
         "UVLF_z12_8_Whitler25",
         "UVLF_z14_3_Whitler25",
+        "UVLF_z9_Finkelstein24",
+        "UVLF_z11_Finkelstein24",
+        "UVLF_z14_Finkelstein24",
         #"Ang_z9_m9",
         #"Ang_z7_m9",
     ]
