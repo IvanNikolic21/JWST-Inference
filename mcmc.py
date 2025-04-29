@@ -234,6 +234,11 @@ class LikelihoodUVLFBase:
         else:
             a_sig_SFR = -0.11654893
 
+        if "M_knee" in dic_params:
+            M_knee = dic_params["M_knee"]
+        else:
+            M_knee = 2.6e11
+
         lnL = 0
         if use_BPASS:
 
@@ -251,6 +256,7 @@ class LikelihoodUVLFBase:
                 vect_func=vect_func,
                 bpass_read=bpass_read,
                 SFH_samp=sfr_samp_inst,
+                M_knee = M_knee
             )
         else:
             preds = UV_calc(
@@ -264,6 +270,7 @@ class LikelihoodUVLFBase:
                 t_star=t_star,
                 a_sig_SFR=a_sig_SFR,
                 z=self.z,
+                M_knee = M_knee,
             )
 
         for index, muvi in enumerate(muvs_o):
