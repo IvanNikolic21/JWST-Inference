@@ -66,7 +66,7 @@ class Observations():
 
     def get_obs_z7_m90(self):
         thethats90_pos_z7 = [
-            float(i) for i,j in zip(self.theta_z7[3],self.wtheta_z7[3]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z7[2],self.wtheta_z7[2]) if float(j)>0
         ]
         wthethats90_pos_z7 = [
             float(i) for i,j in zip(self.wtheta_z7[2],self.wtheta_z7[2]) if float(j)>0
@@ -75,6 +75,18 @@ class Observations():
             float(i) for i,j in zip(self.wsig_z7[2],self.wtheta_z7[2]) if float(j)>0
         ]
         return thethats90_pos_z7, wthethats90_pos_z7, wsig90_pos_z7
+
+    def get_obs_z7_m93(self):
+        thethats93_pos_z7 = [
+            float(i) for i,j in zip(self.theta_z7[3],self.wtheta_z7[3]) if float(j)>0
+        ]
+        wthethats93_pos_z7 = [
+            float(i) for i,j in zip(self.wtheta_z7[3],self.wtheta_z7[3]) if float(j)>0
+        ]
+        wsig93_pos_z7 = [
+            float(i) for i,j in zip(self.wsig_z7[3],self.wtheta_z7[3]) if float(j)>0
+        ]
+        return thethats93_pos_z7, wthethats93_pos_z7, wsig93_pos_z7
 
     def get_obs_uvlf_z11_McLeod23(self):
         McL_Muvs = np.array(
