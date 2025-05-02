@@ -125,8 +125,10 @@ class LikelihoodAngBase():
 
         if obs=="Ang_z9_m87":
             M_thresh = 8.75
-        else:
+        elif obs in ["Ang_z9_m9", "Ang_z7_m9"]:
             M_thresh = 9.0
+        else:
+            M_thresh = 9.3
 
         if obs=="Ang_z7_m9":
             p1_chosen = self.p1_z7
@@ -347,7 +349,7 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if "Ang_z9_m87" in likelihoods or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
+    if any(["Ang_z9_m87","Ang_z9_m87","Ang_z7_m93","ang_z7_m9" in likelihoods]):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
@@ -487,6 +489,16 @@ def run_mcmc(
                 lnL+=AngBase.call_likelihood(
                     p_new,
                     obs="Ang_z7_m9",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z7_m93":
+                thet, w, wsig = observations_inst.get_obs_z7_m93()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z7_m93",
                     thet=thet,
                     w=w,
                     sig_w=wsig,
@@ -846,7 +858,7 @@ if __name__ == "__main__":
         # "UVLF_z11_Finkelstein24",
         # "UVLF_z14_Finkelstein24",
         #"Ang_z9_m9",
-        "Ang_z7_m9",
+        "Ang_z7_m93",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
