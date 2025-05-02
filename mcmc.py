@@ -322,7 +322,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_only_m93_z7/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_so_far/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -857,7 +857,8 @@ if __name__ == "__main__":
         # "UVLF_z9_Finkelstein24",
         # "UVLF_z11_Finkelstein24",
         # "UVLF_z14_Finkelstein24",
-        #"Ang_z9_m9",
+        "Ang_z9_m9",
+        "Ang_z7_m9"
         "Ang_z7_m93",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
