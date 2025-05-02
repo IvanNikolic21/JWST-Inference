@@ -320,7 +320,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/ang_only_simple_prior/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_only_simple_prior/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
