@@ -845,8 +845,8 @@ if __name__ == "__main__":
         # "UVLF_z9_Finkelstein24",
         # "UVLF_z11_Finkelstein24",
         # "UVLF_z14_Finkelstein24",
-        "Ang_z9_m9",
-        # "Ang_z7_m9",
+        #"Ang_z9_m9",
+        "Ang_z7_m9",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
