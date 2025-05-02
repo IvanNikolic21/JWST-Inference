@@ -320,7 +320,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/UVonly_Finkelstein24/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_140425/ang_only_simple_prior/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -826,27 +826,27 @@ if __name__ == "__main__":
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     likelihoods = [
-        "UVLF_z11_McLeod23",
-        "UVLF_z9_Donnan24",
-        "UVLF_z10_Donnan24",
-        "UVLF_z11_Donnan24",
-        "UVLF_z12_5_Donnan24",
-        "UVLF_z9_Harikane24",
-        "UVLF_z10_Harikane24",
-        "UVLF_z12_Harikane24",
-        "UVLF_z14_Harikane24",
-        "UVLF_z8_Willot23",
-        "UVLF_z9_Willot23",
-        "UVLF_z10_Willot23",
-        "UVLF_z12_Willot23",
-        "UVLF_z9_8_Whitler25",
-        "UVLF_z12_8_Whitler25",
-        "UVLF_z14_3_Whitler25",
-        "UVLF_z9_Finkelstein24",
-        "UVLF_z11_Finkelstein24",
-        "UVLF_z14_Finkelstein24",
-        #"Ang_z9_m9",
-        #"Ang_z7_m9",
+        # "UVLF_z11_McLeod23",
+        # "UVLF_z9_Donnan24",
+        # "UVLF_z10_Donnan24",
+        # "UVLF_z11_Donnan24",
+        # "UVLF_z12_5_Donnan24",
+        # "UVLF_z9_Harikane24",
+        # "UVLF_z10_Harikane24",
+        # "UVLF_z12_Harikane24",
+        # "UVLF_z14_Harikane24",
+        # "UVLF_z8_Willot23",
+        # "UVLF_z9_Willot23",
+        # "UVLF_z10_Willot23",
+        # "UVLF_z12_Willot23",
+        # "UVLF_z9_8_Whitler25",
+        # "UVLF_z12_8_Whitler25",
+        # "UVLF_z14_3_Whitler25",
+        # "UVLF_z9_Finkelstein24",
+        # "UVLF_z11_Finkelstein24",
+        # "UVLF_z14_Finkelstein24",
+        "Ang_z9_m9",
+        "Ang_z7_m9",
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
@@ -858,4 +858,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=False, diagonal=False, realistic_Nz=True)
