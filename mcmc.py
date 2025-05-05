@@ -36,17 +36,27 @@ class LikelihoodAngBase():
                 Nz_6_8 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
+            with open(
+                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_5_6.csv',
+                newline='') as csvfile:
+                Nz_5_6 = list(
+                    csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
+                )
 
 
             p1 = lambda x: np.interp(x,np.array(Nz_8_10)[:,0], np.array(Nz_8_10)[:,1] )
             p1_z7 = lambda x: np.interp(x,np.array(Nz_6_8)[:,0], np.array(Nz_6_8)[:,1] )
+            p1_z5_5 = lambda x: np.interp(x, np.array(Nz_5_6)[:,0], np.array(Nz_5_6)[:,1])
             self.p1 = p1
             self.p1_z7 = p1_z7
+            self.p1_z5_5 = p1_z5_5
         else:
             p1 = lambda x: np.exp(-0.5 * (x - 9.25) ** 2 / 0.5 ** 2)
             p1_z7 = lambda x: np.exp(-0.5 * (x - 7.0) ** 2 / 0.5 ** 2)
+            p1_z5_5 = lambda x: np.exp(-0.5 * (x-5.5)**2/0.25**2)
             self.p1 = p1
             self.p1_z7 = p1_z7
+            self.p1_z5_5 = p1_z5_5
         fid_params = {
             'p1':p1,
             'zmin': 8,
@@ -80,7 +90,7 @@ class LikelihoodAngBase():
                 'fstar_norm': 10 ** 0.0,
                 'alpha_star_low': 0.5,
                 'alpha': 1.0,
-                'M1': 13.5,
+                'M1': 12.0,
                 'fstar_norm_sat': 10 ** 0,
                 'stellar_mass_sigma_sat': 0.3,
             }
@@ -130,8 +140,10 @@ class LikelihoodAngBase():
         else:
             M_thresh = 9.3
 
-        if obs=="Ang_z7_m9":
+        if obs=="Ang_z7_m9" or obs=="Ang_z7_m93":
             p1_chosen = self.p1_z7
+        elif obs=="Ang_z5_5_m9" or obs=="Ang_z5_5_m9_25" or obs=="Ang_z5_5_m9_5":
+            p1_chosen = self.p1_z5_5
         else:
             p1_chosen = self.p1
 
@@ -322,7 +334,7 @@ def run_mcmc(
     if priors is None:
         priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_so_far/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_also_z5_5/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -349,7 +361,15 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if any(["Ang_z9_m87","Ang_z9_m87","Ang_z7_m93","ang_z7_m9" in likelihoods]):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
+    if any([
+        "Ang_z9_m87",
+        "Ang_z9_m87",
+        "Ang_z7_m93",
+        "ang_z7_m9",
+        "ang_z5_5_m9",
+        "ang_z5_5_m9_25",
+        "ang_z5_5_m9_5" in likelihoods]
+    ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz)
     else:
@@ -499,6 +519,36 @@ def run_mcmc(
                 lnL+=AngBase.call_likelihood(
                     p_new,
                     obs="Ang_z7_m93",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z5_5_m9":
+                thet, w, wsig = observations_inst.get_obs_z5_5_m90()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z5_5_m9",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z5_5_m92_5":
+                thet, w, wsig = observations_inst.get_obs_z5_5_m92_5()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z5_5_m92_5",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z5_5_m9_5":
+                thet, w, wsig = observations_inst.get_obs_z5_5_m95()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z5_5_m9_5",
                     thet=thet,
                     w=w,
                     sig_w=wsig,
@@ -860,6 +910,9 @@ if __name__ == "__main__":
         "Ang_z9_m9",
         "Ang_z7_m9"
         "Ang_z7_m93",
+        "Ang_z5_5_m9",
+        "Ang_z5_5_m9_25",
+        "Ang_z5_5_m9_5"
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]

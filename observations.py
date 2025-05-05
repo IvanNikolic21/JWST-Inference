@@ -37,6 +37,22 @@ class Observations():
                     dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin6.0-8.0_wsig.dat"
                 ).readlines()
             ]
+
+            self.theta_z5_5 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin5.0-6.0_theta.dat"
+                ).readlines()
+            ]
+            self.wtheta_z5_5 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin5.0-6.0_wtheta.dat"
+                ).readlines()
+            ]
+            self.wsig_z5_5 = [
+                i.strip().split() for i in open(
+                    dir_dat + "clustresults_Paquereau2025_COSMOS-Web_FullSurvey_zbin5.0-6.0_wsig.dat"
+                ).readlines()
+            ]
         if uvlf:
             pass
 
@@ -87,6 +103,42 @@ class Observations():
             float(i) for i,j in zip(self.wsig_z7[3],self.wtheta_z7[3]) if float(j)>0
         ]
         return thethats93_pos_z7, wthethats93_pos_z7, wsig93_pos_z7
+
+    def get_obs_z5_5_m90(self):
+        thethats90_pos_z5_5 = [
+            float(i) for i,j in zip(self.theta_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+        ]
+        wthethats90_pos_z5_5 = [
+            float(i) for i,j in zip(self.wtheta_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+        ]
+        wsig90_pos_z5_5 = [
+            float(i) for i,j in zip(self.wsig_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+        ]
+        return thethats90_pos_z5_5, wthethats90_pos_z5_5, wsig90_pos_z5_5
+
+    def get_obs_z5_5_m92_5(self):
+        thethats92_5_pos_z5_5 = [
+            float(i) for i,j in zip(self.theta_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+        ]
+        wthethats92_5_pos_z5_5 = [
+            float(i) for i,j in zip(self.wtheta_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+        ]
+        wsig92_5_pos_z5_5 = [
+            float(i) for i,j in zip(self.wsig_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+        ]
+        return thethats92_5_pos_z5_5, wthethats92_5_pos_z5_5, wsig92_5_pos_z5_5
+
+    def get_obs_z5_5_m95(self):
+        thethats95_pos_z5_5 = [
+            float(i) for i,j in zip(self.theta_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+        ]
+        wthethats95_pos_z5_5 = [
+            float(i) for i,j in zip(self.wtheta_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+        ]
+        wsig95_pos_z5_5 = [
+            float(i) for i,j in zip(self.wsig_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+        ]
+        return thethats95_pos_z5_5, wthethats95_pos_z5_5, wsig95_pos_z5_5
 
     def get_obs_uvlf_z11_McLeod23(self):
         McL_Muvs = np.array(
