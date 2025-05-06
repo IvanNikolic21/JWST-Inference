@@ -46,7 +46,9 @@ class LikelihoodAngBase():
 
             p1 = lambda x: np.interp(x,np.array(Nz_8_10)[:,0], np.array(Nz_8_10)[:,1] )
             p1_z7 = lambda x: np.interp(x,np.array(Nz_6_8)[:,0], np.array(Nz_6_8)[:,1] )
-            p1_z5_5 = lambda x: np.interp(x, np.array(Nz_5_6)[:,0], np.array(Nz_5_6)[:,1])
+            #p1_z5_5 = lambda x: np.interp(x, np.array(Nz_5_6)[:,0], np.array(Nz_5_6)[:,1])
+            p1_z5_5 = lambda x: np.exp(-0.5 * (x-5.5)**2/0.25**2)
+
             self.p1 = p1
             self.p1_z7 = p1_z7
             self.p1_z5_5 = p1_z5_5
