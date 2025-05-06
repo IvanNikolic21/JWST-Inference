@@ -182,13 +182,13 @@ class LikelihoodAngBase():
                 # compare model and data with gaussian likelihood:
                 like += -0.5 * (((wi - w[i_theta]) / sig_w[
                     i_theta]) ** 2)
-        if obs=="Ang_z9_m9" and savedir:
-            fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
-                np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-            np.savetxt(fname, ang_ang - w_IC_instance)
-        elif obs=="Ang_z7_m9" and savedir:
-            fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-            np.savetxt(fname, ang_ang - w_IC_instance)
+        # if obs=="Ang_z9_m9" and savedir:
+        #     fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
+        #         np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+        #     np.savetxt(fname, ang_ang - w_IC_instance)
+        # elif obs=="Ang_z7_m9" and savedir:
+        #     fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+        #     np.savetxt(fname, ang_ang - w_IC_instance)
         if no_call:
             return 0
         return like
@@ -344,7 +344,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/post_UVLF_Mknee/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_also_z5_5/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -927,21 +927,21 @@ if __name__ == "__main__":
         # "UVLF_z9_Finkelstein24",
         # "UVLF_z11_Finkelstein24",
         # "UVLF_z14_Finkelstein24",
-        "Ang_z9_m9",
-        "Ang_z7_m9"
-        "Ang_z7_m93",
+        # "Ang_z9_m9",
+        # "Ang_z7_m9"
+        # "Ang_z7_m93",
         "Ang_z5_5_m9",
         "Ang_z5_5_m9_25",
         "Ang_z5_5_m9_5"
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
-              "sigma_SFMS_norm", "a_sig_SFR"]
+              "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]
     priors = [(-4.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-              (-1.0, 0.5), (10.0,16.0)]
+              (-1.0, 0.5)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=False)
