@@ -344,7 +344,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_also_z5_5/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_z5_5_only/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
