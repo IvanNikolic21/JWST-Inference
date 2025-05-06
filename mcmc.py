@@ -133,6 +133,11 @@ class LikelihoodAngBase():
         else:
             alpha_star_low = 0.5
 
+        if "M_knee" in dic_params:
+            M_knee = dic_params["M_knee"]
+        else:
+            M_knee = 2.6e11
+
         if obs=="Ang_z9_m87":
             M_thresh = 8.75
         elif obs in ["Ang_z9_m9", "Ang_z7_m9"]:
@@ -155,6 +160,7 @@ class LikelihoodAngBase():
             'alpha_star_low': alpha_star_low,
             'M1': M_1,
             'M_0': M_0,
+            'M_knee': M_knee,
         }
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
@@ -329,12 +335,16 @@ def run_mcmc(
         diagonal=False,
         realistic_Nz=False,
         use_BPASS=True,
+        M_knee=False,
 ):
 
     if priors is None:
-        priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
+        if M_knee:
+            priors = [(-4.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (10.0,16.0)]
+        else:
+            priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_also_z5_5/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/post_UVLF_Mknee/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -824,14 +834,23 @@ def run_mcmc(
 
     def prior(cube, ndim, nparams):
         if covariance:
-            cov_mat = 2 * np.loadtxt(
-                '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
-            ) #my default is twice the covariance.
-            mu = np.loadtxt(
-                '/home/inikolic/projects/UVLF_FMs/priors/means_goodSMHM.txt'
-            )
-            if diagonal:
-                cov_mat=np.diag(cov_mat.diagonal())
+
+            if M_knee:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
+                )
+            else:
+                cov_mat = 2 * np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
+                ) #my default is twice the covariance.
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/means_goodSMHM.txt'
+                )
+                if diagonal:
+                    cov_mat=np.diag(cov_mat.diagonal())
             x = np.zeros(len(mu))  # vector of picked prior values
 
             gp = cube
@@ -872,6 +891,7 @@ def run_mcmc(
             # return cube
             for i in range(ndim):
                 cube[i] = priors[i][0] + cube[i] * (priors[i][1] - priors[i][0])
+            return cube
 
     result = pymultinest.run(
         LogLikelihood=likelihood,
@@ -916,12 +936,12 @@ if __name__ == "__main__":
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR"]
-    priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-              (-1.0, 0.5)]
+    priors = [(-4.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
+              (-1.0, 0.5), (10.0,16.0)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=True)

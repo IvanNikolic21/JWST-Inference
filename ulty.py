@@ -210,6 +210,7 @@ class My_HOD(hm.hod.Zheng05):
         'M_0':12.0,
         'M_1':13.0,
         'alpha_star_low':0.5,
+        'M_knee':2.6e11,
     }    
 
     def _central_occupation(self, m):
@@ -220,7 +221,8 @@ class My_HOD(hm.hod.Zheng05):
                 np.log10(m)-np.log10(
                     ms_mh(10**self.params["stellar_mass_min"],
                           fstar_norm=self.params["fstar_norm"],
-                          alpha_star_low=self.params["alpha_star_low"]
+                          alpha_star_low=self.params["alpha_star_low"],
+                          M_knee=self.params["M_knee"]
                          )
                 )
             )/self.params["stellar_mass_sigma"] / np.sqrt(2)
@@ -241,6 +243,7 @@ class My_HOD(hm.hod.Zheng05):
                         ms_mh(10**self.params["stellar_mass_min"],
                               fstar_norm=self.params["fstar_norm_sat"],
                               alpha_star_low=self.params["alpha_star_low"],
+                              M_knee=self.params["M_knee"]
                              )
                     )
                 )/self.params["stellar_mass_sigma_sat"] / np.sqrt(2)

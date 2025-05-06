@@ -29,8 +29,11 @@ def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
         ms_mean: floats; optional,
             a and b coefficient of the relation.
     """
+
     f_star_mean = fstar_norm#fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
     f_star_mean /= (mh / M_knee) ** (-alpha_star_low) + (mh / M_knee) ** 0.61
+    if M_knee != 2.6e11:
+        f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61
     return f_star_mean * mh
 
 def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5, M_knee=2.6e11):
