@@ -61,8 +61,8 @@ class LikelihoodAngBase():
             self.p1_z5_5 = p1_z5_5
         fid_params = {
             'p1':p1,
-            'zmin': 8,
-            'zmax': 10.5,
+            'zmin': 0,
+            'zmax': 15,
             'theta_max': 10 ** -0.8,
             'theta_min': 10 ** -6.3,
             'theta_num': 50,
@@ -140,10 +140,14 @@ class LikelihoodAngBase():
         else:
             M_knee = 2.6e11
 
-        if obs=="Ang_z9_m87":
+        if obs == "Ang_z9_m87":
             M_thresh = 8.75
-        elif obs in ["Ang_z9_m9", "Ang_z7_m9"]:
+        elif obs in ["Ang_z9_m9", "Ang_z7_m9", "Ang_z5_5_m9"]:
             M_thresh = 9.0
+        elif obs == "Ang_z9_m9_25":
+            M_thresh = 9.25
+        elif obs == "Ang_z9_m9_5":
+            M_thres = 9.5
         else:
             M_thresh = 9.3
 
@@ -346,7 +350,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/post_UVLF_Mknee/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_z5_5_only/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -910,40 +914,40 @@ if __name__ == "__main__":
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     likelihoods = [
-        "UVLF_z11_McLeod23",
-        "UVLF_z9_Donnan24",
-        "UVLF_z10_Donnan24",
-        "UVLF_z11_Donnan24",
-        "UVLF_z12_5_Donnan24",
-        "UVLF_z9_Harikane24",
-        "UVLF_z10_Harikane24",
-        "UVLF_z12_Harikane24",
-        "UVLF_z14_Harikane24",
-        "UVLF_z8_Willot23",
-        "UVLF_z9_Willot23",
-        "UVLF_z10_Willot23",
-        "UVLF_z12_Willot23",
-        "UVLF_z9_8_Whitler25",
-        "UVLF_z12_8_Whitler25",
-        "UVLF_z14_3_Whitler25",
+        # "UVLF_z11_McLeod23",
+        # "UVLF_z9_Donnan24",
+        # "UVLF_z10_Donnan24",
+        # "UVLF_z11_Donnan24",
+        # "UVLF_z12_5_Donnan24",
+        # "UVLF_z9_Harikane24",
+        # "UVLF_z10_Harikane24",
+        # "UVLF_z12_Harikane24",
+        # "UVLF_z14_Harikane24",
+        # "UVLF_z8_Willot23",
+        # "UVLF_z9_Willot23",
+        # "UVLF_z10_Willot23",
+        # "UVLF_z12_Willot23",
+        # "UVLF_z9_8_Whitler25",
+        # "UVLF_z12_8_Whitler25",
+        # "UVLF_z14_3_Whitler25",
         # "UVLF_z9_Finkelstein24",
         # "UVLF_z11_Finkelstein24",
         # "UVLF_z14_Finkelstein24",
-        # "Ang_z9_m9",
-        # "Ang_z7_m9"
-        # "Ang_z7_m93",
+        "Ang_z9_m9",
+        "Ang_z7_m9"
+        "Ang_z7_m93",
         # "Ang_z5_5_m9",
         # "Ang_z5_5_m9_25",
         # "Ang_z5_5_m9_5"
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
-              "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]
+              "sigma_SFMS_norm", "a_sig_SFR"]#, "M_knee"]
     priors = [(-4.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-              (-1.0, 0.5), (10.0,16.0)]
+              (-1.0, 0.5)]#, (10.0,16.0)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=True)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=False)
