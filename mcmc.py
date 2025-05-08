@@ -346,11 +346,11 @@ def run_mcmc(
 
     if priors is None:
         if M_knee:
-            priors = [(-4.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (10.0,16.0)]
+            priors = [(-5.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5), (10.0,16.0)]
         else:
-            priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0)]
+            priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/ang_z5_5_only/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/post_UVLF_Mknee_wider/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -941,13 +941,13 @@ if __name__ == "__main__":
         "Ang_z5_5_m9_5"
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
-              "sigma_SFMS_norm", "a_sig_SFR"]#, "M_knee"]
-    priors = [(-4.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-              (-1.0, 0.5)]#, (10.0,16.0)]
+              "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]
+    priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
+              (-1.0, 0.5), (10.0,16.0)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=False)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=True)
