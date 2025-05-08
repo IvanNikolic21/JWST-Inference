@@ -914,19 +914,19 @@ if __name__ == "__main__":
     #likelihoods = []
     #likelihoods = ["UVLF_z11_McLeod23"]
     likelihoods = [
-        # "UVLF_z11_McLeod23",
-        # "UVLF_z9_Donnan24",
-        # "UVLF_z10_Donnan24",
-        # "UVLF_z11_Donnan24",
-        # "UVLF_z12_5_Donnan24",
-        # "UVLF_z9_Harikane24",
-        # "UVLF_z10_Harikane24",
-        # "UVLF_z12_Harikane24",
-        # "UVLF_z14_Harikane24",
-        # "UVLF_z8_Willot23",
-        # "UVLF_z9_Willot23",
-        # "UVLF_z10_Willot23",
-        # "UVLF_z12_Willot23",
+        "UVLF_z11_McLeod23",
+        "UVLF_z9_Donnan24",
+        "UVLF_z10_Donnan24",
+        "UVLF_z11_Donnan24",
+        "UVLF_z12_5_Donnan24",
+        "UVLF_z9_Harikane24",
+        "UVLF_z10_Harikane24",
+        "UVLF_z12_Harikane24",
+        "UVLF_z14_Harikane24",
+        "UVLF_z8_Willot23",
+        "UVLF_z9_Willot23",
+        "UVLF_z10_Willot23",
+        "UVLF_z12_Willot23",
         # "UVLF_z9_8_Whitler25",
         # "UVLF_z12_8_Whitler25",
         # "UVLF_z14_3_Whitler25",
@@ -936,9 +936,9 @@ if __name__ == "__main__":
         # "Ang_z9_m9",
         # "Ang_z7_m9"
         # "Ang_z7_m93",
-        "Ang_z5_5_m9",
-        "Ang_z5_5_m9_25",
-        "Ang_z5_5_m9_5"
+        # "Ang_z5_5_m9",
+        # "Ang_z5_5_m9_25",
+        # "Ang_z5_5_m9_5"
     ]
     params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
               "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]
