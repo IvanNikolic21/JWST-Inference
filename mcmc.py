@@ -364,7 +364,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
-    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang/"
+    output_filename = "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_prior/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
@@ -966,4 +966,4 @@ if __name__ == "__main__":
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
 
-    run_mcmc(likelihoods, params, priors=priors, covariance=False, diagonal=False, realistic_Nz=True, M_knee=False)
+    run_mcmc(likelihoods, params, priors=priors, covariance=True, diagonal=True, realistic_Nz=True, M_knee=False)
