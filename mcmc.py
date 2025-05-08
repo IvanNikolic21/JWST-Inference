@@ -25,29 +25,43 @@ class LikelihoodAngBase():
     def __init__(self, params, realistic_Nz=False, z=9.25):
         if realistic_Nz:
             with open(
-                    '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105.csv',
+                    '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105_alt.csv',
                     newline='') as csvfile:
                 Nz_8_10 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_6_8.csv',
+                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_6_8_alt.csv',
                 newline='') as csvfile:
                 Nz_6_8 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_5_6.csv',
+                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_5_6_alt.csv',
                 newline='') as csvfile:
                 Nz_5_6 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
 
+            z_8 = np.array(Nz_8_10)[:,0]#.argsort()
+            z_6 = np.array(Nz_6_8)[:,0]#.argsort()
+            z_5 = np.array(Nz_5_6)[:,0]#.argsort()
 
-            p1 = lambda x: np.interp(x,np.array(Nz_8_10)[:,0], np.array(Nz_8_10)[:,1] )
-            p1_z7 = lambda x: np.interp(x,np.array(Nz_6_8)[:,0], np.array(Nz_6_8)[:,1] )
-            #p1_z5_5 = lambda x: np.interp(x, np.array(Nz_5_6)[:,0], np.array(Nz_5_6)[:,1])
-            p1_z5_5 = lambda x: np.exp(-0.5 * (x-5.5)**2/0.25**2)
+            z_8_ind = z_8.argsort()
+            z_6_ind = z_6.argsort()
+            z_5_ind = z_5.argsort()
+
+            z_8_s = z_8[z_8_ind[::-1]]
+            Nz_8_s = np.array(Nz_8_10)[:,1][z_8_ind[::-1]]
+            z_6_s = z_6[z_6_ind[::-1]]
+            Nz_6_s = np.array(Nz_6_8)[:,1][z_6_ind[::-1]]
+            z_5_s = z_5[z_5_ind[::-1]]
+            Nz_5_s = np.array(Nz_5_6)[:,1][z_5_ind[::-1]]
+
+            p1 = lambda x: np.interp(x,z_8_s, Nz_8_s )
+            p1_z7 = lambda x: np.interp(x,z_6_s, Nz_6_s )
+            p1_z5_5 = lambda x:np.interp(x, z_5_s, Nz_5_s)
+            #p1_z5_5 = lambda x: np.exp(-0.5 * (x-5.5)**2/0.25**2)
 
             self.p1 = p1
             self.p1_z7 = p1_z7
