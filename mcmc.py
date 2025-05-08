@@ -954,12 +954,12 @@ if __name__ == "__main__":
         "Ang_z5_5_m9_25",
         "Ang_z5_5_m9_5"
     ]
-    #params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
-    #          "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]
-    params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
-    priors = [(-3.0,0.0), (0.001,2.0), (0.0,1.2)]
-    #priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-    #          (-1.0, 0.5), (10.0,16.0)]
+    params = ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low",
+              "sigma_SFMS_norm", "a_sig_SFR"]#, "M_knee"]
+    #params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
+    #priors = [(-3.0,0.0), (0.001,2.0), (0.0,1.2)]
+    priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
+             (-1.0, 0.5)]#, (10.0,16.0)]
 
     #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
