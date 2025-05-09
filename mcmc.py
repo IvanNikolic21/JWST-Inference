@@ -358,7 +358,7 @@ def run_mcmc(
         realistic_Nz=False,
         use_BPASS=True,
         M_knee=False,
-        output_directory="/home/user/Documents/projects/UVLF_clust/"
+        output_dir="/home/user/Documents/projects/UVLF_clust/"
 ):
 
     if priors is None:
@@ -367,7 +367,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
-    output_filename = output_directory#"/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_prior/"
+    output_filename = output_dir#"/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_prior/"
     #if initialized
     mult_params_fid = {
         "use_MPI": True,
