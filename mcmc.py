@@ -158,12 +158,16 @@ class LikelihoodAngBase():
 
         if obs == "Ang_z9_m87":
             M_thresh = 8.75
+        elif obs == "Ang_z7_m87":
+            M_thresh = 8.7
         elif obs in ["Ang_z9_m9", "Ang_z7_m9", "Ang_z5_5_m9"]:
             M_thresh = 9.0
         elif obs == "Ang_z5_5_m9_25":
             M_thresh = 9.25
         elif obs == "Ang_z5_5_m9_5":
             M_thresh = 9.5
+        elif obs == "Ang_z5_5_m8_5":
+            M_thresh = 8.5
         else:
             M_thresh = 9.3
 
@@ -533,6 +537,16 @@ def run_mcmc(
                 lnL+=AngBase.call_likelihood(
                     p_new,
                     obs="Ang_z9_m9",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z7_m87":
+                thet, w, wsig = observations_inst.get_obs_z7_m87()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z7_m87",
                     thet=thet,
                     w=w,
                     sig_w=wsig,
@@ -994,7 +1008,9 @@ if __name__ == "__main__":
     #     # "UVLF_z11_Finkelstein24",
     #     # "UVLF_z14_Finkelstein24",
     #     "Ang_z9_m9",
-    #     "Ang_z7_m9"
+    #     "Ang_z9_m87",
+    #     "Ang_z7_m9",
+    #     "Ang_z7_m87"
     #     "Ang_z7_m93",
     #     "Ang_z5_5_m85",
     #     "Ang_z5_5_m9",
