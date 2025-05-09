@@ -944,7 +944,7 @@ if __name__ == "__main__":
         default="/home/user/Documents/projects/UVLF_clust/analysis_post/Harikane_only/"
     )
     parser.add_argument(
-        "--p",
+        "-p",
         "--params-list",
         nargs='+',
         default=[
