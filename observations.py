@@ -104,6 +104,18 @@ class Observations():
         ]
         return thethats93_pos_z7, wthethats93_pos_z7, wsig93_pos_z7
 
+    def get_obs_z5_5_m85(self):
+        thethats85_pos_z5_5 = [
+            float(i) for i,j in zip(self.theta_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+        ]
+        wthethats85_pos_z5_5 = [
+            float(i) for i,j in zip(self.wtheta_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+        ]
+        wsig85_pos_z5_5 = [
+            float(i) for i,j in zip(self.wsig_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+        ]
+        return thethats85_pos_z5_5, wthethats85_pos_z5_5, wsig85_pos_z5_5
+
     def get_obs_z5_5_m90(self):
         thethats90_pos_z5_5 = [
             float(i) for i,j in zip(self.theta_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0

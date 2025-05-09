@@ -399,6 +399,7 @@ def run_mcmc(
         "Ang_z9_m87",
         "Ang_z7_m93",
         "ang_z7_m9",
+        "Ang_z5_5_m85",
         "ang_z5_5_m9",
         "ang_z5_5_m9_25",
         "ang_z5_5_m9_5" in likelihoods]
@@ -552,6 +553,16 @@ def run_mcmc(
                 lnL+=AngBase.call_likelihood(
                     p_new,
                     obs="Ang_z7_m93",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                )
+            elif li == "Ang_z5_5_m85":
+                thet, w, wsig = observations_inst.get_obs_z5_5_m85()
+                lnL+=AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z5_5_m85",
                     thet=thet,
                     w=w,
                     sig_w=wsig,
@@ -976,6 +987,7 @@ if __name__ == "__main__":
     #     "Ang_z9_m9",
     #     "Ang_z7_m9"
     #     "Ang_z7_m93",
+    #     "Ang_z5_5_m85",
     #     "Ang_z5_5_m9",
     #     "Ang_z5_5_m9_25",
     #     "Ang_z5_5_m9_5"
