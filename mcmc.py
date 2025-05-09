@@ -358,7 +358,7 @@ def run_mcmc(
         realistic_Nz=False,
         use_BPASS=True,
         M_knee=False,
-        output_directory
+        output_directory="/home/user/Documents/projects/UVLF_clust/"
 ):
 
     if priors is None:
@@ -930,7 +930,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_directory",
         type=str,
-        default="/home/user/Documents/projects/UVLF_clust/"
+        default="/home/user/Documents/projects/UVLF_clust/analysis_post/Harikane_only/"
     )
     parser.add_argument(
         "--p",
@@ -949,7 +949,7 @@ if __name__ == "__main__":
     parser.add_argument("--covariance", action="store_false")
     parser.add_argument("--diagonal", action="store_false")
     parser.add_argument("--realistic_Nz", action="store_false")
-    parser.add_argument("--use_Mknee", action="store_false")
+    parser.add_argument("--use_Mknee", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
