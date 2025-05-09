@@ -204,13 +204,13 @@ class LikelihoodAngBase():
                 # compare model and data with gaussian likelihood:
                 like += -0.5 * (((wi - w[i_theta]) / sig_w[
                     i_theta]) ** 2)
-        # if obs=="Ang_z9_m9" and savedir:
-        #     fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
-        #         np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-        #     np.savetxt(fname, ang_ang - w_IC_instance)
-        # elif obs=="Ang_z7_m9" and savedir:
-        #     fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-        #     np.savetxt(fname, ang_ang - w_IC_instance)
+        if obs=="Ang_z9_m9" and savedir:
+            fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
+                np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+            np.savetxt(fname, ang_ang - w_IC_instance)
+        elif obs=="Ang_z7_m9" and savedir:
+            fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+            np.savetxt(fname, ang_ang - w_IC_instance)
         if no_call:
             return 0
         return like
@@ -692,7 +692,16 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
-
+                thet, w, wsig = observations_inst.get_obs_z9_m90()
+                _ = AngBase.call_likelihood(
+                    p_new,
+                    obs="Ang_z9_m9",
+                    thet=thet,
+                    w=w,
+                    sig_w=wsig,
+                    savedir=output_filename,
+                    no_call=True
+                )
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
                 lnL+=UVLFBase_Har24_10.call_likelihood(
