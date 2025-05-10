@@ -515,7 +515,7 @@ def run_mcmc(
 
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
-        vect_func = np.vectorize(bpass_read.get_UV, hmf_choice=hmf_choice)
+        vect_func = np.vectorize(bpass_read.get_UV)
     else:
         bpass_read = None
         vect_func = None
