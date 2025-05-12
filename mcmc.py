@@ -53,12 +53,12 @@ class LikelihoodAngBase():
             z_6_ind = z_6.argsort()
             z_5_ind = z_5.argsort()
 
-            z_8_s = z_8[z_8_ind[::-1]]
-            Nz_8_s = np.array(Nz_8_10)[:,1][z_8_ind[::-1]]
-            z_6_s = z_6[z_6_ind[::-1]]
-            Nz_6_s = np.array(Nz_6_8)[:,1][z_6_ind[::-1]]
-            z_5_s = z_5[z_5_ind[::-1]]
-            Nz_5_s = np.array(Nz_5_6)[:,1][z_5_ind[::-1]]
+            z_8_s = z_8
+            Nz_8_s = np.array(Nz_8_10)[:,1]
+            z_6_s = z_6
+            Nz_6_s = np.array(Nz_6_8)[:,1]#[z_6_ind[::-1]]
+            z_5_s = z_5
+            Nz_5_s = np.array(Nz_5_6)[:,1]#[z_5_ind[::-1]]
 
             p1 = lambda x: np.interp(x,z_8_s, Nz_8_s )
             p1_z7 = lambda x: np.interp(x,z_6_s, Nz_6_s )
