@@ -14,7 +14,9 @@ hmf_loc_9 = hmf.MassFunction(z=9.25,             Mmin=5,
 hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=5,
             Mmax=15,
             dlog10m=0.05,)
-
+hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=5,
+            Mmax=15,
+            dlog10m=0.05,)
 from uvlf import ms_mh
 
 
@@ -27,6 +29,8 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
             self.hmf_loc = hmf_loc_9
         elif z == 7.0:
             self.hmf_loc = hmf_loc_7
+        elif z == 5.5:
+            self.hmf_loc = hmf_loc_5
         else:
             self.hmf_loc = hmf_loc_9
         #self.hmf_loc = hmf.MassFunction(self.z)
