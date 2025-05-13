@@ -249,12 +249,12 @@ class My_HOD(hm.hod.Zheng05):
                 -(
                     np.log10(m[m > 10 ** self.params["M_0"]])-np.log10(
                         ms_mh(10**self.params["stellar_mass_min"],
-                              fstar_norm=self.params["fstar_norm_sat"],
+                              fstar_norm=self.params["fstar_norm"],
                               alpha_star_low=self.params["alpha_star_low"],
                               M_knee=self.params["M_knee"]
                              )
                     )
-                )/self.params["stellar_mass_sigma_sat"] / np.sqrt(2)
+                )/self.params["stellar_mass_sigma"] / np.sqrt(2)
             ) * ((m[m > 10 ** self.params["M_0"]]-10 ** self.params["M_0"])/10**self.params["M1"])**self.params["alpha"]
             
         return ns

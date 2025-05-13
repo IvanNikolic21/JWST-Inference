@@ -130,12 +130,12 @@ class LikelihoodAngBase():
         if "M_0" in dic_params:
             M_0 = dic_params["M_0"]
         else:
-            M_0 = 11.0
+            M_0 = 11.65
 
         if "M_1" in dic_params:
             M_1 = dic_params["M_1"]
         else:
-            M_1 = 12.0
+            M_1 = 12.3
 
         if "fstar_norm" in dic_params:
             fstar_norm = dic_params["fstar_norm"]
