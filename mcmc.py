@@ -91,7 +91,7 @@ class LikelihoodAngBase():
             'sd_bias_model': Bias_nonlin,
             'sd_bias_params': {'z': 5.5},
             'transfer_model': "EH",
-            'exclusion_model': "Sphere",
+            'exclusion_model': "DblSphere",
             'rnum': 30,
             'rmin': 0.1,
             'rmax': 30,
