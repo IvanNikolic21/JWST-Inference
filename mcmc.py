@@ -213,6 +213,10 @@ class LikelihoodAngBase():
             fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
                 np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
             np.savetxt(fname, ang_ang - w_IC_instance)
+        elif obs=="Ang_z5_5_m9" and savedir:
+            fname = str(savedir) + 'ang_z5_5_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
+                np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+            np.savetxt(fname, ang_ang - w_IC_instance)
         elif obs=="Ang_z7_m9" and savedir:
             fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
             np.savetxt(fname, ang_ang - w_IC_instance)
