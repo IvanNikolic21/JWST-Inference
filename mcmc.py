@@ -200,6 +200,7 @@ class LikelihoodAngBase():
 
         like= 0
         for i_theta, ts in enumerate(thet):
+            print(ts, w[i_theta], sig_w[i_theta])
             if ts>0.003:
 
                 wi = np.interp(
