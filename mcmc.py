@@ -179,7 +179,6 @@ class LikelihoodAngBase():
             p1_chosen = self.p1_z5_5
         else:
             p1_chosen = self.p1
-
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
             'stellar_mass_sigma': sigma_SHMR,
@@ -198,6 +197,8 @@ class LikelihoodAngBase():
             ang_ang,
             41.5 / 60, 46.6 / 60, 940.29997
         )
+        print(obs, M_thresh, fstar_norm,sigma_SHMR, alpha_star_low, ang_th,ang_ang  )
+        assert False
         like= 0
         for i_theta, ts in enumerate(thet):
             if ts>0.003:
