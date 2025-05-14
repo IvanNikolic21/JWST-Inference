@@ -26,6 +26,7 @@ class LikelihoodAngBase():
     """
     def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25):
         if realistic_Nz:
+            print("this is redshift in Angular likelihood base", z)
             with open(
                     '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105_alt.csv',
                     newline='') as csvfile:
@@ -98,7 +99,7 @@ class LikelihoodAngBase():
             'dr_table': 0.1,
             'dlnk': 0.1,
             'dlog10m': 0.05,
-            'z':z,
+            'z':5.5,
         }
         self.params = params
 
