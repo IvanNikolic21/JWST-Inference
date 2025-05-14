@@ -98,6 +98,7 @@ class LikelihoodAngBase():
             'dr_table': 0.1,
             'dlnk': 0.1,
             'dlog10m': 0.05,
+            'z':z,
         }
         self.params = params
 
@@ -411,17 +412,27 @@ def run_mcmc(
 
     if any([
         "Ang_z9_m87",
-        "Ang_z9_m87",
+        "Ang_z9_m9" in likelihoods
+    ]):
+        ang = True
+        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
+    if any([
+        "Ang_z7_m87"
         "Ang_z7_m93",
-        "ang_z7_m9",
+        "ang_z7_m9" in likelihoods
+    ]):
+        ang = True
+        AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
+                                       hmf_choice=hmf_choice, z=7)
+    if any([
         "Ang_z5_5_m85",
         "ang_z5_5_m9",
         "ang_z5_5_m9_25",
         "ang_z5_5_m9_5" in likelihoods]
     ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
-        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice)
-    else:
+        AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
+    if not ang:
         AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice)
 
     SFR_samp_11 = None
@@ -536,7 +547,7 @@ def run_mcmc(
         for li in likelihoods:
             if li == "Ang_z9_m87":
                 thet, w, wsig = observations_inst.get_obs_z9_m87()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z9.call_likelihood(
                     p_new,
                     obs="Ang_z9_m87",
                     thet=thet,
@@ -545,7 +556,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z9_m9":
                 thet, w, wsig = observations_inst.get_obs_z9_m90()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z9.call_likelihood(
                     p_new,
                     obs="Ang_z9_m9",
                     thet=thet,
@@ -555,7 +566,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z7_m87":
                 thet, w, wsig = observations_inst.get_obs_z7_m87()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z7.call_likelihood(
                     p_new,
                     obs="Ang_z7_m87",
                     thet=thet,
@@ -565,7 +576,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z7_m9":
                 thet, w, wsig = observations_inst.get_obs_z7_m90()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z7.call_likelihood(
                     p_new,
                     obs="Ang_z7_m9",
                     thet=thet,
@@ -575,7 +586,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z7_m93":
                 thet, w, wsig = observations_inst.get_obs_z7_m93()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z7.call_likelihood(
                     p_new,
                     obs="Ang_z7_m93",
                     thet=thet,
@@ -585,7 +596,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z5_5_m85":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m85()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z5.call_likelihood(
                     p_new,
                     obs="Ang_z5_5_m85",
                     thet=thet,
@@ -595,7 +606,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z5_5_m9":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m90()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z5.call_likelihood(
                     p_new,
                     obs="Ang_z5_5_m9",
                     thet=thet,
@@ -605,7 +616,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z5_5_m92_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m92_5()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z5.call_likelihood(
                     p_new,
                     obs="Ang_z5_5_m92_5",
                     thet=thet,
@@ -615,7 +626,7 @@ def run_mcmc(
                 )
             elif li == "Ang_z5_5_m9_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m95()
-                lnL+=AngBase.call_likelihood(
+                lnL+=AngBase_z5.call_likelihood(
                     p_new,
                     obs="Ang_z5_5_m9_5",
                     thet=thet,
