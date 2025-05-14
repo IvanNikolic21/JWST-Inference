@@ -378,7 +378,7 @@ def run_mcmc(
         M_knee=False,
         output_dir="/home/user/Documents/projects/UVLF_clust/",
         hmf_choice="Tinker08"):
-    print(likelihood, params)
+    print(likelihoods, params)
     assert False
     if priors is None:
         if M_knee:
