@@ -197,8 +197,7 @@ class LikelihoodAngBase():
             ang_ang,
             41.5 / 60, 46.6 / 60, 940.29997
         )
-        print(obs, M_thresh, fstar_norm,sigma_SHMR, alpha_star_low, ang_th,ang_ang  )
-        assert False
+
         like= 0
         for i_theta, ts in enumerate(thet):
             if ts>0.003:
