@@ -420,16 +420,16 @@ def run_mcmc(
     if any([
         "Ang_z7_m87"
         "Ang_z7_m93",
-        "ang_z7_m9" in likelihoods
+        "Ang_z7_m9" in likelihoods
     ]):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
                                        hmf_choice=hmf_choice, z=7)
     if any([
         "Ang_z5_5_m85",
-        "ang_z5_5_m9",
-        "ang_z5_5_m9_25",
-        "ang_z5_5_m9_5" in likelihoods]
+        "Ang_z5_5_m9",
+        "Ang_z5_5_m9_25",
+        "Ang_z5_5_m9_5" in likelihoods]
     ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
