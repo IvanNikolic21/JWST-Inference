@@ -90,7 +90,7 @@ class LikelihoodAngBase():
             'hmf_model': hmf_choice,
             'bias_model': "Tinker10",
             'sd_bias_model': Bias_nonlin,
-            'sd_bias_params': {'z': 5.5},
+            'sd_bias_params': {'z': z},
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
             'rnum': 30,
@@ -99,7 +99,7 @@ class LikelihoodAngBase():
             'dr_table': 0.1,
             'dlnk': 0.1,
             'dlog10m': 0.05,
-            'z':5.5,
+            'z':z,
         }
         self.params = params
 
@@ -378,8 +378,7 @@ def run_mcmc(
         M_knee=False,
         output_dir="/home/user/Documents/projects/UVLF_clust/",
         hmf_choice="Tinker08"):
-    print(likelihoods, params)
-    assert False
+
     if priors is None:
         if M_knee:
             priors = [(-5.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5), (10.0,16.0)]
@@ -413,25 +412,25 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if any([
+    if any([[
         "Ang_z9_m87",
-        "Ang_z9_m9" in likelihoods
+        "Ang_z9_m9"] in likelihoods
     ]):
         ang = True
         AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
-    if any([
+    if any([[
         "Ang_z7_m87"
         "Ang_z7_m93",
-        "Ang_z7_m9" in likelihoods
+        "Ang_z7_m9"] in likelihoods
     ]):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
                                        hmf_choice=hmf_choice, z=7)
-    if any([
+    if any([[
         "Ang_z5_5_m85",
         "Ang_z5_5_m9",
         "Ang_z5_5_m9_25",
-        "Ang_z5_5_m9_5" in likelihoods]
+        "Ang_z5_5_m9_5"] in likelihoods]
     ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
