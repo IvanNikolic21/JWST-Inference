@@ -201,7 +201,7 @@ class LikelihoodAngBase():
 
         like= 0
         for i_theta, ts in enumerate(thet):
-            print(ts, w[i_theta], sig_w[i_theta])
+            #print(ts, w[i_theta], sig_w[i_theta])
             if ts>0.003:
 
                 wi = np.interp(
@@ -385,6 +385,7 @@ def run_mcmc(
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
+    print(likelihoods)
     output_filename = output_dir#"/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_prior/"
     #if initialized
     mult_params_fid = {
@@ -412,26 +413,19 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if any(set([
-        "Ang_z9_m87",
-        "Ang_z9_m9"]).intersection(set(likelihoods))
-    ):
+    if any({"Ang_z9_m87", "Ang_z9_m9"}.intersection(set(likelihoods))
+           ):
         ang = True
         AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
-    if any(set([
-        "Ang_z7_m87"
-        "Ang_z7_m93",
-        "Ang_z7_m9"]).intersection(set(likelihoods))
-    ):
+    if any({"Ang_z7_m87"
+            "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
+           ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
                                        hmf_choice=hmf_choice, z=7)
-    if any(set([
-        "Ang_z5_5_m85",
-        "Ang_z5_5_m9",
-        "Ang_z5_5_m9_25",
-        "Ang_z5_5_m9_5"]).intersection(set(likelihoods))
-    ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
+    if any({"Ang_z5_5_m85", "Ang_z5_5_m9", "Ang_z5_5_m92_5",
+            "Ang_z5_5_m9_5"}.intersection(set(likelihoods))
+           ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
     if not ang:
