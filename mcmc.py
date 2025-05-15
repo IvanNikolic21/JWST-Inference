@@ -417,7 +417,7 @@ def run_mcmc(
            ):
         ang = True
         AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
-    if any({"Ang_z7_m87"
+    if any({"Ang_z7_m87",
             "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
            ):
         ang = True
