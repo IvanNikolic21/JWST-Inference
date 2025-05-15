@@ -412,25 +412,25 @@ def run_mcmc(
             if key not in mult_params:
                 mult_params[key] = mult_params_fid[key]
 
-    if any([[
+    if any(set([
         "Ang_z9_m87",
-        "Ang_z9_m9"] in likelihoods
-    ]):
+        "Ang_z9_m9"]).intersection(set(likelihoods))
+    ):
         ang = True
         AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
-    if any([[
+    if any(set([
         "Ang_z7_m87"
         "Ang_z7_m93",
-        "Ang_z7_m9"] in likelihoods
-    ]):
+        "Ang_z7_m9"]).intersection(set(likelihoods))
+    ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
                                        hmf_choice=hmf_choice, z=7)
-    if any([[
+    if any(set([
         "Ang_z5_5_m85",
         "Ang_z5_5_m9",
         "Ang_z5_5_m9_25",
-        "Ang_z5_5_m9_5"] in likelihoods]
+        "Ang_z5_5_m9_5"]).intersection(set(likelihoods))
     ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
         AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
