@@ -462,6 +462,11 @@ def run_mcmc(
         UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5, hmf_choice=hmf_choice)
         SFR_samp_12_5 = SFH_sampler(z=12.5)
 
+    if "UVLF_z8_Harikane24" in likelihoods:
+        uvlf = True
+        UVLFBase_Har24_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice)
+        SFR_samp_8 = SFH_sampler(z=8)
+
     if "UVLF_z9_Harikane24" in likelihoods:
         uvlf = True
         UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
@@ -709,6 +714,18 @@ def run_mcmc(
                     sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12_5,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z8_Harikane24":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Harikane24()
+                lnL+=UVLFBase_Har24_8.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
