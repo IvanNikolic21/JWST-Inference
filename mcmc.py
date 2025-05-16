@@ -741,16 +741,17 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
-                thet, w, wsig = observations_inst.get_obs_z9_m90()
-                _ = AngBase.call_likelihood(
-                    p_new,
-                    obs="Ang_z9_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                    no_call=True
-                )
+                if not ang:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    _ = AngBase.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                        no_call=True
+                    )
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
                 lnL+=UVLFBase_Har24_10.call_likelihood(
