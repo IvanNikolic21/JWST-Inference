@@ -237,6 +237,21 @@ class Observations():
         )*1e-6
         return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
 
+    def get_obs_uvlf_z7_Harikane24(self):
+        Har_Muvs = np.array(
+            [-23.7, -23.2, -22.7, -22.2, -21.7, -21.2]
+        )
+        Har_uvlf = np.array(
+            [2.3 * 1e-9, 1.6 * 1e-7, 4.8 * 1e-7, 1.1 * 1e-6, 2.4 * 1e-5, 1.2 * 1e-5]
+        )
+        Har_sig_p = np.array(
+            [-5.3 * 1e-9, 1.6 * 1e-7, 4.6 * 1e-7, -0.4 * 1e-6, -3.3 * 1e-5, -2.8 * 1e-5]
+        )  #trick for lower limit
+        Har_sig_m = np.array(
+            [-1.9 * 1e-9, 1.3 * 1e-7, 2.6 * 1e-7, -0.4 * 1e-6, -1.7 * 1e-5, -1.1 * 1e-5 ]
+        )
+        return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
+
     def get_obs_uvlf_z8_Harikane24(self):
         Har_Muvs = np.array(
             [-22.2, -21.2]
