@@ -1076,7 +1076,7 @@ if __name__ == "__main__":
     params = inputs.params_list
 
     if not os.path.exists(inputs.output_directory):
-        os.mkdir(inputs.output_directory)
+        os.makedirs(inputs.output_directory, exist_ok=True)
     if params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR"]:
         priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.2), (-1.0, 0.5)]
