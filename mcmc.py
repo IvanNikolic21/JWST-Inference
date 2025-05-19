@@ -155,7 +155,7 @@ class LikelihoodAngBase():
             alpha_star_low = 0.5
 
         if "M_knee" in dic_params:
-            M_knee = dic_params["M_knee"]
+            M_knee = 10**dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
