@@ -8,13 +8,13 @@ from astropy.cosmology import Planck18 as cosmo
 
 from numba import njit, prange
 import ultranest
-hmf_loc_9 = hmf.MassFunction(z=9.25,             Mmin=5,
+hmf_loc_9 = hmf.MassFunction(z=9.25,             Mmin=1,
+            Mmax=16,
+            dlog10m=0.05,)
+hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=1,
             Mmax=15,
             dlog10m=0.05,)
-hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=5,
-            Mmax=15,
-            dlog10m=0.05,)
-hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=5,
+hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=1,
             Mmax=15,
             dlog10m=0.05,)
 from uvlf import ms_mh
