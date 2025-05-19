@@ -284,31 +284,31 @@ class Observations():
 
     def get_obs_uvlf_z10_Harikane24(self):
         Har_Muvs = np.array(
-            [-21.6, -20.6, -19.6,-18.6,-17.6]
+            [-23.5,-21.6, -20.6, -19.6,-18.6,-17.6]
         )
         Har_uvlf = np.array(
-            [1.0 * 1e-6,8.7 * 1e-6,2.6*1e-5,1.9*1e-4, 6.3*1e-4]
+            [6.8*1e-8,1.0 * 1e-6,8.7 * 1e-6,2.6*1e-5,1.9*1e-4, 6.3*1e-4]
         )
         Har_sig_p = np.array(
-            [2.3 * 1e-6, -1 * 20.5*1e-6, -1 * 2.8 * 1e-5, 4.7 * 1e-4, 15.8 * 1e-4]
+            [-6.8*1e-8,2.3 * 1e-6, -1 * 20.5*1e-6, -1 * 2.8 * 1e-5, 4.7 * 1e-4, 15.8 * 1e-4]
         )  #trick for lower limit
         Har_sig_m = np.array(
-            [0.9 * 1e-6, -1 * 8.4 * 1e-6, -1 * 1.8 * 1e-5, 1.9 * 1e-4, 6.3 * 1e-4]
+            [-6.8*1e-8, 0.9 * 1e-6, -1 * 8.4 * 1e-6, -1 * 1.8 * 1e-5, 1.9 * 1e-4, 6.3 * 1e-4]
         )
         return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 
     def get_obs_uvlf_z12_Harikane24(self):
         Har_Muvs = np.array(
-            [-20.5, -20.1, -18.7]
+            [-23.5,-20.5, -20.1, -18.7]
         )
         Har_uvlf = np.array(
-            [8.6 * 1e-6,8.8 * 1e-6,6.6*1e-5]
+            [1.1*1e-7,8.6 * 1e-6,8.8 * 1e-6,6.6*1e-5]
         )
         Har_sig_p = np.array(
-            [19.9 * 1e-6,-1* 9.1*1e-6, -1*6.0 * 1e-5]
+            [-1.1*1e-7,19.9 * 1e-6,-1* 9.1*1e-6, -1*6.0 * 1e-5]
         )  #trick for lower limit
         Har_sig_m = np.array(
-            [7.4 * 1e-6, -1* 5.5 * 1e-6, -1* 4.6 * 1e-5]
+            [-1.1*1e-7,7.4 * 1e-6, -1* 5.5 * 1e-6, -1* 4.6 * 1e-5]
         )
         return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 

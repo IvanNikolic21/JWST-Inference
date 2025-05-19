@@ -339,6 +339,10 @@ class LikelihoodUVLFBase:
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
                 if sig_o[0][index] < 0.0:
+                    if muvi==-23.5:
+                        erf_modifier = -1
+                    else:
+                        erf_modifer = +1
                     #trick for lower limits for spectroscopic estimates
                     sig_a = - 2 * (sig_o[0][index] * sig_o[1][index]) / (
                                 sig_o[0][index] + sig_o[1][index])
@@ -346,7 +350,7 @@ class LikelihoodUVLFBase:
                                 sig_o[0][index] + sig_o[1][index])
                     lnL += np.log(
                         0.5*(
-                            1+erf(
+                            1+erf_modifer*erf(
                                 (
                                     (
                                         (preds[index] - uvlf_o[index]) / np.sqrt(
