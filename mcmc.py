@@ -61,9 +61,9 @@ class LikelihoodAngBase():
             z_5_s = z_5
             Nz_5_s = np.array(Nz_5_6)[:,1]#[z_5_ind[::-1]]
 
-            p1 = lambda x: np.interp(x,z_8_s, Nz_8_s )
-            p1_z7 = lambda x: np.interp(x,z_6_s, Nz_6_s )
-            p1_z5_5 = lambda x:np.interp(x, z_5_s, Nz_5_s)
+            p1 = lambda x: np.interp(x,z_8_s, Nz_8_s, left=0, right=0 )
+            p1_z7 = lambda x: np.interp(x,z_6_s, Nz_6_s , left=0, right=0)
+            p1_z5_5 = lambda x:np.interp(x, z_5_s, Nz_5_s, left=0, right=0)
             #p1_z5_5 = lambda x: np.exp(-0.5 * (x-5.5)**2/0.25**2)
 
             self.p1 = p1
@@ -102,7 +102,7 @@ class LikelihoodAngBase():
             'z':z,
         }
         self.params = params
-
+        print(fid_params)
         self.angular_gal = AngularCF_NL(
             **fid_params,
             hod_params={
