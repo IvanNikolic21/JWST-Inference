@@ -387,7 +387,7 @@ def run_mcmc(
 
     if priors is None:
         if M_knee:
-            priors = [(-5.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5), (10.0,16.0)]
+            priors = [(-5.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5), (11.5,16.0)]
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
@@ -1046,6 +1046,7 @@ if __name__ == "__main__":
     parser.add_argument("--realistic_Nz", action="store_false")
     parser.add_argument("--use_Mknee", action="store_true")
     parser.add_argument("--hmf", type=str, default="Tinker08")
+    parser.add_argument('--z_evolv_SHMR', action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1083,14 +1084,17 @@ if __name__ == "__main__":
 
     if not os.path.exists(inputs.output_directory):
         os.makedirs(inputs.output_directory, exist_ok=True)
-    if params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR"]:
+    if params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR",]:
         priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.2), (-1.0, 0.5)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]:
         priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (10.0,16.0)]
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
+        priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
     else:
         raise ValueError("Invalid parameter list provided.")
 
