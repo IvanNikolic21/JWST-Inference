@@ -213,8 +213,7 @@ class LikelihoodAngBase():
                 like += -0.5 * (((wi - w[i_theta]) / sig_w[
                     i_theta]) ** 2)
 
-        print(obs, dic_params, ang_ang, ang_th, p1_chosen, w_IC_instance)
-        assert False
+
         if obs=="Ang_z9_m9" and savedir:
             fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
                 np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
