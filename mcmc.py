@@ -347,7 +347,9 @@ class LikelihoodUVLFBase:
                                 sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index]) / (
                                 sig_o[0][index] + sig_o[1][index])
-                    lnL += np.log(
+                    lnL += np.log(np.sqrt(np.pi/2) * abs(
+                                            sig_a + sig_b * (preds - uvlf_o[index])
+                                        ) *
                         0.5*(
                             1+erf_modifier*erf(
                                 (

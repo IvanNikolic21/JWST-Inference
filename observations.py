@@ -260,10 +260,10 @@ class Observations():
             [5.3 * 1e-7,  1.3 * 1e-5]
         )
         Har_sig_p = np.array(
-            [-5.2 * 1e-7,3.1 * 1e-5]
+            [-5.2 * 1e-7,-3.1 * 1e-5]
         )  #trick for lower limit
         Har_sig_m = np.array(
-            [-2.9 * 1e-7, 1.2 * 1e-5]
+            [-2.9 * 1e-7, -1.2 * 1e-5]
         )
         return Har_Muvs, Har_uvlf, (Har_sig_p, Har_sig_m)
 
