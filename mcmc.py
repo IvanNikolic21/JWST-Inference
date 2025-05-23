@@ -93,12 +93,12 @@ class LikelihoodAngBase():
             'sd_bias_params': {'z': z},
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
-            'rnum': 30,
-            'rmin': 0.1,
-            'rmax': 30,
-            'dr_table': 0.1,
-            'dlnk': 0.1,
-            'dlog10m': 0.05,
+            'rnum': 50,
+            'rmin': 0.05,
+            'rmax': 50,
+            'dr_table': 0.05,
+            'dlnk': 0.05,
+            'dlog10m': 0.02,
             'z':z,
         }
         self.params = params
