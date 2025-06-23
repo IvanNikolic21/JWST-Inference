@@ -956,7 +956,7 @@ def run_mcmc(
             if M_knee:
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
-                )
+                ) * 1.5
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
                 )
