@@ -543,6 +543,31 @@ def run_mcmc(
         UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice)
         SFR_samp_14 = SFH_sampler(z=14)
 
+    if "UVLF_z5_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_5 = LikelihoodUVLFBase(params, z=5, hmf_choice=hmf_choice)
+        SFR_samp_5 = SFH_sampler(z=5)
+    if "UVLF_z6_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_6 = LikelihoodUVLFBase(params, z=6, hmf_choice=hmf_choice)
+        SFR_samp_6 = SFH_sampler(z=6)
+    if "UVLF_z7_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice)
+        SFR_samp_7 = SFH_sampler(z=7)
+    if "UVLF_z8_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice)
+        SFR_samp_8 = SFH_sampler(z=8)
+    if "UVLF_z9_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        SFR_samp_9 = SFH_sampler(z=9)
+    if "UVLF_z10_Bouwens21" in likelihoods:
+        uvlf = True
+        UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice)
+        SFR_samp_10 = SFH_sampler(z=10)
+
     if uvlf and use_BPASS:
         bpass_read = bpass_loader()
         vect_func = np.vectorize(bpass_read.get_UV)
@@ -935,8 +960,78 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
-
-
+            elif li=="UVLF_z5_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z5_Bouwens21()
+                lnL+=UVLFBase_Bouwens21_5.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_5,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z6_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z6_Bouwens21()
+                lnL+=UVLFBase_Bouwens21_6.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_6,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z7_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Bouwens21()
+                lnL+=UVLFBase_Bouwens21_7.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_7,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z8_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Bouwens21()
+                lnL+=UVLFBase_Bouwens21_8.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_8,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li=="UVLF_z9_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Bouwens21()
+                lnL+=UVLFBase_Bouwens21_9.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_9,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
+            elif li == "UVLF_z10_Bouwens21":
+                muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Bouwens21()
+                lnL += UVLFBase_Bouwens21_10.call_likelihood(
+                    p_new,
+                    muvs_o=muvs_o,
+                    uvlf_o=uvlf_o,
+                    sig_o=sig_o,
+                    use_BPASS=use_BPASS,
+                    sfr_samp_inst=SFR_samp_10,
+                    bpass_read=bpass_read,
+                    vect_func=vect_func,
+                )
             else:
                 lnL+=0 #an option for testing
         return lnL
