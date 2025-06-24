@@ -549,3 +549,247 @@ class Observations():
             ]
         )
         return Fink_Muvs, Fink_uvlf, (Fink_sig_p, Fink_sig_m)
+
+    def get_obs_uvlf_z5_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -23.11,
+                -22.61,
+                -22.11,
+                -21.61,
+                -21.11,
+                -20.61,
+                -20.11,
+                -19.61,
+                -19.11,
+                -18.36,
+                -17.36,
+                -16.36
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000001,
+                0.000004,
+                0.000028,
+                0.000092,
+                0.000262,
+                0.000584,
+                0.000879,
+                0.001594,
+                0.002159,
+                0.004620,
+                0.008780,
+                0.025120
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000001,
+                0.000002,
+                0.000007,
+                0.000013,
+                0.000024,
+                0.000044,
+                0.000067,
+                0.000156,
+                0.000346,
+                0.000520,
+                0.001540,
+                0.007340
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+    def get_obs_uvlf_z6_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -22.52,
+                -22.02,
+                -21.52,
+                -21.02,
+                -20.52,
+                -20.02,
+                -19.52,
+                -18.77,
+                -17.77,
+                -16.77,
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000002,
+                0.000014,
+                0.000051,
+                0.000169,
+                0.000317,
+                0.000724,
+                0.001147,
+                0.002820,
+                0.008360,
+                0.017100,
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000002,
+                0.000005,
+                0.000011,
+                0.000024,
+                0.000041,
+                0.000087,
+                0.000157,
+                0.000440,
+                0.001660,
+                0.005260,
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+    def get_obs_uvlf_z7_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -22.19,
+                -21.69,
+                -21.19,
+                -20.69,
+                -20.19,
+                -19.69,
+                -19.19,
+                -18.69,
+                -17.94,
+                -16.94,
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000001,
+                0.000041,
+                0.000047,
+                0.000198,
+                0.000283,
+                0.000589,
+                0.001172,
+                0.001433,
+                0.005760,
+                0.008320,
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000002,
+                0.000011,
+                0.000015,
+                0.000036,
+                0.000066,
+                0.000126,
+                0.000336,
+                0.000419,
+                0.001440,
+                0.002900,
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+
+    def get_obs_uvlf_z8_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -21.85,
+                -21.35,
+                -20.85,
+                -20.10,
+                -19.35,
+                -18.60,
+                -17.60,
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000003,
+                0.000012,
+                0.000041,
+                0.000120,
+                0.000657,
+                0.001100,
+                0.003020,
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000002,
+                0.000004,
+                0.000011,
+                0.000040,
+                0.000233,
+                0.000340,
+                0.001140,
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+    def get_obs_uvlf_z9_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -21.92,
+                -21.12,
+                -20.32,
+                -19.12,
+                -17.92,
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000001,
+                0.000007,
+                0.000026,
+                0.000187,
+                0.000923,
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000001,
+                0.000003,
+                0.000009,
+                0.000150,
+                0.000501,
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+    def get_obs_uvlf_z10_Bouwens21(self):
+        Bouwens_Muvs = np.array(
+            [
+                -21.25,
+                -20.25,
+                -19.25,
+                -18.25,
+                -17.25,
+            ]
+        )
+        Bouwens_uvlf = np.array(
+            [
+                0.000001,
+                0.000010,
+                0.000034,
+                0.000190,
+                0.000630,
+            ]
+        )
+        Bouwens_sig = np.array(
+            [
+                0.000001,
+                0.000005,
+                0.000022,
+                0.000120,
+                0.000520,
+            ]
+        )
+
+        return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
