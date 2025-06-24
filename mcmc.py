@@ -1063,7 +1063,7 @@ def run_mcmc(
             if M_knee:
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
-                ) * 1.5
+                ) * 2.5
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
                 )
@@ -1195,8 +1195,8 @@ if __name__ == "__main__":
         priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.2), (-1.0, 0.5)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]:
-        priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0)]
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
