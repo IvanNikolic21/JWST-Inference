@@ -1061,11 +1061,17 @@ def run_mcmc(
         if covariance:
 
             if M_knee:
+                # cov_mat = np.loadtxt(
+                #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
+                # ) * 4.0
+                # mu = np.loadtxt(
+                #     '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
+                # )
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
-                ) * 4.0
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_Mknee_wide.txt'
+                )
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
                 )
             else:
                 cov_mat = 2 * np.loadtxt(
