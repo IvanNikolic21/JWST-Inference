@@ -136,6 +136,18 @@ class LikelihoodAngBase():
         else:
             sig_logm = 0.26
 
+        if "M_1" in dic_params:
+            M_1 = dic_params["M_1"]
+        else:
+            M_1 = 12.0
+        if "alpha" in dic_params:
+            alpha = dic_params["alpha"]
+        else:
+            alpha = 1.0
+        if "M_0" in dic_params:
+            M_0 = dic_params["M_0"]
+        else:
+            M_0 = 11.0
 
 
         if obs == "Ang_z9_m87":
@@ -162,6 +174,9 @@ class LikelihoodAngBase():
         self.angular_gal.hod_params = {
             'M_min': M_min,
             'sig_logm': sig_logm,
+            "M_1": M_1,
+            "M_0": M_0,
+            "alpha": alpha,
         }
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
@@ -175,7 +190,7 @@ class LikelihoodAngBase():
         like= 0
         for i_theta, ts in enumerate(thet):
             #print(ts, w[i_theta], sig_w[i_theta])
-            if ts>0.005:
+            if ts>1e-18:
 
                 wi = np.interp(
                     ts,
@@ -1183,6 +1198,8 @@ if __name__ == "__main__":
                   (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
     elif params == ["M_min", "sig_logm"]:
         priors = [(10.0,14.0), (0.0001, 1.0)]
+    elif params == ["M_min", "sig_logm", "M_0", "alpha", "M_1"]:
+        priors = [(10.0,14.0), (0.0001, 1.0), (10.0, 16.0), (0.0, 2.0), (10.0, 16.0)]
     else:
         raise ValueError("Invalid parameter list provided.")
 
