@@ -132,7 +132,7 @@ class LikelihoodAngBase():
             M_min = 11.63
 
         if "sig_logm" in dic_params:
-            sigm_logm = dic_params["sig_logm"]
+            sig_logm = dic_params["sig_logm"]
         else:
             sig_logm = 0.26
 
