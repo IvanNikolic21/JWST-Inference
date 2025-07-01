@@ -84,7 +84,7 @@ class LikelihoodAngBase():
             'theta_min': 10 ** -6.3,
             'theta_num': 50,
             'theta_log': True,
-            'hod_model': My_HOD,
+            'hod_model': "Zheng05",
             'tracer_concentration_model': hm.concentration.Duffy08,
             'tracer_profile_model': hm.profiles.NFW,
             'hmf_model': hmf_choice,
@@ -106,14 +106,16 @@ class LikelihoodAngBase():
         self.angular_gal = AngularCF_NL(
             **fid_params,
             hod_params={
-                'stellar_mass_min': 8.75,
-                'stellar_mass_sigma': 0.3,
-                'fstar_norm': 10 ** 0.0,
-                'alpha_star_low': 0.5,
-                'alpha': 1.0,
-                'M1': 12.0,
-                'fstar_norm_sat': 10 ** 0,
-                'stellar_mass_sigma_sat': 0.3,
+                'M_min':11.63,
+                'sig_logm':0.26,
+                #'stellar_mass_min': 8.75,
+                #'stellar_mass_sigma': 0.3,
+                #'fstar_norm': 10 ** 0.0,
+                #'alpha_star_low': 0.5,
+                #'alpha': 1.0,
+                #'M1': 12.0,
+                #'fstar_norm_sat': 10 ** 0,
+                #'stellar_mass_sigma_sat': 0.3,
             }
         )
 
@@ -124,40 +126,17 @@ class LikelihoodAngBase():
         for index, pary in enumerate(self.params):
             dic_params[pary] = paramida[index]
 
-        if "alpha" in dic_params:
-            alpha = dic_params["alpha"]
+        if "M_min" in dic_params:
+            M_min = dic_params["M_min"]
         else:
-            alpha = 1.0
+            M_min = 11.63
 
-        if "M_0" in dic_params:
-            M_0 = dic_params["M_0"]
+        if "sig_logm" in dic_params:
+            sigm_logm = dic_params["sig_logm"]
         else:
-            M_0 = 11.65
+            sig_logm = 0.26
 
-        if "M_1" in dic_params:
-            M_1 = dic_params["M_1"]
-        else:
-            M_1 = 12.3
 
-        if "fstar_norm" in dic_params:
-            fstar_norm = dic_params["fstar_norm"]
-        else:
-            fstar_norm = 10 ** 0.0
-
-        if "sigma_SHMR" in dic_params:
-            sigma_SHMR = dic_params["sigma_SHMR"]
-        else:
-            sigma_SHMR = 0.3
-
-        if "alpha_star_low" in dic_params:
-            alpha_star_low = dic_params["alpha_star_low"]
-        else:
-            alpha_star_low = 0.5
-
-        if "M_knee" in dic_params:
-            M_knee = 10**dic_params["M_knee"]
-        else:
-            M_knee = 2.6e11
 
         if obs == "Ang_z9_m87":
             M_thresh = 8.75
@@ -181,14 +160,8 @@ class LikelihoodAngBase():
         else:
             p1_chosen = self.p1
         self.angular_gal.hod_params = {
-            'stellar_mass_min': M_thresh,
-            'stellar_mass_sigma': sigma_SHMR,
-            'fstar_norm': 10 ** fstar_norm,
-            'alpha': alpha,
-            'alpha_star_low': alpha_star_low,
-            'M1': M_1,
-            'M_0': M_0,
-            'M_knee': M_knee,
+            'M_min': M_min,
+            'sig_logm': sig_logm,
         }
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
@@ -214,17 +187,17 @@ class LikelihoodAngBase():
                     i_theta]) ** 2)
 
 
-        if obs=="Ang_z9_m9" and savedir:
-            fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
-                np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-            np.savetxt(fname, ang_ang - w_IC_instance)
-        elif obs=="Ang_z5_5_m9" and savedir:
-            fname = str(savedir) + 'ang_z5_5_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
-                np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-            np.savetxt(fname, ang_ang - w_IC_instance)
-        elif obs=="Ang_z7_m9" and savedir:
-            fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
-            np.savetxt(fname, ang_ang - w_IC_instance)
+        # if obs=="Ang_z9_m9" and savedir:
+        #     fname = str(savedir) + 'fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
+        #         np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+        #     np.savetxt(fname, ang_ang - w_IC_instance)
+        # elif obs=="Ang_z5_5_m9" and savedir:
+        #     fname = str(savedir) + 'ang_z5_5_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(
+        #         np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+        #     np.savetxt(fname, ang_ang - w_IC_instance)
+        # elif obs=="Ang_z7_m9" and savedir:
+        #     fname = str(savedir) + 'ang_z7_fs' + str(np.round(fstar_norm,8)) + '_sig' + str(np.round(sigma_SHMR,8)) + '_al' + str(np.round(alpha_star_low,8)) + '.txt'
+        #     np.savetxt(fname, ang_ang - w_IC_instance)
         if no_call:
             return 0
         return like
@@ -1208,6 +1181,8 @@ if __name__ == "__main__":
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
         priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
+    elif params == ["M_min", "sig_logm"]:
+        priors = [(10.0,14.0), (0.0001, 1.0)]
     else:
         raise ValueError("Invalid parameter list provided.")
 
