@@ -89,8 +89,8 @@ class LikelihoodAngBase():
             'tracer_profile_model': hm.profiles.NFW,
             'hmf_model': hmf_choice,
             'bias_model': "Tinker10",
-            'sd_bias_model': Bias_nonlin,
-            'sd_bias_params': {'z': z},
+            # 'sd_bias_model': Bias_nonlin,
+            # 'sd_bias_params': {'z': z},
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
             'rnum': 50,
@@ -196,7 +196,7 @@ class LikelihoodAngBase():
         w_IC_instance = w_IC(
             ang_th,
             ang_ang,
-            41.5 / 60, 46.6 / 60, 940.29997
+            18.5 / 60, 16.6 / 60, 940.29997
         )
 
         like= 0
