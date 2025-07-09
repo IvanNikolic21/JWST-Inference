@@ -12,7 +12,7 @@ import csv
 import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
-from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp
+from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
 import argparse
 
 class LikelihoodAngBase():
@@ -238,7 +238,7 @@ class LikelihoodUVLFBase:
 
     """
 
-    def __init__(self, params, z, hmf_choice="Tinker08"):
+    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True):
         self.z = z
         self.hmf_loc = hmf.MassFunction(
             z=z,
@@ -248,6 +248,7 @@ class LikelihoodUVLFBase:
             hmf_model=hmf_choice
         )
         self.params = params
+        self.sigma_uv = sigma_uv
 
     def call_likelihood(
             self,
@@ -301,25 +302,48 @@ class LikelihoodUVLFBase:
         else:
             M_knee = 2.6e11
 
+        if "sigma_UV" in dic_params:
+            sigma_UV = dic_params["sigma_UV"]
+        else:
+            sigma_UV = 0.2
+
         lnL = 0
         if use_BPASS:
-
-            preds = UV_calc_BPASS(
-                muvs_o,
-                np.log10(self.hmf_loc.m),
-                self.hmf_loc.dndlnm,
-                f_star_norm=10 ** fstar_norm,
-                alpha_star=alpha_star,
-                sigma_SHMR=sigma_SHMR,
-                sigma_SFMS_norm=sigma_SFMS_norm,
-                t_star=t_star,
-                a_sig_SFR=a_sig_SFR,
-                z=self.z,
-                vect_func=vect_func,
-                bpass_read=bpass_read,
-                SFH_samp=sfr_samp_inst,
-                M_knee = M_knee
-            )
+            if self.sigma_uv:
+                preds = UV_calc_BPASS_op(
+                    muvs_o,
+                    np.log10(self.hmf_loc.m),
+                    self.hmf_loc.dndlnm,
+                    f_star_norm=10 ** fstar_norm,
+                    alpha_star=alpha_star,
+                    sigma_SHMR=sigma_SHMR,
+                    sigma_SFMS_norm=sigma_SFMS_norm,
+                    t_star=t_star,
+                    a_sig_SFR=a_sig_SFR,
+                    z=self.z,
+                    vect_func=vect_func,
+                    bpass_read=bpass_read,
+                    SFH_samp=sfr_samp_inst,
+                    M_knee=M_knee,
+                    sigma_kuv=sigma_UV,
+                )
+            else:
+                preds = UV_calc_BPASS(
+                    muvs_o,
+                    np.log10(self.hmf_loc.m),
+                    self.hmf_loc.dndlnm,
+                    f_star_norm=10 ** fstar_norm,
+                    alpha_star=alpha_star,
+                    sigma_SHMR=sigma_SHMR,
+                    sigma_SFMS_norm=sigma_SFMS_norm,
+                    t_star=t_star,
+                    a_sig_SFR=a_sig_SFR,
+                    z=self.z,
+                    vect_func=vect_func,
+                    bpass_read=bpass_read,
+                    SFH_samp=sfr_samp_inst,
+                    M_knee = M_knee
+                )
         else:
             preds = UV_calc(
                 muvs_o,
@@ -355,7 +379,7 @@ class LikelihoodUVLFBase:
                                         (preds[index] - uvlf_o[index]) / np.sqrt(
                                         2
                                     )/abs(
-                                            sig_a + sig_b * (preds[index] - uvlf_o[index])
+                                            np.sqrt((sig_a + sig_b * (preds[index] - uvlf_o[index]))**2 + 0.5**2)
                                         )
                                     )
                                 )
@@ -366,10 +390,10 @@ class LikelihoodUVLFBase:
                     sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
 
-                    lnL += -0.5 * (((preds[index] - uvlf_o[index]) / (sig_a + sig_b * (preds[index] - uvlf_o[index]))) ** 2)
+                    lnL += -0.5 * (((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
             else:
-                lnL += -0.5 * (((preds[index] - uvlf_o[index]) / sig_o[
-                    index]) ** 2)
+                lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
+                    index] ** 2 + 0.5**2))
         return lnL
 
 def run_mcmc(
@@ -383,15 +407,20 @@ def run_mcmc(
         use_BPASS=True,
         M_knee=False,
         output_dir="/home/user/Documents/projects/UVLF_clust/",
-        hmf_choice="Tinker08"):
+        hmf_choice="Tinker08",
+        sigma_uv=True,
+):
 
     if priors is None:
-        if M_knee:
+        if M_knee and sigma_uv:
+            priors = [(-5.0, 1.0), (0.0, 1.0), (0.05, 0.9), (0.01, 1.0),
+                      (0.01, 1.0), (-1.0, 0.5), (11.5, 16.0), (0.0,0.5)]
+        elif M_knee and not sigma_uv:
             priors = [(-5.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5), (11.5,16.0)]
         else:
             priors = [(-3.0,1.0),(0.0,1.0), (0.05,0.9), (0.01,1.0), (0.01,1.0), (-1.0, 0.5)]
     #initialize likelihoods
-    print(likelihoods)
+    #print(likelihoods)
     output_filename = output_dir#"/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/all_ang_prior/"
     #if initialized
     mult_params_fid = {
@@ -447,125 +476,125 @@ def run_mcmc(
 
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
-        UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice)
+        UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_11 = SFH_sampler(z=11)
     if "UVLF_z9_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9 = SFH_sampler(z=9)
 
     if "UVLF_z10_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice)
+        UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if "UVLF_z11_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice)
+        UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_11 = SFH_sampler(z=11)
 
 
     if "UVLF_z12_5_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5, hmf_choice=hmf_choice)
+        UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_12_5 = SFH_sampler(z=12.5)
 
     if "UVLF_z7_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice)
+        UVLFBase_Har24_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_7 = SFH_sampler(z=7)
 
     if "UVLF_z8_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice)
+        UVLFBase_Har24_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_8 = SFH_sampler(z=8)
 
     if "UVLF_z9_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9 = SFH_sampler(z=9)
 
     if "UVLF_z10_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice)
+        UVLFBase_Har24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if "UVLF_z12_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice)
+        UVLFBase_Har24_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_12 = SFH_sampler(z=12)
 
     if "UVLF_z14_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice)
+        UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_14 = SFH_sampler(z=14)
 
     if "UVLF_z8_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice)
+        UVLFBase_Wil23_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_8 = SFH_sampler(z=8)
     if "UVLF_z9_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        UVLFBase_Wil23_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z10_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice)
+        UVLFBase_Wil23_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_10 = SFH_sampler(z=10)
     if "UVLF_z12_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice)
+        UVLFBase_Wil23_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_12 = SFH_sampler(z=12)
 
     if "UVLF_z9_8_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_9_8 = LikelihoodUVLFBase(params, z=9.8, hmf_choice=hmf_choice)
+        UVLFBase_Whitler25_9_8 = LikelihoodUVLFBase(params, z=9.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9_8 = SFH_sampler(z=9.8)
     if "UVLF_z12_8_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_12_8 = LikelihoodUVLFBase(params, z=12.8, hmf_choice=hmf_choice)
+        UVLFBase_Whitler25_12_8 = LikelihoodUVLFBase(params, z=12.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_12_8 = SFH_sampler(z=12.8)
     if "UVLF_z14_3_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_14_3 = LikelihoodUVLFBase(params, z=14.3, hmf_choice=hmf_choice)
+        UVLFBase_Whitler25_14_3 = LikelihoodUVLFBase(params, z=14.3, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_14_3 = SFH_sampler(z=14.3)
 
     if "UVLF_z9_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        UVLFBase_Fin24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z11_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice)
+        UVLFBase_Fin24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_11 = SFH_sampler(z=11)
     if "UVLF_z14_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice)
+        UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_14 = SFH_sampler(z=14)
 
     if "UVLF_z5_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_5 = LikelihoodUVLFBase(params, z=5, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_5 = LikelihoodUVLFBase(params, z=5, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_5 = SFH_sampler(z=5)
     if "UVLF_z6_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_6 = LikelihoodUVLFBase(params, z=6, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_6 = LikelihoodUVLFBase(params, z=6, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_6 = SFH_sampler(z=6)
     if "UVLF_z7_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_7 = SFH_sampler(z=7)
     if "UVLF_z8_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_8 = SFH_sampler(z=8)
     if "UVLF_z9_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z10_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice)
+        UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if uvlf and use_BPASS:
@@ -1060,7 +1089,7 @@ def run_mcmc(
     def prior(cube, ndim, nparams):
         if covariance:
 
-            if M_knee:
+            if M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
@@ -1072,6 +1101,13 @@ def run_mcmc(
                 )
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
+                )
+            elif M_knee and sigma_uv:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
                 )
             else:
                 cov_mat = 2 * np.loadtxt(
@@ -1160,6 +1196,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_Mknee", action="store_true")
     parser.add_argument("--hmf", type=str, default="Tinker08")
     parser.add_argument('--z_evolv_SHMR', action="store_true")
+    parser.add_argument("--sigma_uv", action="store_false")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1203,6 +1240,11 @@ if __name__ == "__main__":
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]:
         priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV"]:
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5)]
+        if not inputs.sigma_uv:
+            raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
@@ -1232,4 +1274,5 @@ if __name__ == "__main__":
         M_knee=inputs.use_Mknee,
         output_dir = inputs.output_directory,
         hmf_choice = inputs.hmf,
+        sigma_uv=inputs.sigma_uv,
     )
