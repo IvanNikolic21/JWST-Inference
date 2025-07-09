@@ -390,7 +390,7 @@ class LikelihoodUVLFBase:
                     sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
 
-                    lnL += -0.5 * (((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
+                    lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
             else:
                 lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
                     index] ** 2 + 0.5**2))
