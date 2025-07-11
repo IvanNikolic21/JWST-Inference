@@ -623,7 +623,7 @@ def UV_calc_BPASS_op(
         msss=msss,
         sfrs=sfrs,
         muvs=muvs,
-        sigma_kuv=sigma_kuv_var,
+        sigma_kuv=sigma_kuv_var[index],
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
