@@ -241,7 +241,7 @@ class LikelihoodUVLFBase:
 
     """
 
-    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True):
+    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True, mass_dependent_sigma_uv=False):
         self.z = z
         self.hmf_loc = hmf.MassFunction(
             z=z,
