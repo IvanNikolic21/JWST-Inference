@@ -572,6 +572,10 @@ def uv_calc_op(
         integral_sum += dnd * ppred * exp
     return integral_sum / N_samples * 7
 
+def linear_model_kuv(X, sigma_kuv):
+    a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
+    M, z = X
+    return a * (M-9) + b * (z-6)- + c * (z-6) * (M-9) + sigma_kuv
 
 def UV_calc_BPASS_op(
         Muv,
@@ -589,6 +593,7 @@ def UV_calc_BPASS_op(
         SFH_samp = None,
         M_knee=2.6e11,
         sigma_kuv = 0.1,
+        mass_dependent_sigma_uv=False,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
                             fstar_norm=f_star_norm, M_knee=M_knee)
@@ -600,6 +605,11 @@ def UV_calc_BPASS_op(
     muvs = Muv_Luv(F_UV * 3.846 * 1e33)
     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
+
+    if mass_dependent_sigma_uv:
+        sigma_kuv_var = linear_model_kuv((ms_obs_log, z), sigma_kuv)
+    else:
+        sigma_kuv_var = sigma_kuv
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = [uv_calc_op(
@@ -613,7 +623,7 @@ def UV_calc_BPASS_op(
         msss=msss,
         sfrs=sfrs,
         muvs=muvs,
-        sigma_kuv=sigma_kuv,
+        sigma_kuv=sigma_kuv_var,
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
