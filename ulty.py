@@ -259,6 +259,17 @@ class My_HOD(hm.hod.Zheng05):
             
         return ns
 
+        @property
+        def mmin(self):
+            """Minimum turnover mass for tracer."""
+            return np.log10(
+                ms_mh(10 ** self.params["stellar_mass_min"],
+                      fstar_norm=self.params["fstar_norm"],
+                      alpha_star_low=self.params["alpha_star_low"],
+                      M_knee=self.params["M_knee"]
+                      )
+            ) - 5 * self.params["stellar_mass_sigma"]
+
 #FIDUCIALS
 # fid_params = {
 #     #'p1':lambda x: np.exp(-0.5*(x-9.25)**2/0.5**2),
