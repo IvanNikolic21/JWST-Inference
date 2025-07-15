@@ -255,7 +255,7 @@ class LikelihoodUVLFBase:
         self.hmf_loc = hmf.MassFunction(
             z=z,
             Mmin=5,
-            Mmax=15,
+            Mmax=19,
             dlog10m=0.05,
             hmf_model=hmf_choice
         )
