@@ -48,7 +48,7 @@ def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5, M_knee=2.6e11):
         mh_mean: floats; optional,
             mh of the relation
     """
-    mhs = np.logspace(5,15,500)
+    mhs = np.logspace(5,18,1000)
     mss = ms_mh_flattening(mhs, fstar_norm=fstar_norm, alpha_star_low=alpha_star_low, M_knee=M_knee)
     return 10**np.interp(np.log10(ms), np.log10(mss), np.log10(mhs))
 
