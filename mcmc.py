@@ -27,7 +27,8 @@ class LikelihoodAngBase():
     -------
 
     """
-    def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25):
+    def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25, exact_specs=True):
+        self.exact_specs = exact_specs
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
             with open(
@@ -79,6 +80,7 @@ class LikelihoodAngBase():
             self.p1 = p1
             self.p1_z7 = p1_z7
             self.p1_z5_5 = p1_z5_5
+
         fid_params = {
             'p1':p1,
             'zmin': 0,
@@ -92,8 +94,6 @@ class LikelihoodAngBase():
             'tracer_profile_model': hm.profiles.NFW,
             'hmf_model': hmf_choice,
             'bias_model': "Tinker10",
-            'sd_bias_model': Bias_nonlin,
-            'sd_bias_params': {'z': z},
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
             'rnum': 50,
@@ -104,8 +104,10 @@ class LikelihoodAngBase():
             'dlog10m': 0.02,
             'z':z,
         }
+        if not exact_specs:
+            fid_params['sd_bias_model'] =  Bias_nonlin
+            fid_params['sd_bias_params'] = {'z': z}
         self.params = params
-        print(fid_params)
         self.angular_gal = AngularCF_NL(
             **fid_params,
             hod_params={
@@ -196,11 +198,18 @@ class LikelihoodAngBase():
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
         ang_ang = self.angular_gal.angular_corr_gal
-        w_IC_instance = w_IC(
-            ang_th,
-            ang_ang,
-            41.5 / 60, 46.6 / 60, 940.29997
-        )
+        if self.exact_specs:
+            w_IC_instance = w_IC(
+                ang_th,
+                ang_ang,
+                18.5 / 60, 16.6 / 60, 940.29997
+            )
+        else:
+            w_IC_instance = w_IC(
+                ang_th,
+                ang_ang,
+                41.5 / 60, 46.6 / 60, 940.29997
+            )
 
         like= 0
         for i_theta, ts in enumerate(thet):
@@ -436,6 +445,7 @@ def run_mcmc(
         M_knee=False,
         output_dir="/home/user/Documents/projects/UVLF_clust/",
         hmf_choice="Tinker08",
+        exact_specs=True,
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
 ):
@@ -480,20 +490,20 @@ def run_mcmc(
     if any({"Ang_z9_m87", "Ang_z9_m9"}.intersection(set(likelihoods))
            ):
         ang = True
-        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25)
+        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs)
     if any({"Ang_z7_m87",
             "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
            ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
-                                       hmf_choice=hmf_choice, z=7)
+                                       hmf_choice=hmf_choice, z=7, exact_specs=exact_specs)
     if any({"Ang_z5_5_m85", "Ang_z5_5_m9", "Ang_z5_5_m92_5",
             "Ang_z5_5_m9_5"}.intersection(set(likelihoods))
            ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
-        AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5)
+        AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5, exact_specs=exact_specs)
     if not ang:
-        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice)
+        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, exact_specs=exact_specs)
 
     SFR_samp_11 = None
     SFR_samp_10 = None
@@ -1224,7 +1234,11 @@ if __name__ == "__main__":
     parser.add_argument("--realistic_Nz", action="store_false")
     parser.add_argument("--use_Mknee", action="store_true")
     parser.add_argument("--hmf", type=str, default="Tinker08")
-    parser.add_argument('--z_evolv_SHMR', action="store_true")
+    parser.add_argument(
+        '--exact_specs',
+        action="store_false",
+        help="Use exact specifications from Paquereau+25 in computing\n integral constraint and use only linear bias",
+    )
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     inputs = parser.parse_args()
@@ -1308,6 +1322,7 @@ if __name__ == "__main__":
         M_knee=inputs.use_Mknee,
         output_dir = inputs.output_directory,
         hmf_choice = inputs.hmf,
+        exact_specs=inputs.exact_specs,
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
     )
