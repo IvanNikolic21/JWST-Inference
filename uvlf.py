@@ -233,7 +233,18 @@ class SFH_sampler:
         self.Hubble_now = cosmo.H(z).to(u.yr**-1).value
         self.ages_SFH = np.array([0] + [10**(6.05 + 0.1 * i) for i in range(1,52)])
         self.maximum_time = cosmo.lookback_time(30).to(u.yr).value - cosmo.lookback_time(z).to(u.yr).value
-        self.Hubbles = [self.Hubble_now]
+        self.lookback_time_100 = cosmo.lookback_time(z).value + 1e8
+        self.Hubble_100 = cosmo.H(
+                            z_at_value(
+                                cosmo.lookback_time,
+                                cosmo.lookback_time(z) + 100 * u.Myr
+                            )
+                        ).to(
+                            u.yr ** -1
+                        ).value
+        self.Hubbles = []
+        self.z_ages = []
+        self.hubb_diffs = []
         for self.index_age, age in enumerate(self.ages_SFH):
             if age>self.maximum_time:
                 self.index_age -= 1
@@ -241,6 +252,23 @@ class SFH_sampler:
             z_age = z_at_value(cosmo.lookback_time, cosmo.lookback_time(z) + age * u.yr)
             Hubble_age = cosmo.H(z_age).to(u.yr**-1).value
             self.Hubbles.append(Hubble_age)
+            self.z_ages.append(z_age)
+            self.hubb_diffs.append(
+                intg.quad(
+                    lambda x: (
+                        cosmo.H(
+                            z_at_value(
+                                cosmo.lookback_time,
+                                cosmo.lookback_time(z) + x * u.Myr
+                            )
+                        ).to(
+                            u.Myr ** -1
+                        ).value
+                    ),
+                    a=100,
+                    b=age / 10 ** 6
+                )[0]
+            )
         self.Hubbles = np.array(self.Hubbles)
 
     def get_SFH_exp(self, Mstar, SFR):
@@ -254,6 +282,31 @@ class SFH_sampler:
             SFH.append(SFR_now * np.exp(-(self.ages_SFH[index+1]/t_STAR) * Hub))
             SFR_now = SFH[index]
             Mstar -= SFH[-1] * (self.ages_SFH[index+1] - self.ages_SFH[index])
+        return np.array(SFH), self.index_age
+
+    def get_SFH_const(self, Mstar, SFR):
+        """
+            Generate SFH using Mstar and SFR.
+        """
+        t_STAR = Mstar / (SFR * self.Hubble_now**-1)
+        SFR_now = SFR
+        SFH = [SFR] * len(self.ages_SFH[self.ages_SFH<1e8]) #all SFH will be below 100Myr
+        #stochasticity below 100Myr will be explicitly accounted for
+        mass_formed = SFR * 1e8
+        mass_remaining = Mstar - mass_formed
+        for index,Hub in enumerate(self.Hubbles):
+            if self.ages_SFH[index] < 1e8:
+                continue
+            #print(index, self.hubb_diffs[index], Hub/self.Hubble_100)
+            #SFH.append(SFR_now * np.exp(-(self.ages_SFH[index]/t_STAR) * Hub))
+            SFH.append(SFR_now * np.exp(-(1 / t_STAR) * self.hubb_diffs[index]) * Hub/self.Hubble_100)
+            SFR_now = SFH[index]
+            mass_remaining -= SFH[-1] * (
+                self.ages_SFH[index] - self.ages_SFH[index-1]
+            )
+            if mass_remaining < 0:
+                break
+            #print(Mstar/(SFH[-1]* Hub**-1))
         return np.array(SFH), self.index_age
 
 def wv_to_freq(wvs):
@@ -366,7 +419,7 @@ class bpass_loader:
 
         self.t_star = 0.36
 
-    def get_UV(self, metal, Mstar, SFR, z, SFH_samp=None):
+    def get_UV(self, metal, Mstar, SFR, z, SFH_samp=None, sigma_uv=True):
         """
         Function returs the specific luminosity at 1500 angstroms averaged over
         100 angstroms.
@@ -405,21 +458,19 @@ class bpass_loader:
         # SEDn = self.SEDS[i]
 
         try:
-            if not self.SFH[0] == SFR / 10 ** 6:
-                if SFH_samp is None:
-                    SFH_short, self.index_age = get_SFH_exp(Mstar, SFR, z)
-                else:
-                    SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
-                self.SFH = np.zeros(self.ages - 1)
-                self.SFH[:len(SFH_short)] = np.array(SFH_short)
-                self.SFH /= 1e6
+            self.SFH = np.zeros(self.ages - 1)
+            self.SFH[:len(SFH_samp)] = np.array(SFH_samp)
+            self.SFH /= 1e6
 
-        except AttributeError:  # not even set-up
+        except TypeError:  # not even set-up
 
             if SFH_samp is None:
                 SFH_short, self.index_age = get_SFH_exp(Mstar, SFR, z)
             else:
-                SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
+                if sigma_uv:
+                    SFH_short, self.index_age = SFH_samp.get_SFH_const(Mstar, SFR)
+                else:
+                    SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
             self.SFH = np.zeros(self.ages - 1)
             self.SFH[:len(SFH_short)] = np.array(SFH_short)
             self.SFH /= 1e6
@@ -430,11 +481,12 @@ class bpass_loader:
 
         UVs_all = np.sum(self.SEDS[0:10, :, 1449:1549],
                          axis=2) / 100 * self.SFH * (
-                              self.ag[1:] - self.ag[:-1]) * ang_to_hz
+                          self.ag[1:] - self.ag[:-1]) * ang_to_hz
         FUVs = np.sum(UVs_all, axis=1)
         s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
         UV_final = float(BSpline(*s)(metal))
         return UV_final
+
 
 def UV_calc_BPASS(
         Muv,
@@ -475,6 +527,103 @@ def UV_calc_BPASS(
         msss=msss,
         sfrs=sfrs,
         muvs=muvs,
+    ) for index, muvi in enumerate(Muv)]
+
+    return uvlf
+@njit(parallel=True)
+def uv_calc_op(
+    Muv,
+    masses_hmf,
+    dndm,
+    sigma_SFMS=0.1,
+    sigma_SHMR=0.1,
+    ms_obs_log = None,
+    sfr_obs_log = None,
+    msss=None,
+    sfrs=None,
+    muvs=None,
+    sigma_kuv = 0.1,
+):
+    #print(x_deg, y_deg)
+    N_samples = int(1e4)
+    log_mhs_int = np.random.uniform(
+        7.0,
+        14.0,
+        N_samples,
+    )
+#     log_ms_int = np.random.uniform(
+#         6.0,
+#         12.0,
+#         N_samples,
+#     )
+    #msss = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
+
+    log_ms_int = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
+    sig_int = np.interp(log_ms_int, np.log10(msss), sigma_SFMS)
+    muvs_int = np.interp(log_mhs_int, masses_hmf, muvs)
+    integral_sum = 0.0
+    for i in prange(N_samples):  # Parallel loop
+        dnd = np.interp(log_mhs_int[i], masses_hmf, dndm)
+        ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2) * np.sqrt(2)
+
+#         print(dnd)
+        #exp = np.exp(-(Muv-muvs_int[i])**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
+        exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2))
+        integral_sum += dnd * ppred * exp
+    return integral_sum / N_samples * 7
+
+def linear_model_kuv(X, sigma_kuv):
+    a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
+    M, z = X
+    return a * (M-9) + b * (z-6)- + c * (z-6) * (M-9) + sigma_kuv
+
+def UV_calc_BPASS_op(
+        Muv,
+        masses_hmf,
+        dndm,
+        f_star_norm=1.0,
+        alpha_star=0.5,
+        sigma_SHMR=0.3,
+        sigma_SFMS_norm=0.0,
+        t_star=0.5,
+        a_sig_SFR=-0.11654893,
+        z=11,
+        vect_func = None,
+        bpass_read = None,
+        SFH_samp = None,
+        M_knee=2.6e11,
+        sigma_kuv = 0.1,
+        mass_dependent_sigma_uv=False,
+):
+    msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
+                            fstar_norm=f_star_norm, M_knee=M_knee)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+
+    Zs = metalicity_from_FMR(msss, sfrs)
+    Zs += DeltaZ_z(z)
+    F_UV = vect_func(Zs, msss, sfrs, z=z, SFH_samp=SFH_samp, sigma_uv = sigma_kuv)
+    muvs = Muv_Luv(F_UV * 3.846 * 1e33)
+    sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
+    ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
+
+    if mass_dependent_sigma_uv:
+        sigma_kuv_var = linear_model_kuv((ms_obs_log, z), sigma_kuv)
+    else:
+        sigma_kuv_var = sigma_kuv
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
+                                        a_sig_SFR=a_sig_SFR)
+    uvlf = [uv_calc_op(
+        muvi,
+        masses_hmf,
+        dndm,
+        sigma_SFMS=sigma_SFMS_var,
+        sigma_SHMR=sigma_SHMR,
+        sfr_obs_log=sfr_obs_log[index],
+        ms_obs_log=ms_obs_log[index],
+        msss=msss,
+        sfrs=sfrs,
+        muvs=muvs,
+        sigma_kuv=sigma_kuv_var[index],
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
