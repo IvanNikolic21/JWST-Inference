@@ -1170,7 +1170,7 @@ if __name__ == "__main__":
     parser.add_argument("--realistic_Nz", action="store_false")
     parser.add_argument("--use_Mknee", action="store_true")
     parser.add_argument("--hmf", type=str, default="Tinker08")
-    parser.add_argument('--exact_specs', action="store_true")
+    parser.add_argument('--exact_specs', action="store_flase")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
