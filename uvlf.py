@@ -545,10 +545,10 @@ def uv_calc_op(
     sigma_kuv = 0.1,
 ):
     #print(x_deg, y_deg)
-    N_samples = int(1e4)
+    N_samples = int(3e4)
     log_mhs_int = np.random.uniform(
         7.0,
-        14.0,
+        16.0,
         N_samples,
     )
 #     log_ms_int = np.random.uniform(
@@ -564,13 +564,13 @@ def uv_calc_op(
     integral_sum = 0.0
     for i in prange(N_samples):  # Parallel loop
         dnd = np.interp(log_mhs_int[i], masses_hmf, dndm)
-        ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2) * np.sqrt(2)
+        ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2) / np.sqrt(2 * np.pi)
 
 #         print(dnd)
         #exp = np.exp(-(Muv-muvs_int[i])**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
         exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2))
         integral_sum += dnd * ppred * exp
-    return integral_sum / N_samples * 7
+    return integral_sum / N_samples * 9
 
 def linear_model_kuv(X, sigma_kuv):
     a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
