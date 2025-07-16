@@ -198,18 +198,18 @@ class LikelihoodAngBase():
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
         ang_ang = self.angular_gal.angular_corr_gal
-        if self.exact_specs:
-            w_IC_instance = w_IC(
-                ang_th,
-                ang_ang,
-                18.5 / 60, 16.6 / 60, 940.29997
-            )
-        else:
-            w_IC_instance = w_IC(
-                ang_th,
-                ang_ang,
-                41.5 / 60, 46.6 / 60, 940.29997
-            )
+        # if self.exact_specs:
+        #     w_IC_instance = w_IC(
+        #         ang_th,
+        #         ang_ang,
+        #         18.5 / 60, 16.6 / 60, 940.29997
+        #     )
+        # else:
+        w_IC_instance = w_IC(
+            ang_th,
+            ang_ang,
+            41.5 / 60, 46.6 / 60, 940.29997
+        )
 
         like= 0
         for i_theta, ts in enumerate(thet):
