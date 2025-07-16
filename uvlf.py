@@ -575,7 +575,9 @@ def uv_calc_op(
 def linear_model_kuv(X, sigma_kuv):
     a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
     M, z = X
-    return a * (M-9) + b * (z-6)- + c * (z-6) * (M-9) + sigma_kuv
+    sigmas = a * (M-9) + b * (z-6)- + c * (z-6) * (M-9) + sigma_kuv
+    sigmas = np.clip(sigmas, 0.0, 0.5)
+    return sigmas
 
 def UV_calc_BPASS_op(
         Muv,
