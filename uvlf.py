@@ -530,7 +530,8 @@ def UV_calc_BPASS(
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
-@njit(parallel=True)
+
+@njit
 def uv_calc_op(
     Muv,
     masses_hmf,
@@ -544,33 +545,18 @@ def uv_calc_op(
     muvs=None,
     sigma_kuv = 0.1,
 ):
-    #print(x_deg, y_deg)
     N_samples = int(3e4)
-    log_mhs_int = np.random.uniform(
-        7.0,
-        16.0,
-        N_samples,
-    )
-#     log_ms_int = np.random.uniform(
-#         6.0,
-#         12.0,
-#         N_samples,
-#     )
-    #msss = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
-
+    log_mhs_int = np.random.uniform(7.0, 16.0, N_samples)
     log_ms_int = np.interp(log_mhs_int, masses_hmf, np.log10(msss))
     sig_int = np.interp(log_ms_int, np.log10(msss), sigma_SFMS)
-    muvs_int = np.interp(log_mhs_int, masses_hmf, muvs)
-    integral_sum = 0.0
-    for i in prange(N_samples):  # Parallel loop
-        dnd = np.interp(log_mhs_int[i], masses_hmf, dndm)
-        ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2) / np.sqrt(2 * np.pi)
+    dnd_interp = np.interp(log_mhs_int, masses_hmf, dndm)
 
-#         print(dnd)
-        #exp = np.exp(-(Muv-muvs_int[i])**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
-        exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sig_int[i]**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2))
-        integral_sum += dnd * ppred * exp
-    return integral_sum / N_samples * 9
+    denom = np.sqrt(sig_int**2 + sigma_SHMR**2 + sigma_kuv**2 + 0.054**2)
+    prefactor = 1.0 / (denom * np.sqrt(2 * np.pi))
+    exp_term = np.exp(-(log_ms_int - ms_obs_log)**2 / (2 * denom**2))
+
+    return np.sum(dnd_interp * prefactor * exp_term) / N_samples * 9
+
 
 def linear_model_kuv(X, sigma_kuv):
     a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
