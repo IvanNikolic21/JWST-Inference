@@ -658,8 +658,8 @@ def compute_uvlf_numba(
             sigma_muv = sigma_muv_array[idx_mh]
             sigma_mstar = sigma_m_star[idx_mh]
 
-            if np.abs(Muv_mean - Muv) > 3:
-                continue
+            # if np.abs(Muv_mean - Muv) > 3:
+            #     continue
 
             logMh = np.log10(Mh)
             if logMh < mh_min[j]:
