@@ -715,3 +715,48 @@ def compute_uvlf_numba(
 
     return uvlf
 
+def UV_calc_numba(
+        Muv,
+        masses_hmf,
+        dndm,
+        f_star_norm=1.0,
+        alpha_star=0.5,
+        sigma_SHMR=0.3,
+        sigma_SFMS_norm=0.0,
+        t_star=0.5,
+        a_sig_SFR=-0.11654893,
+        z=11,
+        vect_func = None,
+        bpass_read = None,
+        SFH_samp = None,
+        M_knee=2.6e11,
+        sigma_kuv = 0.1,
+        mass_dependent_sigma_uv=False,
+):
+    msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
+                            fstar_norm=f_star_norm, M_knee=M_knee)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+
+    Zs = metalicity_from_FMR(msss, sfrs)
+    Zs += DeltaZ_z(z)
+    F_UV = vect_func(Zs, msss, sfrs, z=z, SFH_samp=SFH_samp, sigma_uv=sigma_kuv)
+    muvs = Muv_Luv(F_UV * 3.846 * 1e33)
+    #     sfr_obs_log = np.interp(Muv, np.flip(muvs), np.flip(np.log10(sfrs)))
+    #     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
+
+    if mass_dependent_sigma_uv:
+        sigma_kuv_var = linear_model_kuv((msss, z), sigma_kuv)
+    else:
+        sigma_kuv = np.clip(sigma_kuv, 0.05, 0.5) #numerical reasons
+        sigma_kuv_var = sigma_kuv * np.ones((len(msss)))
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
+                                        a_sig_SFR=a_sig_SFR)
+    uvlf_mod = compute_uvlf_numba(
+        Muv,
+        10 ** masses_hmf, dndm,  # / (np.log(10) * hmf_loc_10.m),
+        msss, np.ones((len(msss))) * sigma_SHMR,
+        sfrs, sigma_SFMS_var,
+        muvs, sigma_kuv_var,
+    )
+
+    return uvlf_mod
