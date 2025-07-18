@@ -478,3 +478,104 @@ def UV_calc_BPASS(
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
+
+@njit
+def lognormal_pdf_numba(x, mu, sigma):
+    x = np.maximum(x, 1e-30)  # avoid log(0)
+    logx = np.log10(x)
+    norm_const = 1 / (x * sigma * np.log(10) * np.sqrt(2 * np.pi))
+    exponent = -0.5 * ((logx - mu) / sigma) ** 2
+    return norm_const * np.exp(exponent)
+
+@njit
+def trapz_numba(y, x):
+    result = 0.0
+    for i in range(1, len(x)):
+        dx = x[i] - x[i - 1]
+        result += 0.5 * dx * (y[i] + y[i - 1])
+    return result
+
+@njit(parallel=True)
+def compute_uvlf_numba(
+    Muv_eval, m_h_array, dndm_array,
+    m_star_array, sigma_m_star,
+    sfr_array, sigma_sfr_array,
+    m_uv_array, sigma_muv_array
+):
+    uvlf = np.zeros(len(Muv_eval))
+    mh_min = np.ones(len(Muv_eval)) * 30
+    mh_max = np.zeros(len(Muv_eval))
+
+    for j in prange(len(Muv_eval)):
+        Muv = Muv_eval[j]
+        for i in prange(len(m_h_array)):
+            Mh = m_h_array[i]
+
+            # Approximate chained interpolation manually
+            idx_mh = np.searchsorted(m_h_array, Mh)
+            if idx_mh >= len(m_star_array):
+                continue
+            m_star = m_star_array[idx_mh]
+            sfr = sfr_array[idx_mh]
+            Muv_mean = m_uv_array[idx_mh]
+            sigma_muv = sigma_muv_array[idx_mh]
+            sigma_mstar = sigma_m_star[idx_mh]
+
+            if np.abs(Muv_mean - Muv) > 7 * sigma_muv:
+                continue
+
+            logMh = np.log10(Mh)
+            if logMh < mh_min[j]:
+                mh_min[j] = logMh
+            if logMh > mh_max[j]:
+                mh_max[j] = logMh
+
+            dndm = dndm_array[i]
+            Mstar_mu = np.log10(m_star)
+
+            Mstar_grid = np.logspace(Mstar_mu - 7 * sigma_mstar, Mstar_mu + 7 * sigma_mstar, 200)
+            P_mstar = lognormal_pdf_numba(Mstar_grid, Mstar_mu, sigma_mstar)
+
+            nested_vals = np.zeros_like(Mstar_grid)
+            for k in range(len(Mstar_grid)):
+                Mstar = Mstar_grid[k]
+                idx_ms = np.searchsorted(m_star_array, Mstar)
+                if idx_ms >= len(sfr_array):
+                    continue
+                sfr_mu = np.log10(sfr_array[idx_ms])
+                sigma_sfr = sigma_sfr_array[idx_ms]
+
+                SFR_grid = np.logspace(sfr_mu - 7 * sigma_sfr, sfr_mu + 7 * sigma_sfr, 200)
+                P_sfr = lognormal_pdf_numba(SFR_grid, sfr_mu, sigma_sfr)
+
+                idx_sfr = np.searchsorted(sfr_array, SFR_grid)
+                Muv_mu = np.zeros_like(SFR_grid)
+                sigma_muv_interp = np.zeros_like(SFR_grid)
+
+                for s in range(len(SFR_grid)):
+                    si = min(idx_sfr[s], len(m_uv_array) - 1)
+                    Muv_mu[s] = m_uv_array[si]
+                    sigma_muv_interp[s] = sigma_muv_array[si]
+
+                P_muv_given_sfr = np.zeros_like(SFR_grid)
+                for s in range(len(SFR_grid)):
+                    diff = Muv - Muv_mu[s]
+                    P_muv_given_sfr[s] = (
+                        1 / (np.sqrt(2 * np.pi) * sigma_muv_interp[s])
+                        * np.exp(-0.5 * (diff / sigma_muv_interp[s]) ** 2)
+                    )
+
+                integrand_sfr = P_sfr * P_muv_given_sfr
+                integral_sfr = trapz_numba(integrand_sfr, SFR_grid)
+                norm_P_sfr = trapz_numba(P_sfr, SFR_grid)
+                nested_vals[k] = P_mstar[k] * integral_sfr / norm_P_sfr
+
+            val = dndm * trapz_numba(nested_vals, Mstar_grid) / trapz_numba(P_mstar, Mstar_grid)
+            if i < len(m_h_array) - 1:
+                dlog10Mh = np.log10(m_h_array[i + 1]) - np.log10(m_h_array[i])
+            else:
+                dlog10Mh = np.log10(m_h_array[i]) - np.log10(m_h_array[i - 1])
+            uvlf[j] += val * dlog10Mh
+
+    return uvlf
+
