@@ -615,7 +615,8 @@ def UV_calc_BPASS_op(
     ) for index, muvi in enumerate(Muv)]
 
     return uvlf
-  
+
+@njit
 def lognormal_pdf_numba(x, mu, sigma):
     x = np.maximum(x, 1e-30)  # avoid log(0)
     logx = np.log10(x)
