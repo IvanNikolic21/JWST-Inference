@@ -326,7 +326,7 @@ class LikelihoodUVLFBase:
                 preds = UV_calc_BPASS_op(
                     muvs_o,
                     np.log10(self.hmf_loc.m),
-                    self.hmf_loc.dndlnm,
+                    self.hmf_loc.dndlog10m,
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -345,7 +345,7 @@ class LikelihoodUVLFBase:
                 preds = UV_calc_BPASS(
                     muvs_o,
                     np.log10(self.hmf_loc.m),
-                    self.hmf_loc.dndlnm,
+                    self.hmf_loc.dndlog10m,
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -362,7 +362,7 @@ class LikelihoodUVLFBase:
             preds = UV_calc(
                 muvs_o,
                 np.log10(self.hmf_loc.m),
-                self.hmf_loc.dndlnm,
+                self.hmf_loc.dndlog10m,
                 f_star_norm=10 ** fstar_norm,
                 alpha_star=alpha_star,
                 sigma_SHMR=sigma_SHMR,
