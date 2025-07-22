@@ -881,6 +881,16 @@ def run_mcmc(
                         savedir=output_filename,
                         no_call=True
                     )
+                    thet, w, wsig = observations_inst.get_obs_z7_m90()
+                    _ = AngBase.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                        no_call=True
+                    )
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
                 lnL+=UVLFBase_Har24_10.call_likelihood(
