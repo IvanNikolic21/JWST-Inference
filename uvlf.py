@@ -565,6 +565,14 @@ def linear_model_kuv(X, sigma_kuv):
     sigmas = np.clip(sigmas, 0.0, 0.5)
     return sigmas
 
+def SFMS_new(Mstar, SFR_norm = 1., z=9.25, slope_SFR=1.0):
+    """
+        the functon returns SFR from Main sequence
+    """
+    b_SFR = -np.log10(SFR_norm) + np.log10(cosmo.H(z).to(u.yr ** (-1)).value) + 9.5
+
+    return (Mstar/1e9)**(slope_SFR) * 10 ** b_SFR #* SFR_norm
+
 def UV_calc_BPASS_op(
         Muv,
         masses_hmf,
@@ -582,10 +590,14 @@ def UV_calc_BPASS_op(
         M_knee=2.6e11,
         sigma_kuv = 0.1,
         mass_dependent_sigma_uv=False,
+        slope_SFR=1.0,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
                             fstar_norm=f_star_norm, M_knee=M_knee)
-    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+    if slope_SFR != 1.0:
+        sfrs = SFMS_new(msss, SFR_norm = t_star, z=z, slope_SFR = slope_SFR)
+    else:
+        sfrs = SFMS(msss, SFR_norm=t_star, z=z)
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
