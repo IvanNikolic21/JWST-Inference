@@ -1345,7 +1345,8 @@ if __name__ == "__main__":
     #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
     #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
     #"write a list of all possible parameters"
-
+    print(priors)
+    raise ValueError("priors should be printed.")
     run_mcmc(
         likelihoods,
         params,
