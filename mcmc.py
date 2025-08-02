@@ -1191,6 +1191,8 @@ def run_mcmc(
 
             gp = cube
             limits = np.copy(priors)
+            print(limits)
+            raise ValueError("This is a test, please do not run this code.")
             mu_i = np.copy(mu)
             cov_i = np.copy(np.diag(cov_mat))
             # calculating the inverse of cond. probs
