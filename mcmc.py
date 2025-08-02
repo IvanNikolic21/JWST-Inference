@@ -1157,6 +1157,21 @@ def run_mcmc(
                 # mu = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
                 # )
+                # if slope_SFR:
+                #     cov_mat = np.loadtxt(
+                #         '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_slope_SFR.txt'
+                #     )
+                #     mu = np.loadtxt(
+                #         '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_slope_SFR.txt'
+                #     )
+                # else:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_Mknee_wide.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
+                )
+            elif M_knee and sigma_uv:
                 if slope_SFR:
                     cov_mat = np.loadtxt(
                         '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_slope_SFR.txt'
@@ -1166,18 +1181,11 @@ def run_mcmc(
                     )
                 else:
                     cov_mat = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_Mknee_wide.txt'
+                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
                     )
                     mu = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
+                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
                     )
-            elif M_knee and sigma_uv:
-                cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
-                )
-                mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
-                )
             else:
                 cov_mat = 2 * np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
@@ -1204,7 +1212,6 @@ def run_mcmc(
                     cov_i[i] = cov_i[i] - (
                             cov_mat[:i, i] @ np.linalg.inv(cov_mat[:i, :i])
                     ) @ (cov_mat[i, :i])
-
                 y_min = phi((limits[i][0] - mu_i[i]) / np.sqrt(cov_i[i]))
                 y_max = phi((limits[i][1] - mu_i[i]) / np.sqrt(cov_i[i]))
                 gp[i] = mu_i[i] + np.sqrt(cov_i[i]) * phiinv(
