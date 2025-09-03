@@ -561,7 +561,7 @@ def uv_calc_op(
 def linear_model_kuv(X, sigma_kuv):
     a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
     M, z = X
-    sigmas = a * (M-9) + b * (z-6) + c * (z-6) * (M-9) + sigma_kuv
+    sigmas = a * (M-9) + b * (z-6) - c * (z-6) * (M-9) + sigma_kuv
     sigmas = np.clip(sigmas, 0.0, 0.5)
     return sigmas
 
@@ -597,7 +597,7 @@ def UV_calc_BPASS_op(
     if mass_dependent_sigma_uv:
         sigma_kuv_var = linear_model_kuv((ms_obs_log, z), sigma_kuv)
     else:
-        sigma_kuv_var = sigma_kuv
+        sigma_kuv_var = sigma_kuv * np.ones(np.shape(ms_obs_log))
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = [uv_calc_op(
