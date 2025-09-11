@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4720aa4f-8461-4b6b-b293-77a455569c89" name="Changes" comment="Sigma_uv modifications.&#10;&#10;Notes:&#10;- in the case where sigma_uv is not mass-dependent, there is an error. Fixed now.&#10;- The linear model for sigma_kuv has incorrect redshift dependence. Fixed." />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;IvanNikolic21&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/IvanNikolic21/JWST-Inference.git&quot;,
+    &quot;accountId&quot;: &quot;e2dee3e5-213e-47b2-913c-fc494f8fe2a0&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2tD83VnDWQBIb7R0BhDooanEQcB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.mcmc.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "last_opened_file_path": "/home/user/Documents/projects/UVLF_clust/github/JWST-Inference"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Docutils task">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docs" factoryName="Sphinx task">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="" />
+      <option name="docutils_output_file" value="" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="" />
+      <option name="docutils_open_in_browser" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Autodetect">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="JWST-Inference" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-8753aad8314d-d902c0275401-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-252.25557.178" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4720aa4f-8461-4b6b-b293-77a455569c89" name="Changes" comment="" />
+      <created>1739875085549</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1739875085549</updated>
+    </task>
+    <task id="LOCAL-00196" summary="M_knee is wrong for clustering.">
+      <option name="closed" value="true" />
+      <created>1747655642274</created>
+      <option name="number" value="00196" />
+      <option name="presentableId" value="LOCAL-00196" />
+      <option name="project" value="LOCAL" />
+      <updated>1747655642274</updated>
+    </task>
+    <task id="LOCAL-00197" summary="M_knee is wrong for clustering.">
+      <option name="closed" value="true" />
+      <created>1747663410737</created>
+      <option name="number" value="00197" />
+      <option name="presentableId" value="LOCAL-00197" />
+      <option name="project" value="LOCAL" />
+      <updated>1747663410737</updated>
+    </task>
+    <task id="LOCAL-00198" summary="M_knee is wrong for clustering.">
+      <option name="closed" value="true" />
+      <created>1747673397734</created>
+      <option name="number" value="00198" />
+      <option name="presentableId" value="LOCAL-00198" />
+      <option name="project" value="LOCAL" />
+      <updated>1747673397734</updated>
+    </task>
+    <task id="LOCAL-00199" summary="Error in erf_modifier.&#10;&#10;Notes:&#10;- The way that I deal with upper/lower limits had a bug.">
+      <option name="closed" value="true" />
+      <created>1747728233292</created>
+      <option name="number" value="00199" />
+      <option name="presentableId" value="LOCAL-00199" />
+      <option name="project" value="LOCAL" />
+      <updated>1747728233292</updated>
+    </task>
+    <task id="LOCAL-00200" summary="Error in erf_modifier.&#10;&#10;Notes:&#10;- The way that I deal with upper/lower limits had a bug.">
+      <option name="closed" value="true" />
+      <created>1747729190888</created>
+      <option name="number" value="00200" />
+      <option name="presentableId" value="LOCAL-00200" />
+      <option name="project" value="LOCAL" />
+      <updated>1747729190889</updated>
+    </task>
+    <task id="LOCAL-00201" summary="Error in UVLF observations&#10;&#10;Notes:&#10;- I believe a small bug in z=8 UVLF is creating problems.">
+      <option name="closed" value="true" />
+      <created>1747735287981</created>
+      <option name="number" value="00201" />
+      <option name="presentableId" value="LOCAL-00201" />
+      <option name="project" value="LOCAL" />
+      <updated>1747735287981</updated>
+    </task>
+    <task id="LOCAL-00202" summary="Error in UVLF observations&#10;&#10;Notes:&#10;- I believe a small bug in z=8 UVLF is creating problems.">
+      <option name="closed" value="true" />
+      <created>1747738134105</created>
+      <option name="number" value="00202" />
+      <option name="presentableId" value="LOCAL-00202" />
+      <option name="project" value="LOCAL" />
+      <updated>1747738134105</updated>
+    </task>
+    <task id="LOCAL-00203" summary="Low resolution creates bugs.&#10;&#10;Notes:&#10;- For some parameters, there is an error in computing clustering caused by too low of a resolution on the r- and k- and m- grid.">
+      <option name="closed" value="true" />
+      <created>1748005791612</created>
+      <option name="number" value="00203" />
+      <option name="presentableId" value="LOCAL-00203" />
+      <option name="project" value="LOCAL" />
+      <updated>1748005791612</updated>
+    </task>
+    <task id="LOCAL-00204" summary="Higher 2-halo term.&#10;&#10;Notes:&#10;- I believe that the choice of the 2-halo term is not adequate creating weird likelihood at z=5.5 -&gt; not able to fit borderline 2-halo term point.">
+      <option name="closed" value="true" />
+      <created>1749056142261</created>
+      <option name="number" value="00204" />
+      <option name="presentableId" value="LOCAL-00204" />
+      <option name="project" value="LOCAL" />
+      <updated>1749056142262</updated>
+    </task>
+    <task id="LOCAL-00205" summary="Wider prior with M_knee&#10;&#10;Notes:&#10;- potential issues could be caused by too narrow priors. Multiplying the covariance by 1.5">
+      <option name="closed" value="true" />
+      <created>1750697545181</created>
+      <option name="number" value="00205" />
+      <option name="presentableId" value="LOCAL-00205" />
+      <option name="project" value="LOCAL" />
+      <updated>1750697545182</updated>
+    </task>
+    <task id="LOCAL-00206" summary="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.">
+      <option name="closed" value="true" />
+      <created>1750758440969</created>
+      <option name="number" value="00206" />
+      <option name="presentableId" value="LOCAL-00206" />
+      <option name="project" value="LOCAL" />
+      <updated>1750758440970</updated>
+    </task>
+    <task id="LOCAL-00207" summary="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.">
+      <option name="closed" value="true" />
+      <created>1750759402508</created>
+      <option name="number" value="00207" />
+      <option name="presentableId" value="LOCAL-00207" />
+      <option name="project" value="LOCAL" />
+      <updated>1750759402509</updated>
+    </task>
+    <task id="LOCAL-00208" summary="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.&#10;- adding saving of angular clustering for Donnan+24">
+      <option name="closed" value="true" />
+      <created>1750766938762</created>
+      <option name="number" value="00208" />
+      <option name="presentableId" value="LOCAL-00208" />
+      <option name="project" value="LOCAL" />
+      <updated>1750766938763</updated>
+    </task>
+    <task id="LOCAL-00209" summary="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.&#10;- adding saving of angular clustering for Donnan+24&#10;- much wider prior.">
+      <option name="closed" value="true" />
+      <created>1750783596350</created>
+      <option name="number" value="00209" />
+      <option name="presentableId" value="LOCAL-00209" />
+      <option name="project" value="LOCAL" />
+      <updated>1750783596350</updated>
+    </task>
+    <task id="LOCAL-00210" summary="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.&#10;- adding saving of angular clustering for Donnan+24&#10;- much wider prior.">
+      <option name="closed" value="true" />
+      <created>1750783772130</created>
+      <option name="number" value="00210" />
+      <option name="presentableId" value="LOCAL-00210" />
+      <option name="project" value="LOCAL" />
+      <updated>1750783772130</updated>
+    </task>
+    <task id="LOCAL-00211" summary="A bit different prior.&#10;&#10;Notes:&#10;- the prior used maybe was too narrow. I created new ones that could work better.">
+      <option name="closed" value="true" />
+      <created>1751123477852</created>
+      <option name="number" value="00211" />
+      <option name="presentableId" value="LOCAL-00211" />
+      <option name="project" value="LOCAL" />
+      <updated>1751123477852</updated>
+    </task>
+    <task id="LOCAL-00212" summary="Zheng+05 update.&#10;&#10;Notes:&#10;- a simple test, Trying out Zheng+05 SHMR.">
+      <option name="closed" value="true" />
+      <created>1751382274629</created>
+      <option name="number" value="00212" />
+      <option name="presentableId" value="LOCAL-00212" />
+      <option name="project" value="LOCAL" />
+      <updated>1751382274630</updated>
+    </task>
+    <task id="LOCAL-00213" summary="Zheng+05 update.&#10;&#10;Notes:&#10;- a simple test, Trying out Zheng+05 SHMR.">
+      <option name="closed" value="true" />
+      <created>1751382826927</created>
+      <option name="number" value="00213" />
+      <option name="presentableId" value="LOCAL-00213" />
+      <option name="project" value="LOCAL" />
+      <updated>1751382826927</updated>
+    </task>
+    <task id="LOCAL-00214" summary="Zheng+05 update.&#10;&#10;Notes:&#10;- a simple test, Trying out Zheng+05 SHMR.&#10;- trying also full fit.">
+      <option name="closed" value="true" />
+      <created>1751386011203</created>
+      <option name="number" value="00214" />
+      <option name="presentableId" value="LOCAL-00214" />
+      <option name="project" value="LOCAL" />
+      <updated>1751386011203</updated>
+    </task>
+    <task id="LOCAL-00215" summary="Test without NL bias and different w_IC&#10;&#10;Notes:&#10;- Reduced the size of the field and removed Jose+16 correction.">
+      <option name="closed" value="true" />
+      <created>1751536298184</created>
+      <option name="number" value="00215" />
+      <option name="presentableId" value="LOCAL-00215" />
+      <option name="project" value="LOCAL" />
+      <updated>1751536298184</updated>
+    </task>
+    <task id="LOCAL-00216" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.">
+      <option name="closed" value="true" />
+      <created>1752069772255</created>
+      <option name="number" value="00216" />
+      <option name="presentableId" value="LOCAL-00216" />
+      <option name="project" value="LOCAL" />
+      <updated>1752069772256</updated>
+    </task>
+    <task id="LOCAL-00217" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.">
+      <option name="closed" value="true" />
+      <created>1752070121227</created>
+      <option name="number" value="00217" />
+      <option name="presentableId" value="LOCAL-00217" />
+      <option name="project" value="LOCAL" />
+      <updated>1752070121227</updated>
+    </task>
+    <task id="LOCAL-00218" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean.">
+      <option name="closed" value="true" />
+      <created>1752227771828</created>
+      <option name="number" value="00218" />
+      <option name="presentableId" value="LOCAL-00218" />
+      <option name="project" value="LOCAL" />
+      <updated>1752227771829</updated>
+    </task>
+    <task id="LOCAL-00219" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean.&#10;- I added an option to use a physically motivate redshift- and mass- dependent evolution.">
+      <option name="closed" value="true" />
+      <created>1752244545227</created>
+      <option name="number" value="00219" />
+      <option name="presentableId" value="LOCAL-00219" />
+      <option name="project" value="LOCAL" />
+      <updated>1752244545227</updated>
+    </task>
+    <task id="LOCAL-00220" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean.&#10;- I added an option to use a physically motivate redshift- and mass- dependent evolution.">
+      <option name="closed" value="true" />
+      <created>1752244846066</created>
+      <option name="number" value="00220" />
+      <option name="presentableId" value="LOCAL-00220" />
+      <option name="project" value="LOCAL" />
+      <updated>1752244846066</updated>
+    </task>
+    <task id="LOCAL-00221" summary="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean.&#10;- I added an option to use a physically motivate redshift- and mass- dependent evolution.">
+      <option name="closed" value="true" />
+      <created>1752246496151</created>
+      <option name="number" value="00221" />
+      <option name="presentableId" value="LOCAL-00221" />
+      <option name="project" value="LOCAL" />
+      <updated>1752246496151</updated>
+    </task>
+    <task id="LOCAL-00222" summary="BIG BUG.&#10;&#10;NOTES:&#10;- very weird error found where very high levels of sigma_SHMR could be discouraged just because of a bug (probably also SHMR normalization too).">
+      <option name="closed" value="true" />
+      <created>1752518728747</created>
+      <option name="number" value="00222" />
+      <option name="presentableId" value="LOCAL-00222" />
+      <option name="project" value="LOCAL" />
+      <updated>1752518728747</updated>
+    </task>
+    <task id="LOCAL-00223" summary="BIG BUG.&#10;&#10;NOTES:&#10;- very weird error found where very high levels of sigma_SHMR could be discouraged just because of a bug (probably also SHMR normalization too).">
+      <option name="closed" value="true" />
+      <created>1752564366026</created>
+      <option name="number" value="00223" />
+      <option name="presentableId" value="LOCAL-00223" />
+      <option name="project" value="LOCAL" />
+      <updated>1752564366027</updated>
+    </task>
+    <task id="LOCAL-00224" summary="Exact specifications option.&#10;&#10;Notes:&#10;- the addition of a flag to toggle off non-linear bias, and increase w_IC to exactly match Paquereau+25 (in an ad-hoc way).">
+      <option name="closed" value="true" />
+      <created>1752571943086</created>
+      <option name="number" value="00224" />
+      <option name="presentableId" value="LOCAL-00224" />
+      <option name="project" value="LOCAL" />
+      <updated>1752571943086</updated>
+    </task>
+    <task id="LOCAL-00225" summary="Exact specifications option.&#10;&#10;Notes:&#10;- the addition of a flag to toggle off non-linear bias, and increase w_IC to exactly match Paquereau+25 (in an ad-hoc way).">
+      <option name="closed" value="true" />
+      <created>1752572146018</created>
+      <option name="number" value="00225" />
+      <option name="presentableId" value="LOCAL-00225" />
+      <option name="project" value="LOCAL" />
+      <updated>1752572146018</updated>
+    </task>
+    <task id="LOCAL-00226" summary="Exact specifications option.&#10;&#10;Notes:&#10;- the addition of a flag to toggle off non-linear bias, and increase w_IC to exactly match Paquereau+25 (in an ad-hoc way).">
+      <option name="closed" value="true" />
+      <created>1752572523432</created>
+      <option name="number" value="00226" />
+      <option name="presentableId" value="LOCAL-00226" />
+      <option name="project" value="LOCAL" />
+      <updated>1752572523432</updated>
+    </task>
+    <task id="LOCAL-00227" summary="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.">
+      <option name="closed" value="true" />
+      <created>1752591507717</created>
+      <option name="number" value="00227" />
+      <option name="presentableId" value="LOCAL-00227" />
+      <option name="project" value="LOCAL" />
+      <updated>1752591507717</updated>
+    </task>
+    <task id="LOCAL-00228" summary="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.">
+      <option name="closed" value="true" />
+      <created>1752591719206</created>
+      <option name="number" value="00228" />
+      <option name="presentableId" value="LOCAL-00228" />
+      <option name="project" value="LOCAL" />
+      <updated>1752591719206</updated>
+    </task>
+    <task id="LOCAL-00229" summary="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.&#10;- I calculate UVLF_incorrectly.">
+      <option name="closed" value="true" />
+      <created>1752599771560</created>
+      <option name="number" value="00229" />
+      <option name="presentableId" value="LOCAL-00229" />
+      <option name="project" value="LOCAL" />
+      <updated>1752599771560</updated>
+    </task>
+    <task id="LOCAL-00230" summary="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.&#10;- I calculate UVLF_incorrectly.&#10;- reverting back to standard w_IC.">
+      <option name="closed" value="true" />
+      <created>1752677042845</created>
+      <option name="number" value="00230" />
+      <option name="presentableId" value="LOCAL-00230" />
+      <option name="project" value="LOCAL" />
+      <updated>1752677042845</updated>
+    </task>
+    <task id="LOCAL-00231" summary="I can't let sigma_UV go to 0.">
+      <option name="closed" value="true" />
+      <created>1752682598391</created>
+      <option name="number" value="00231" />
+      <option name="presentableId" value="LOCAL-00231" />
+      <option name="project" value="LOCAL" />
+      <updated>1752682598392</updated>
+    </task>
+    <task id="LOCAL-00232" summary="Speed-up">
+      <option name="closed" value="true" />
+      <created>1752763504944</created>
+      <option name="number" value="00232" />
+      <option name="presentableId" value="LOCAL-00232" />
+      <option name="project" value="LOCAL" />
+      <updated>1752763504945</updated>
+    </task>
+    <task id="LOCAL-00233" summary="Addition of uvlf code that is still to be implemented.">
+      <option name="closed" value="true" />
+      <created>1752840053769</created>
+      <option name="number" value="00233" />
+      <option name="presentableId" value="LOCAL-00233" />
+      <option name="project" value="LOCAL" />
+      <updated>1752840053771</updated>
+    </task>
+    <task id="LOCAL-00234" summary="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'">
+      <option name="closed" value="true" />
+      <created>1752842124279</created>
+      <option name="number" value="00234" />
+      <option name="presentableId" value="LOCAL-00234" />
+      <option name="project" value="LOCAL" />
+      <updated>1752842124279</updated>
+    </task>
+    <task id="LOCAL-00235" summary="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'">
+      <option name="closed" value="true" />
+      <created>1752844131929</created>
+      <option name="number" value="00235" />
+      <option name="presentableId" value="LOCAL-00235" />
+      <option name="project" value="LOCAL" />
+      <updated>1752844131930</updated>
+    </task>
+    <task id="LOCAL-00236" summary="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'&#10;- mass limiting is spuriously affecting posterior. To be checked.">
+      <option name="closed" value="true" />
+      <created>1752853923782</created>
+      <option name="number" value="00236" />
+      <option name="presentableId" value="LOCAL-00236" />
+      <option name="project" value="LOCAL" />
+      <updated>1752853923782</updated>
+    </task>
+    <task id="LOCAL-00237" summary="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'&#10;- mass limiting is spuriously affecting posterior. To be checked.">
+      <option name="closed" value="true" />
+      <created>1752858737048</created>
+      <option name="number" value="00237" />
+      <option name="presentableId" value="LOCAL-00237" />
+      <option name="project" value="LOCAL" />
+      <updated>1752858737048</updated>
+    </task>
+    <task id="LOCAL-00238" summary="First commit.">
+      <option name="closed" value="true" />
+      <created>1753374727543</created>
+      <option name="number" value="00238" />
+      <option name="presentableId" value="LOCAL-00238" />
+      <option name="project" value="LOCAL" />
+      <updated>1753374727544</updated>
+    </task>
+    <task id="LOCAL-00239" summary="First commit.">
+      <option name="closed" value="true" />
+      <created>1753971009251</created>
+      <option name="number" value="00239" />
+      <option name="presentableId" value="LOCAL-00239" />
+      <option name="project" value="LOCAL" />
+      <updated>1753971009253</updated>
+    </task>
+    <task id="LOCAL-00240" summary="First commit.">
+      <option name="closed" value="true" />
+      <created>1753971058805</created>
+      <option name="number" value="00240" />
+      <option name="presentableId" value="LOCAL-00240" />
+      <option name="project" value="LOCAL" />
+      <updated>1753971058806</updated>
+    </task>
+    <task id="LOCAL-00241" summary="First commit.">
+      <option name="closed" value="true" />
+      <created>1754127443444</created>
+      <option name="number" value="00241" />
+      <option name="presentableId" value="LOCAL-00241" />
+      <option name="project" value="LOCAL" />
+      <updated>1754127443444</updated>
+    </task>
+    <task id="LOCAL-00242" summary="First commit.">
+      <option name="closed" value="true" />
+      <created>1754129138676</created>
+      <option name="number" value="00242" />
+      <option name="presentableId" value="LOCAL-00242" />
+      <option name="project" value="LOCAL" />
+      <updated>1754129138676</updated>
+    </task>
+    <task id="LOCAL-00243" summary="Sigma_uv modifications.&#10;&#10;Notes:&#10;- in the case where sigma_uv is not mass-dependent, there is an error. Fixed now.&#10;- The linear model for sigma_kuv has incorrect redshift dependence. Fixed.">
+      <option name="closed" value="true" />
+      <created>1756891842018</created>
+      <option name="number" value="00243" />
+      <option name="presentableId" value="LOCAL-00243" />
+      <option name="project" value="LOCAL" />
+      <updated>1756891842018</updated>
+    </task>
+    <task id="LOCAL-00244" summary="Sigma_uv modifications.&#10;&#10;Notes:&#10;- in the case where sigma_uv is not mass-dependent, there is an error. Fixed now.&#10;- The linear model for sigma_kuv has incorrect redshift dependence. Fixed.">
+      <option name="closed" value="true" />
+      <created>1756891898790</created>
+      <option name="number" value="00244" />
+      <option name="presentableId" value="LOCAL-00244" />
+      <option name="project" value="LOCAL" />
+      <updated>1756891898790</updated>
+    </task>
+    <option name="localTasksCounter" value="245" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="b6b52dc2-f7a3-40f6-9723-7284c05166ba" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="b6b52dc2-f7a3-40f6-9723-7284c05166ba">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Wider prior with M_knee&#10;&#10;Notes:&#10;- potential issues could be caused by too narrow priors. Multiplying the covariance by 1.5" />
+    <MESSAGE value="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior." />
+    <MESSAGE value="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code." />
+    <MESSAGE value="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.&#10;- adding saving of angular clustering for Donnan+24" />
+    <MESSAGE value="HST observations added.&#10;&#10;Notes:&#10;- adding Bouwens+21 and Oesch+18 datapoints to constrain low redshift behavior.&#10;- full compatibility with the rest of the code.&#10;- adding saving of angular clustering for Donnan+24&#10;- much wider prior." />
+    <MESSAGE value="A bit different prior.&#10;&#10;Notes:&#10;- the prior used maybe was too narrow. I created new ones that could work better." />
+    <MESSAGE value="Zheng+05 update.&#10;&#10;Notes:&#10;- a simple test, Trying out Zheng+05 SHMR." />
+    <MESSAGE value="Zheng+05 update.&#10;&#10;Notes:&#10;- a simple test, Trying out Zheng+05 SHMR.&#10;- trying also full fit." />
+    <MESSAGE value="Test without NL bias and different w_IC&#10;&#10;Notes:&#10;- Reduced the size of the field and removed Jose+16 correction." />
+    <MESSAGE value="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes." />
+    <MESSAGE value="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature." />
+    <MESSAGE value="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean." />
+    <MESSAGE value="First commit in trying fitting SFR_10.&#10;&#10;Notes:&#10;- bunch of changes.&#10;- have to be careful with adjusting quadrature.&#10;- I added an accurate marginalization over the uncertainty of the mean.&#10;- I added an option to use a physically motivate redshift- and mass- dependent evolution." />
+    <MESSAGE value="BIG BUG.&#10;&#10;NOTES:&#10;- very weird error found where very high levels of sigma_SHMR could be discouraged just because of a bug (probably also SHMR normalization too)." />
+    <MESSAGE value="Exact specifications option.&#10;&#10;Notes:&#10;- the addition of a flag to toggle off non-linear bias, and increase w_IC to exactly match Paquereau+25 (in an ad-hoc way)." />
+    <MESSAGE value="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things." />
+    <MESSAGE value="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.&#10;- I calculate UVLF_incorrectly." />
+    <MESSAGE value="BIG BUG&#10;&#10;Notes:&#10;- mass limits of the halo mass function may artificially boost some things.&#10;- I calculate UVLF_incorrectly.&#10;- reverting back to standard w_IC." />
+    <MESSAGE value="I can't let sigma_UV go to 0." />
+    <MESSAGE value="Speed-up" />
+    <MESSAGE value="Addition of uvlf code that is still to be implemented." />
+    <MESSAGE value="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'" />
+    <MESSAGE value="Addition of uvlf code that is still to be implemented.&#10;&#10;Notes:&#10;- fully operational with a flag 'numba_uvlf'&#10;- mass limiting is spuriously affecting posterior. To be checked." />
+    <MESSAGE value="First commit." />
+    <MESSAGE value="Sigma_uv modifications.&#10;&#10;Notes:&#10;- in the case where sigma_uv is not mass-dependent, there is an error. Fixed now.&#10;- The linear model for sigma_kuv has incorrect redshift dependence. Fixed." />
+    <option name="LAST_COMMIT_MESSAGE" value="Sigma_uv modifications.&#10;&#10;Notes:&#10;- in the case where sigma_uv is not mass-dependent, there is an error. Fixed now.&#10;- The linear model for sigma_kuv has incorrect redshift dependence. Fixed." />
+  </component>
+</project>
