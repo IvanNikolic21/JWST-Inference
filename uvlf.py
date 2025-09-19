@@ -760,9 +760,9 @@ def UV_calc_numba(
     ms_obs_log = np.interp(sfr_obs_log, np.log10(sfrs), np.log10(msss))
 
     if mass_dependent_sigma_uv:
-        sigma_kuv_var = linear_model_kuv((ms_obs_log, z), sigma_kuv)
+        sigma_kuv_var = linear_model_kuv((msss, z), sigma_kuv)
     else:
-        sigma_kuv_var = sigma_kuv * np.ones(np.shape(ms_obs_log))
+        sigma_kuv_var = sigma_kuv * np.ones(np.shape(msss))
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = uvlf_numba_vectorized(
