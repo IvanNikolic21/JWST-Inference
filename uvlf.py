@@ -689,10 +689,10 @@ def uvlf_numba_vectorized(
     sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  np.asarray(sfr_grid)).astype(np.float64)  # (Nmstar,)
     dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid).astype(np.float64)           # (Nmh,)
     mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid).astype(np.float64) # (Nmh,)
-
+    sigma_uv_of_sfr  = np.interp(sfr_samples, sfr_grid, sigma_UV).astype(np.float64)  # (Nmstar,)
     # --- Constants & Monte-Carlo scale factors (interval length / Nsamples) ---
     inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
-    inv_sigma_UV = 1.0 / float(sigma_UV)
+    inv_sigma_UV = 1.0 / sigma_uv_of_sfr
     norm_UV = inv_sqrt2pi * inv_sigma_UV
 
     scale_sfr   = 10.0 / float(Nsfr)    # domain length [-5,5]
