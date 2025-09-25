@@ -16,6 +16,7 @@ import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
+from uvlf import uvlf_numba_vectorized, UV_calc_numba
 import argparse
 
 class LikelihoodAngBase():
@@ -323,7 +324,7 @@ class LikelihoodUVLFBase:
         lnL = 0
         if use_BPASS:
             if self.sigma_uv:
-                preds = UV_calc_BPASS_op(
+                preds = UV_calc_numba(
                     muvs_o,
                     np.log10(self.hmf_loc.m),
                     self.hmf_loc.dndlog10m,
