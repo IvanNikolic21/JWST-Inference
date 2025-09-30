@@ -771,7 +771,7 @@ def run_mcmc(
                     )
             elif li == "UVLF_z9_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Donnan24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -809,7 +809,7 @@ def run_mcmc(
                     )
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -825,7 +825,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z11_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -841,7 +841,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z12_5_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -857,7 +857,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z7_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -873,7 +873,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z8_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -889,7 +889,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z9_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -926,7 +926,7 @@ def run_mcmc(
                     )
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -943,7 +943,7 @@ def run_mcmc(
 
             elif li == "UVLF_z12_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -960,7 +960,7 @@ def run_mcmc(
 
             elif li == "UVLF_z14_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Harikane24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -976,7 +976,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z8_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Willot23()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -992,7 +992,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z9_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Willot23()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1008,7 +1008,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z10_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Willot23()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1024,7 +1024,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z12_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Willot23()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1040,7 +1040,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_8_Whitler25()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1056,7 +1056,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z12_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_8_Whitler25()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1072,7 +1072,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z14_3_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_3_Whitler25()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1088,7 +1088,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Finkelstein24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1104,7 +1104,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z11_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Finkelstein24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1120,7 +1120,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z14_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Finkelstein24()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1136,7 +1136,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z5_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z5_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1153,7 +1153,7 @@ def run_mcmc(
 
             elif li=="UVLF_z6_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z6_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1169,7 +1169,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z7_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1185,7 +1185,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z8_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1201,7 +1201,7 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
@@ -1217,7 +1217,7 @@ def run_mcmc(
                 )
             elif li == "UVLF_z10_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Bouwens21()
-                muvs_mask = [muvs_o <= -20.0]
+                muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
                 sig_c = sig_o[muvs_mask]
