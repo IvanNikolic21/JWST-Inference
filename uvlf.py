@@ -693,7 +693,7 @@ def _outer_loop_parallel(
 
     return out
 
-@njit(fastmath=True)
+@njit(parallel=True, fastmath=True)
 def setup_sample_probabilities(
     muv_grid,              # array of Muv values (e.g. np.linspace(-23, -15, 50))
     sigma_UV,              # scalar (dispersion of Muv|SFR)
@@ -705,9 +705,9 @@ def setup_sample_probabilities(
     sigma_SHMR,            # scalar (dispersion of log10 M* | Mh)
     dndlnm_grid,           # d n / d ln M on mh_grid
     seed,
-    Nsfr=30_000,
-    Nmstar=1_000,
-    Nmh=50_000,
+    Nsfr,
+    Nmstar,
+    Nmh,
 ):
     # --- RNG & samples (fixed across all Muv) ---
     np.random.seed(seed)
@@ -734,23 +734,30 @@ def setup_sample_probabilities(
     inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
 
     # --- Conditional Relations ----
-    diff_muv = muv_grid[None,:] - muuv_of_sfr[:, None]  # (Nmuv, Nsfr)
-    # Shape: (Nsfr, Nmuv)
-    p_muv_sfr = (inv_sqrt2pi / sigma_uv_of_sfr[:, None]) * np.exp(
-        -0.5 * ((diff_muv) / sigma_uv_of_sfr[:, None])**2
-    )
+    p_muv_sfr = np.empty((Nsfr, muv_grid.size), dtype=np.float64)
+    for i in prange(muv_grid.size):
+        diff_muv = muv_grid[i] - muuv_of_sfr  # (Nmuv,)
+        # Shape: (Nsfr, Nmuv)
+        p_muv_sfr[:,i] = (inv_sqrt2pi / sigma_uv_of_sfr) * np.exp(
+            -0.5 * ((diff_muv) / sigma_uv_of_sfr)**2
+        )
 
     # Shape: (Nmstar, Nsfr)
-    diff_sfr = sfr_samples[None, :] - sfr_target_of_ms[:, None]
-    p_sfr_mstar = (inv_sqrt2pi / sigma_sfr_of_sfr[None, :]) * np.exp(
-        -0.5 * (diff_sfr / sigma_sfr_of_sfr[None, :])**2
-    )
+    p_sfr_mstar = np.empty((Nmstar, Nsfr), dtype=np.float64)
+    for i in prange(Nmstar):
+        diff_sfr = sfr_samples - sfr_target_of_ms[i]
+        p_sfr_mstar[i,:] = (inv_sqrt2pi / sigma_sfr_of_sfr) * np.exp(
+            -0.5 * (diff_sfr / sigma_sfr_of_sfr)**2
+        )
 
     # Shape: (Nmstar, Nmh)
-    diff_star = mstar_samples[None, :] - mstar_tgt_of_mh[:, None]
-    p_mstar_mh = inv_sqrt2pi / sigma_SHMR * np.exp(
-        -0.5 * (diff_star / sigma_SHMR)**2
-    )
+    p_mstar_mh = np.empty((Nmh, Nmstar), dtype=np.float64)
+    for i in prange(Nmh):
+        diff_star = mstar_samples - mstar_tgt_of_mh[i]
+        p_mstar_mh[i,:] = inv_sqrt2pi / sigma_SHMR * np.exp(
+            -0.5 * (diff_star / sigma_SHMR)**2
+        )
+
     return p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale
 
 # ---------- Vectorized UVLF with Numba on the Mh reduction ----------
@@ -765,9 +772,9 @@ def uvlf_numba_vectorized(
     sigma_SHMR,            # scalar (dispersion of log10 M* | Mh)
     dndlnm_grid,           # d n / d ln M on mh_grid
     *,
-    Nsfr=30_000,
-    Nmstar=1_000,
-    Nmh=50_000,
+    Nsfr,
+    Nmstar,
+    Nmh,
     seed=0
 ):
     """
@@ -796,6 +803,9 @@ def uvlf_numba_vectorized(
         mh_grid,
         sigma_SHMR,
         dndlnm_grid,
+        Nsfr=Nsfr,
+        Nmstar=Nmstar,
+        Nmh=Nmh,
         seed,
     )
 
