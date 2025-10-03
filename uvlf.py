@@ -615,59 +615,6 @@ def UV_calc_BPASS_op(
 
     return uvlf
 
-@njit(fastmath=True)
-def _integral_over_sfr(muv, muuv_of_sfr, sigma_uv, sfr_grid, sfr_target_of_ms, sigma_sfr_of_sfr):
-    """
-    For each M*, compute:
-        ∫ dSFR N(Muv; mu_UV(SFR), sigma_UV) * N(SFR; <SFR>(M*), sigma_SFR(SFR))
-    using the Monte-Carlo grid sfr_samples and weights encoded in p_sfr_mstar.
-    Returns an array of shape (Nmstar,) with p(Muv | M*) before M*-weighting.
-    """
-    inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
-    inv_sigma_uv = 1.0 / sigma_uv
-
-    Nmstar  = sfr_target_of_ms.size
-    Nsfr    = muuv_of_sfr.size
-    out     = np.empty(Nmstar, dtype=np.float64)
-
-    for i in range(Nmstar):
-        mu_sfr = sfr_target_of_ms[i]
-        s = 0.0
-        for k in range(Nsfr):
-            z  = (sfr_grid[k] - mu_sfr) / sigma_sfr_of_sfr[k]
-            ps = inv_sqrt2pi / sigma_sfr_of_sfr[k] * np.exp(-0.5 * z * z)  # N(SFR; mu_sfr, sigma_sfr)
-            z2 = (muv - muuv_of_sfr[k]) * inv_sigma_uv
-            pm = inv_sqrt2pi * inv_sigma_uv * np.exp(-0.5 * z2 * z2)  # N(Muv; mu_UV(SFR), sigma_UV)
-            s += ps * pm
-        out[i] = s
-    return out
-
-# ---------- Numba kernel: integrates over M* for each Mh ----------
-@njit(fastmath=True)
-def _integral_over_Mstar(mstar_samples, mstar_tgt_of_mh, p_muv_mstar, sigma_SHMR):
-    """
-    For each Mh (with mean log10 M* = mstar_tgt_of_mh[i]), compute:
-        ∫ N(M*; mstar_tgt_of_mh[i], sigma_SHMR) * p_sfr_mstar(M*) dM*
-    using the Monte-Carlo grid mstar_samples and weights encoded in p_sfr_mstar.
-    Returns an array of shape (Nmh,) with p(Muv | Mh) before Mh-weighting.
-    """
-    inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
-    inv_sigma   = 1.0 / sigma_SHMR
-
-    Nmh     = mstar_tgt_of_mh.size
-    Nmstar  = mstar_samples.size
-    out     = np.empty(Nmh, dtype=np.float64)
-
-    for i in range(Nmh):
-        mu = mstar_tgt_of_mh[i]
-        s  = 0.0
-        for k in range(Nmstar):
-            z  = (mstar_samples[k] - mu) * inv_sigma
-            pm = inv_sqrt2pi * inv_sigma * np.exp(-0.5 * z * z)  # N(log10 M*; mu, sigma_SHMR)
-            s += pm * p_muv_mstar[k]
-        out[i] = s
-    return out
-
 @njit(fastmath=True, parallel=True)
 def _outer_loop_parallel(
     muv_grid,
