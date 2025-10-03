@@ -2,13 +2,12 @@ import numpy as np
 import hmf as hmf
 from astropy.cosmology import Planck18 as cosmo
 from astropy import units as u
-from numba import njit, jit, prange
+from numba import njit, prange
 from astropy import constants as const
 from astropy.cosmology import z_at_value
 from multiprocessing import Pool
 from scipy.interpolate import splrep, BSpline
 import scipy.integrate as intg
-from tqdm import tqdm
 from timeit import default_timer as timer
 
 #hmf_loc = hmf.MassFunction(z=11)
@@ -613,15 +612,12 @@ def UV_calc_BPASS_op(
 @njit(fastmath=True, parallel=True)
 def _outer_loop_parallel(
     muv_grid,
-    p_muv_sfr_grid,
+    p_muv_sfr,
     p_sfr_mstar,
     p_mstar_mh,
     dndlnm_on_mh,
 ):
     out = np.empty_like(muv_grid, dtype=np.float64)
-
-    # p(Muv | SFR)
-    p_muv_sfr = p_muv_sfr_grid  # (Nsfr, Nmuv)
 
     # p(Muv | M*)
     p_muv_mstar = p_sfr_mstar @ p_muv_sfr  # (Nmstar, Nmuv)
@@ -733,8 +729,6 @@ def uvlf_numba_vectorized(
       SFR ∈ [-5, 5],  M* ∈ [2, 12],  Mh ∈ [5, 15]   (same as your code)
     """
 
-    start = timer()
-
     p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = setup_sample_probabilities(
         muv_grid,
         sigma_UV,
@@ -748,10 +742,9 @@ def uvlf_numba_vectorized(
         Nsfr=Nsfr,
         Nmstar=Nmstar,
         Nmh=Nmh,
-        seed,
+        seed=seed,
     )
 
-    mid = timer()
     out = _outer_loop_parallel(
         muv_grid,
         p_muv_sfr,
@@ -759,9 +752,6 @@ def uvlf_numba_vectorized(
         p_mstar_mh,
         dndlnm_on_mh,
     ) * total_scale
-
-    end = timer()
-    print(f"UVLF: setup {mid-start}s, loop {end-mid:.2f}s, total {end-start:.2f}s")
     return out
 
 
