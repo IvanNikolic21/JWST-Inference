@@ -774,7 +774,7 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
                 lnL+=UVLFBase_Don24.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -812,7 +812,7 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
                 lnL+=UVLFBase_Don24_10.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -828,7 +828,7 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
                 lnL+=UVLFBase_Don24_11.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -844,7 +844,7 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
                 lnL+=UVLFBase_Don24_12_5.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -860,7 +860,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_7.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -876,7 +877,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_8.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -892,7 +894,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_9.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -929,7 +932,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_10.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -946,7 +950,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_12.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -963,7 +968,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Har24_14.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -979,7 +985,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Wil23_8.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -995,7 +1002,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Wil23_9.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1011,7 +1019,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Wil23_10.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1027,7 +1036,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Wil23_12.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1043,7 +1053,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Whitler25_9_8.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1059,7 +1070,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Whitler25_12_8.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1075,7 +1087,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Whitler25_14_3.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1091,7 +1104,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Fin24_9.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1107,7 +1121,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Fin24_11.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1123,7 +1138,8 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+
                 lnL+=UVLFBase_Fin24_14.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
@@ -1139,12 +1155,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL+=UVLFBase_Bouwens21_5.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_5,
                     bpass_read=bpass_read,
@@ -1156,12 +1174,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL+=UVLFBase_Bouwens21_6.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_6,
                     bpass_read=bpass_read,
@@ -1172,12 +1192,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL+=UVLFBase_Bouwens21_7.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_7,
                     bpass_read=bpass_read,
@@ -1188,12 +1210,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL+=UVLFBase_Bouwens21_8.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
@@ -1204,12 +1228,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL+=UVLFBase_Bouwens21_9.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -1220,12 +1246,14 @@ def run_mcmc(
                 muvs_mask = muvs_o <= -20.0
                 muvs_c = muvs_o[muvs_mask]
                 uvlf_c = uvlf_o[muvs_mask]
-                sig_c = sig_o[muvs_mask]
+                sig_o_arr = np.array(sig_o)
+                sig_c = sig_o_arr[muvs_mask]
+                sig_c = [tuple(i) for i in sig_c]
                 lnL += UVLFBase_Bouwens21_10.call_likelihood(
                     p_new,
                     muvs_o=muvs_c,
                     uvlf_o=uvlf_c,
-                    sig_o=sig_c,
+                    sig_o=sig_o,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
