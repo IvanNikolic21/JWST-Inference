@@ -426,31 +426,31 @@ class LikelihoodUVLFBase:
                     sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_this = sig_a + sig_b * (preds[index] - uvlf_o[index])
-                    L = intg.trapezoid(
-                        y=np.exp(
-                            -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
-                                        sig_this ** 2))
-                        ) / 2 / np.pi / sig_this / 0.5 * np.exp(
-                            -0.5 * ((np.log10(
-                                preds[index]) - pred_x) ** 2 / 0.5 ** 2)
-                        ),
-                        x=pred_x
-                    )
-                    lnL += np.log(L)
-                    #lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
+                    # L = intg.trapezoid(
+                    #     y=np.exp(
+                    #         -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
+                    #                     sig_this ** 2))
+                    #     ) / 2 / np.pi / sig_this / 0.5 * np.exp(
+                    #         -0.5 * ((np.log10(
+                    #             preds[index]) - pred_x) ** 2 / 0.5 ** 2)
+                    #     ),
+                    #     x=pred_x
+                    # )
+                    # lnL += np.log(L)
+                    lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
-                L = intg.trapezoid(
-                    y = np.exp(
-                        -0.5 * (( 10**pred_x - uvlf_o[index])**2 / (sig_o[index] ** 2))
-                    ) / 2 / np.pi / sig_o[index] / 0.5 * np.exp(
-                        -0.5 * ((np.log10(preds[index]) - pred_x) ** 2 / 0.5**2)
-                    ),
-                    x = pred_x
-                )
-                lnL += np.log(L)
-                #lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
-                #    index] ** 2 + 0.5**2))
+                # L = intg.trapezoid(
+                #     y = np.exp(
+                #         -0.5 * (( 10**pred_x - uvlf_o[index])**2 / (sig_o[index] ** 2))
+                #     ) / 2 / np.pi / sig_o[index] / 0.5 * np.exp(
+                #         -0.5 * ((np.log10(preds[index]) - pred_x) ** 2 / 0.5**2)
+                #     ),
+                #     x = pred_x
+                # )
+                # lnL += np.log(L)
+                lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
+                   index] ** 2 + 0.5**2))
         return lnL
 
 def run_mcmc(
