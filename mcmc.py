@@ -437,7 +437,7 @@ class LikelihoodUVLFBase:
                     #     x=pred_x
                     # )
                     # lnL += np.log(L)
-                    lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
+                    lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2))
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
                 # L = intg.trapezoid(
@@ -450,7 +450,7 @@ class LikelihoodUVLFBase:
                 # )
                 # lnL += np.log(L)
                 lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
-                   index] ** 2 + 0.5**2))
+                   index] ** 2))
         return lnL
 
 def run_mcmc(
