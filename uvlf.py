@@ -1,23 +1,17 @@
 import numpy as np
-import halomod as hm
 import hmf as hmf
-import matplotlib.pyplot as plt
-from hmf import cached_quantity, parameter, get_mdl
-from scipy.interpolate import InterpolatedUnivariateSpline as spline
-from scipy.special import erfc
-import pymultinest
 from astropy.cosmology import Planck18 as cosmo
 from astropy import units as u
 from numba import njit, prange
-import ultranest
 from astropy import constants as const
 from astropy.cosmology import z_at_value
 from multiprocessing import Pool
 from scipy.interpolate import splrep, BSpline
 import scipy.integrate as intg
+from timeit import default_timer as timer
 
 #hmf_loc = hmf.MassFunction(z=11)
-def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
+def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
     """
         Get scaling relations for SHMR based on Davies+in prep.
         Parameters
@@ -30,11 +24,10 @@ def ms_mh_flattening(mh, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
             a and b coefficient of the relation.
     """
 
-    f_star_mean = fstar_norm#fstar_scale * 0.0076 * (2.6e11 / 1e10) ** alpha_star_low
-    f_star_mean /= (mh / M_knee) ** (-alpha_star_low) + (mh / M_knee) ** 0.61
-    if M_knee != 2.6e11:
-        f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61
-    return f_star_mean * mh
+    f_star_mean = fstar_norm
+    f_star_mean /= (mh / M_knee) ** (-alpha_star_low) + (mh / M_knee) ** 0.61 #knee denominator
+    f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61 #knee numerator
+    return np.minimum(f_star_mean, cosmo.Ob0 / cosmo.Om0) * mh
 
 def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5, M_knee=2.6e11):
     """
@@ -139,7 +132,6 @@ def uv_calc(
         dnd = np.interp(log_mhs_int[i], masses_hmf, dndm)
         ppred = 1 / np.sqrt(sig_int[i]**2 + sigma_SHMR**2) * np.sqrt(2)
 
-#         print(dnd)
         #exp = np.exp(-(Muv-muvs_int[i])**2/2/(sigma_SFMS**2 + sigma_SHMR**2))
         exp = np.exp(-(log_ms_int[i]-ms_obs_log)**2/2/(sig_int[i]**2 + sigma_SHMR**2))
         integral_sum += dnd * ppred * exp
@@ -617,34 +609,94 @@ def UV_calc_BPASS_op(
 
     return uvlf
 
+@njit(fastmath=True, parallel=True)
+def _outer_loop_parallel(
+    muv_grid,
+    p_muv_sfr,
+    p_sfr_mstar,
+    p_mstar_mh,
+    dndlnm_on_mh,
+):
+    out = np.empty_like(muv_grid, dtype=np.float64)
 
+    # p(Muv | M*)
+    p_muv_mstar = p_sfr_mstar @ p_muv_sfr  # (Nmstar, Nmuv)
 
-# ---------- Numba kernel: integrates over M* for each Mh ----------
-@njit(parallel=True, fastmath=True)
-def _mh_reduce_numba(mstar_samples, mstar_tgt_of_mh, p_sfr_mstar, sigma_SHMR):
-    """
-    For each Mh (with mean log10 M* = mstar_tgt_of_mh[i]), compute:
-        ∫ N(M*; mstar_tgt_of_mh[i], sigma_SHMR) * p_sfr_mstar(M*) dM*
-    using the Monte-Carlo grid mstar_samples and weights encoded in p_sfr_mstar.
-    Returns an array of shape (Nmh,) with p(Muv | Mh) before Mh-weighting.
-    """
-    inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
-    inv_sigma   = 1.0 / sigma_SHMR
+    # p(Muv | Mh)
+    p_muv_given_mh = p_mstar_mh @ p_muv_mstar  # (Nmh, Nmuv)
 
-    Nmh     = mstar_tgt_of_mh.size
-    Nmstar  = mstar_samples.size
-    out     = np.empty(Nmh, dtype=np.float64)
+    # numba doesn't do axis sums or broadcasting in parallel, so we have to do this loop by hand
+    for i in prange(muv_grid.size):
+        out[i] = np.sum(dndlnm_on_mh * p_muv_given_mh[:,i])  # (Nmh,)
 
-    for i in prange(Nmh):
-        mu = mstar_tgt_of_mh[i]
-        s  = 0.0
-        for k in range(Nmstar):
-            z  = (mstar_samples[k] - mu) * inv_sigma
-            pm = inv_sqrt2pi * inv_sigma * np.exp(-0.5 * z * z)  # N(log10 M*; mu, sigma_SHMR)
-            s += pm * p_sfr_mstar[k]
-        out[i] = s
     return out
 
+@njit(parallel=True, fastmath=True)
+def setup_sample_probabilities(
+    muv_grid,              # array of Muv values (e.g. np.linspace(-23, -15, 50))
+    sigma_UV,              # scalar (dispersion of Muv|SFR)
+    muuv_of_sfr_grid,      # mu_UV(SFR) tabulated on
+    sfr_grid,              # SFR grid (log10)
+    mstar_grid,            # M* grid (log10) for interpolation of mu_SFR(M*)
+    sigma_sfr_grid,        # sigma_SFR(SFR) tabulated on sfr_grid
+    mh_grid,               # Mh grid (log10)
+    sigma_SHMR,            # scalar (dispersion of log10 M* | Mh)
+    dndlnm_grid,           # d n / d ln M on mh_grid
+    seed,
+    Nsfr,
+    Nmstar,
+    Nmh,
+):
+    # --- RNG & samples (fixed across all Muv) ---
+    np.random.seed(seed)
+    sfr_range = [-5.0, 5.0]
+    mstar_range = [2.0, 12.0]
+    mh_range = [5.0, 15.0]
+    sfr_samples   = np.random.uniform(sfr_range[0], sfr_range[1],  Nsfr).astype(np.float64)   # (Nsfr,)
+    mstar_samples = np.random.uniform(mstar_range[0], mstar_range[1], Nmstar).astype(np.float64)  # (Nmstar,)
+    mh_samples    = np.random.uniform(mh_range[0], mh_range[1], Nmh).astype(np.float64)     # (Nmh,)
+
+    scale_sfr   = (sfr_range[1] - sfr_range[0]) / float(Nsfr)    # domain length [-5,5]
+    scale_mstar = (mstar_range[1] - mstar_range[0]) / float(Nmstar)  # domain length [2,12]
+    scale_mh    = (mh_range[1] - mh_range[0]) / float(Nmh)     # domain length [5,15]
+    total_scale = scale_sfr * scale_mstar * scale_mh
+
+    # --- Interpolations to sampled points ---
+    muuv_of_sfr      = np.interp(sfr_samples, sfr_grid,      muuv_of_sfr_grid).astype(np.float64)      # (Nsfr,)
+    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid,      sigma_sfr_grid).astype(np.float64)        # (Nsfr,)
+    sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  sfr_grid).astype(np.float64)  # (Nmstar,)
+    dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid).astype(np.float64)           # (Nmh,)
+    mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid).astype(np.float64) # (Nmh,)
+    sigma_uv_of_sfr  = np.interp(sfr_samples, sfr_grid, sigma_UV).astype(np.float64)  # (Nmstar,)
+
+    inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
+
+    # --- Conditional Relations ----
+    p_muv_sfr = np.empty((Nsfr, muv_grid.size), dtype=np.float64)
+    for i in prange(muv_grid.size):
+        diff_muv = muv_grid[i] - muuv_of_sfr  # (Nmuv,)
+        # Shape: (Nsfr, Nmuv)
+        p_muv_sfr[:,i] = (inv_sqrt2pi / sigma_uv_of_sfr) * np.exp(
+            -0.5 * ((diff_muv) / sigma_uv_of_sfr)**2
+        )
+
+    # Shape: (Nmstar, Nsfr)
+    p_sfr_mstar = np.empty((Nmstar, Nsfr), dtype=np.float64)
+    for i in prange(Nmstar):
+        diff_sfr = sfr_samples - sfr_target_of_ms[i]
+        p_sfr_mstar[i,:] = (inv_sqrt2pi / sigma_sfr_of_sfr) * np.exp(
+            -0.5 * (diff_sfr / sigma_sfr_of_sfr)**2
+        )
+
+    # Shape: (Nmstar, Nmh)
+    p_mstar_mh = np.empty((Nmh, Nmstar), dtype=np.float64)
+    for i in prange(Nmh):
+        diff_star = mstar_samples - mstar_tgt_of_mh[i]
+        p_mstar_mh[i,:] = inv_sqrt2pi / sigma_SHMR * np.exp(
+            -0.5 * (diff_star / sigma_SHMR)**2
+        )
+
+    return p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale
 
 # ---------- Vectorized UVLF with Numba on the Mh reduction ----------
 def uvlf_numba_vectorized(
@@ -658,9 +710,9 @@ def uvlf_numba_vectorized(
     sigma_SHMR,            # scalar (dispersion of log10 M* | Mh)
     dndlnm_grid,           # d n / d ln M on mh_grid
     *,
-    Nsfr=30_000,
-    Nmstar=1_000,
-    Nmh=50_000,
+    Nsfr,
+    Nmstar,
+    Nmh,
     seed=0
 ):
     """
@@ -677,56 +729,29 @@ def uvlf_numba_vectorized(
       SFR ∈ [-5, 5],  M* ∈ [2, 12],  Mh ∈ [5, 15]   (same as your code)
     """
 
-    # --- RNG & samples (fixed across all Muv) ---
-    rng = np.random.default_rng(seed)
-    sfr_samples   = rng.uniform(-5.0,  5.0,  Nsfr).astype(np.float64)   # (Nsfr,)
-    mstar_samples = rng.uniform( 2.0, 12.0, Nmstar).astype(np.float64)  # (Nmstar,)
-    mh_samples    = rng.uniform( 5.0, 15.0, Nmh).astype(np.float64)     # (Nmh,)
-
-    # --- Interpolations to sampled points ---
-    muuv_of_sfr      = np.interp(sfr_samples, sfr_grid,      muuv_of_sfr_grid).astype(np.float64)      # (Nsfr,)
-    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid,      sigma_sfr_grid).astype(np.float64)        # (Nsfr,)
-    sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  np.asarray(sfr_grid)).astype(np.float64)  # (Nmstar,)
-    dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid).astype(np.float64)           # (Nmh,)
-    mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid).astype(np.float64) # (Nmh,)
-    sigma_uv_of_sfr  = np.interp(sfr_samples, sfr_grid, sigma_UV).astype(np.float64)  # (Nmstar,)
-    # --- Constants & Monte-Carlo scale factors (interval length / Nsamples) ---
-    inv_sqrt2pi = 1.0 / np.sqrt(2.0*np.pi)
-    inv_sigma_UV = 1.0 / sigma_uv_of_sfr
-    norm_UV = inv_sqrt2pi * inv_sigma_UV
-
-    scale_sfr   = 10.0 / float(Nsfr)    # domain length [-5,5]
-    scale_mstar = 10.0 / float(Nmstar)  # domain length [2,12]
-    scale_mh    = 10.0 / float(Nmh)     # domain length [5,15]
-
-    # --- Vectorized: p(SFR | M*) for all M* and SFR samples ---
-    # Shape: (Nmstar, Nsfr)
-    diff_sfr = sfr_samples[None, :] - sfr_target_of_ms[:, None]
-    psfr = (inv_sqrt2pi / sigma_sfr_of_sfr[None, :]) * np.exp(
-        -0.5 * (diff_sfr / sigma_sfr_of_sfr[None, :])**2
+    p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = setup_sample_probabilities(
+        muv_grid,
+        sigma_UV,
+        muuv_of_sfr_grid,
+        sfr_grid,
+        mstar_grid,
+        sigma_sfr_grid,
+        mh_grid,
+        sigma_SHMR,
+        dndlnm_grid,
+        Nsfr=Nsfr,
+        Nmstar=Nmstar,
+        Nmh=Nmh,
+        seed=seed,
     )
 
-    out = np.empty_like(muv_grid, dtype=np.float64)
-
-    # --- Loop over Muv only; everything else is vectorized/Numba-accelerated ---
-    for j, Muv in enumerate(np.asarray(muv_grid, dtype=np.float64)):
-        # pmuv(s) = N(Muv; muuv_of_sfr[s], sigma_UV)  over all SFR samples
-        pmuv = norm_UV * np.exp(-0.5 * ((Muv - muuv_of_sfr) * inv_sigma_UV)**2)  # (Nsfr,)
-
-        # p_SFR_Mstar(M*, Muv) = sum_s psfr[:, s] * pmuv[s] * scale_sfr
-        p_sfr_mstar = psfr @ (pmuv * scale_sfr)  # (Nmstar,)
-
-        # p(Muv | Mh) for all Mh via Numba; then MC scale by M* domain
-        p_muv_given_mh = _mh_reduce_numba(
-            mstar_samples,
-            mstar_tgt_of_mh,
-            p_sfr_mstar,
-            float(sigma_SHMR),
-        ) * scale_mstar  # (Nmh,)
-
-        # Outer integral over Mh with weights dndlnm(Mh)
-        out[j] = np.sum(dndlnm_on_mh * p_muv_given_mh) * scale_mh
-
+    out = _outer_loop_parallel(
+        muv_grid,
+        p_muv_sfr,
+        p_sfr_mstar,
+        p_mstar_mh,
+        dndlnm_on_mh,
+    ) * total_scale
     return out
 
 
@@ -747,8 +772,10 @@ def UV_calc_numba(
         M_knee=2.6e11,
         sigma_kuv = 0.1,
         mass_dependent_sigma_uv=False,
+        seed=0,
+        **kw,
 ):
-    msss = ms_mh_flattening(10 ** masses_hmf, alpha_star_low=alpha_star,
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
                             fstar_norm=f_star_norm, M_knee=M_knee)
     sfrs = SFMS(msss, SFR_norm=t_star, z=z)
 
@@ -778,7 +805,7 @@ def UV_calc_numba(
         Nsfr=10_000,
         Nmstar=10_000,
         Nmh=10_000,
-        seed=0
-        )
+        seed=seed,
+    )
 
     return uvlf
