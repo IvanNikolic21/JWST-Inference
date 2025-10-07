@@ -6,6 +6,7 @@ import pymultinest
 from astropy.cosmology import Planck18 as cosmo
 import json
 import ultranest
+import math
 
 import scipy.integrate as intg
 
