@@ -322,6 +322,12 @@ class LikelihoodUVLFBase:
         else:
             sigma_UV = 0.2
 
+        if "alpha_z_SHMR" in dic_params:
+            alpha_z_SHMR = dic_params["alpha_z_SHMR"]
+        else:
+            alpha_z_SHMR = 0.0
+
+
         lnL = 0
         if use_BPASS:
             if self.sigma_uv:
@@ -342,6 +348,7 @@ class LikelihoodUVLFBase:
                     M_knee=M_knee,
                     sigma_kuv=sigma_UV,
                     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
+                    alpha_z_SHMR=alpha_z_SHMR
                 )
 
                 # preds = UV_calc_BPASS_op(
@@ -377,7 +384,8 @@ class LikelihoodUVLFBase:
                     vect_func=vect_func,
                     bpass_read=bpass_read,
                     SFH_samp=sfr_samp_inst,
-                    M_knee = M_knee
+                    M_knee = M_knee,
+                    alpha_z_SHMR=alpha_z_SHMR
                 )
         else:
             preds = UV_calc(
@@ -392,6 +400,7 @@ class LikelihoodUVLFBase:
                 a_sig_SFR=a_sig_SFR,
                 z=self.z,
                 M_knee = M_knee,
+                alpha_z_SHMR=alpha_z_SHMR,
             )
 
         for index, muvi in enumerate(muvs_o):
@@ -469,6 +478,7 @@ def run_mcmc(
         exact_specs=True,
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
+        z_dependent_SHMR=False
 ):
 
     if priors is None:
@@ -1273,6 +1283,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
+    parser.add_argument("--z_dependent_SHMR", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1323,9 +1334,13 @@ if __name__ == "__main__":
             raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV","alpha_z_SHMR"]:
         priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(0.001,0.5), (-1.0,2.0)]
+        if inputs.z_dependent_SHMR is False:
+            raise ValueError("You need to set --z_dependent_SHMR to use alpha_z_SHMR parameter.")
+        if inputs.covariance is True:
+            raise ValueError("Not implemented in the covariance matrix.")
     else:
         raise ValueError("Invalid parameter list provided.")
 
@@ -1357,4 +1372,5 @@ if __name__ == "__main__":
         exact_specs=inputs.exact_specs,
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
+        z_dependent_SHMR=inputs.z_dependent_SHMR,
     )

@@ -11,7 +11,7 @@ import scipy.integrate as intg
 from timeit import default_timer as timer
 
 #hmf_loc = hmf.MassFunction(z=11)
-def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
+def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11, alpha_z_SHMR=0.0,z=10):
     """
         Get scaling relations for SHMR based on Davies+in prep.
         Parameters
@@ -26,7 +26,7 @@ def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2
 
     f_star_mean = fstar_norm
     f_star_mean /= (mh / M_knee) ** (-alpha_star_low) + (mh / M_knee) ** 0.61 #knee denominator
-    f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61 #knee numerator
+    f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61 *((1+z)/11)**alpha_z_SHMR #knee numerator
     return np.minimum(f_star_mean, cosmo.Ob0 / cosmo.Om0) * mh
 
 def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5, M_knee=2.6e11):
@@ -890,10 +890,11 @@ def UV_calc_numba(
         sigma_kuv = 0.1,
         mass_dependent_sigma_uv=False,
         seed=0,
+        alpha_z_SHMR=0.0,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
-                            fstar_norm=f_star_norm, M_knee=M_knee)
+                            fstar_norm=f_star_norm, M_knee=M_knee, alpha_z_SHMR=alpha_z_SHMR, z=z)
     sfrs = SFMS(msss, SFR_norm=t_star, z=z)
 
     Zs = metalicity_from_FMR(msss, sfrs)
