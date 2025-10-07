@@ -1174,7 +1174,8 @@ def run_mcmc(
             elif M_knee and sigma_uv:
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
-                )
+                ) / 5
+                print("I reduced cov mat")
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
                 )
