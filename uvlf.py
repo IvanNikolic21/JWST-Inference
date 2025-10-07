@@ -9,6 +9,7 @@ from multiprocessing import Pool
 from scipy.interpolate import splrep, BSpline
 import scipy.integrate as intg
 from timeit import default_timer as timer
+import math
 
 #hmf_loc = hmf.MassFunction(z=11)
 def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11, alpha_z_SHMR=0.0,z=10):
