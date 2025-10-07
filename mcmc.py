@@ -326,8 +326,8 @@ class LikelihoodUVLFBase:
             if self.sigma_uv:
                 preds = UV_calc_numba(
                     muvs_o,
-                    np.log10(self.hmf_loc.m * cosmo.h),
-                    self.hmf_loc.dndlog10m / cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m * cosmo.h) ),
+                    np.log10(self.hmf_loc.m / cosmo.h),
+                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -364,8 +364,8 @@ class LikelihoodUVLFBase:
             else:
                 preds = UV_calc_BPASS(
                     muvs_o,
-                    np.log10(self.hmf_loc.m * cosmo.h),
-                    self.hmf_loc.dndlog10m / cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m * cosmo.h) ),
+                    np.log10(self.hmf_loc.m / cosmo.h),
+                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -381,8 +381,8 @@ class LikelihoodUVLFBase:
         else:
             preds = UV_calc(
                 muvs_o,
-                np.log10(self.hmf_loc.m * cosmo.h),
-                self.hmf_loc.dndlog10m / cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m * cosmo.h) ),
+                np.log10(self.hmf_loc.m / cosmo.h),
+                self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                 f_star_norm=10 ** fstar_norm,
                 alpha_star=alpha_star,
                 sigma_SHMR=sigma_SHMR,
