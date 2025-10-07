@@ -754,6 +754,123 @@ def uvlf_numba_vectorized(
     ) * total_scale
     return out
 
+INV_SQRT2PI = 0.3989422804014327
+
+# ---------- tiny kernels: cache-friendly row-major writes ----------
+@njit(parallel=True, fastmath=True)
+def _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr):
+    Nmuv  = muv_grid.size
+    Nsfr  = muuv_of_sfr.size
+    outT  = np.empty((Nmuv, Nsfr), dtype=np.float64)  # row-major writes
+    for k in prange(Nsfr):
+        mu   = muuv_of_sfr[k]
+        sig  = sigma_uv_of_sfr[k]
+        invs = 1.0 / sig
+        norm = INV_SQRT2PI * invs
+        c    = -0.5 * invs * invs
+        for j in range(Nmuv):
+            dx = muv_grid[j] - mu
+            outT[j, k] = norm * math.exp(c * dx * dx)
+    return outT.T  # (Nsfr, Nmuv)
+
+@njit(parallel=True, fastmath=True)
+def _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr):
+    Nsfr      = sfr_samples.size
+    Nmstar    = sfr_target_of_ms.size
+    out = np.empty((Nmstar, Nsfr), dtype=np.float64)
+    for i in prange(Nmstar):
+        mu = sfr_target_of_ms[i]
+        for j in range(Nsfr):
+            sig  = sigma_sfr_of_sfr[j]
+            invs = 1.0 / sig
+            norm = INV_SQRT2PI * invs
+            c    = -0.5 * invs * invs
+            dx   = (sfr_samples[j] - mu)
+            out[i, j] = norm * math.exp(c * dx * dx)
+    return out  # (Nmstar, Nsfr)
+
+@njit(parallel=True, fastmath=True)
+def _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR):
+    Nmstar = mstar_samples.size
+    Nmh    = mstar_tgt_of_mh.size
+    invs = 1.0 / sigma_SHMR
+    norm = INV_SQRT2PI * invs
+    c    = -0.5 * invs * invs
+    out  = np.empty((Nmh, Nmstar), dtype=np.float64)
+    for i in prange(Nmh):
+        mu = mstar_tgt_of_mh[i]
+        for j in range(Nmstar):
+            dx = mstar_samples[j] - mu
+            out[i, j] = norm * math.exp(c * dx * dx)
+    return out  # (Nmh, Nmstar)
+
+# ---------- your setup(), but leaner & faster ----------
+def setup_sample_probabilities_fast(
+    muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
+    mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR,
+    dndlnm_grid, *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False
+):
+    rng = np.random.default_rng(seed)
+    sfr_range   = (-5.0, 5.0)
+    mstar_range = ( 2.0,12.0)
+    mh_range    = ( 5.0,15.0)
+
+    sfr_samples   = rng.uniform(*sfr_range,   Nsfr).astype(np.float64)
+    mstar_samples = rng.uniform(*mstar_range, Nmstar).astype(np.float64)
+    mh_samples    = rng.uniform(*mh_range,    Nmh).astype(np.float64)
+
+    scale_sfr   = (sfr_range[1]   - sfr_range[0])   / float(Nsfr)
+    scale_mstar = (mstar_range[1] - mstar_range[0]) / float(Nmstar)
+    scale_mh    = (mh_range[1]    - mh_range[0])    / float(Nmh)
+    total_scale = scale_sfr * scale_mstar * scale_mh
+
+    # Interpolations
+    muuv_of_sfr      = np.interp(sfr_samples, sfr_grid,      muuv_of_sfr_grid).astype(np.float64)
+    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid,      sigma_sfr_grid   ).astype(np.float64)
+    sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  sfr_grid         ).astype(np.float64)
+    dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid      ).astype(np.float64)
+    mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid       ).astype(np.float64)
+
+    # sigma_UV can be scalar or array on sfr_grid; handle both:
+    if np.ndim(sigma_UV) == 0:
+        sigma_uv_of_sfr = np.full_like(sfr_samples, float(sigma_UV), dtype=np.float64)
+    else:
+        sigma_uv_of_sfr = np.interp(sfr_samples, sfr_grid, sigma_UV).astype(np.float64)
+
+    # Build Gaussian tables with Numba
+    p_muv_sfr   = _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr)      # (Nsfr,   Nmuv)
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    p_mstar_mh  = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR) # (Nmh,    Nmstar)
+
+    if use_float32:
+        p_muv_sfr   = np.ascontiguousarray(p_muv_sfr,   dtype=np.float32)
+        p_sfr_mstar = np.ascontiguousarray(p_sfr_mstar, dtype=np.float32)
+        p_mstar_mh  = np.ascontiguousarray(p_mstar_mh,  dtype=np.float32)
+        dndlnm_on_mh= np.ascontiguousarray(dndlnm_on_mh,dtype=np.float32)
+
+    return p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale
+
+def uvlf_fast_einsum(
+    muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
+    mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR, dndlnm_grid,
+    *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False
+):
+    p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = setup_sample_probabilities_fast(
+        muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
+        mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR, dndlnm_grid,
+        Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, use_float32=use_float32
+    )
+
+    # Contract: dnd * B(mh,m*) * H(m*,sfr) * G(sfr,muv)  -> (Nmuv,)
+    out = np.einsum('m,ma,ar,ru->u',
+                    dndlnm_on_mh,
+                    p_mstar_mh,
+                    p_sfr_mstar,
+                    p_muv_sfr,
+                    optimize='greedy')
+    # Note: by index naming, result shape is 's' == Nmuv.
+    return (out * total_scale).astype(np.float64)
+
 
 def UV_calc_numba(
         Muv,
@@ -792,7 +909,7 @@ def UV_calc_numba(
         sigma_kuv_var = sigma_kuv * np.ones(np.shape(msss))
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
-    uvlf = uvlf_numba_vectorized(
+    uvlf = uvlf_fast_einsum(
         Muv,
         sigma_kuv_var,              # scalar (dispersion of Muv|SFR)
         muvs,      # mu_UV(SFR) tabulated on sfr_grid
