@@ -27,7 +27,7 @@ def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2
 
     f_star_mean = fstar_norm
     f_star_mean /= (mh / M_knee) ** (-alpha_star_low) + (mh / M_knee) ** 0.61 #knee denominator
-    f_star_mean *= (1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61 *((1+z)/11)**alpha_z_SHMR #knee numerator
+    f_star_mean *= ((1e10 / M_knee) ** (-alpha_star_low) + (1e10 / M_knee) ** 0.61) *((1+z)/11)**alpha_z_SHMR #knee numerator
     return np.minimum(f_star_mean, cosmo.Ob0 / cosmo.Om0) * mh
 
 def ms_mh(ms, fstar_norm=1, alpha_star_low=0.5, M_knee=2.6e11):

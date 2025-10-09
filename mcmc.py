@@ -1336,7 +1336,7 @@ if __name__ == "__main__":
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV","alpha_z_SHMR"]:
         priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(0.001,0.5), (-1.0,2.0)]
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(0.001,0.5), (-10.0,10.0)]
         if inputs.z_dependent_SHMR is False:
             raise ValueError("You need to set --z_dependent_SHMR to use alpha_z_SHMR parameter.")
         if inputs.covariance is True:
