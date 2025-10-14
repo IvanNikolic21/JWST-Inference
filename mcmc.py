@@ -1284,6 +1284,7 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     parser.add_argument("--z_dependent_SHMR", action="store_true")
+    parser.add_argument("--dependene_on_alpha_star", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1348,7 +1349,7 @@ if __name__ == "__main__":
         if "sigma_UV" not in params or not inputs.sigma_uv:
             raise ValueError("You need to include 'sigma_UV' in the params list to use mass-dependent sigma_UV.")
 
-    #, "M_knee"]
+    #, "M_knee"]Ad
     #params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
     #priors = [(-3.0,0.0), (0.001,2.0), (0.0,1.2)]
    # priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
