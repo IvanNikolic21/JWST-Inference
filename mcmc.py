@@ -349,7 +349,8 @@ class LikelihoodUVLFBase:
                     M_knee=M_knee,
                     sigma_kuv=sigma_UV,
                     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
-                    alpha_z_SHMR=alpha_z_SHMR
+                    alpha_z_SHMR=alpha_z_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star,
                 )
 
                 # preds = UV_calc_BPASS_op(
@@ -386,7 +387,8 @@ class LikelihoodUVLFBase:
                     bpass_read=bpass_read,
                     SFH_samp=sfr_samp_inst,
                     M_knee = M_knee,
-                    alpha_z_SHMR=alpha_z_SHMR
+                    alpha_z_SHMR=alpha_z_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star,
                 )
         else:
             preds = UV_calc(
@@ -402,6 +404,7 @@ class LikelihoodUVLFBase:
                 z=self.z,
                 M_knee = M_knee,
                 alpha_z_SHMR=alpha_z_SHMR,
+                dependence_on_alpha_star=dependence_on_alpha_star,
             )
 
         for index, muvi in enumerate(muvs_o):
