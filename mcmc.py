@@ -315,7 +315,7 @@ class LikelihoodUVLFBase:
                 self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                 f_star_norm=10 ** fstar_norm,
                 alpha_star=alpha_star,
-                sigma_uv_simple=sigma_uv_simple,
+                sigma_UV_simple=sigma_uv_simple,
                 t_star=t_star,
                 z=self.z,
                 vect_func=vect_func,
