@@ -16,8 +16,8 @@ import csv
 import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
-from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
-from uvlf import uvlf_numba_vectorized, UV_calc_numba
+from uvlf import bpass_loader, SFH_sampler
+from uvlf import UV_simple
 import argparse
 
 class LikelihoodAngBase():
@@ -252,7 +252,7 @@ class LikelihoodUVLFBase:
 
     """
 
-    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True, mass_dependent_sigma_uv=False):
+    def __init__(self, params, z, hmf_choice="Tinker08"):
         self.z = z
         self.hmf_loc = hmf.MassFunction(
             z=z,
@@ -262,8 +262,6 @@ class LikelihoodUVLFBase:
             hmf_model=hmf_choice
         )
         self.params = params
-        self.sigma_uv = sigma_uv
-        self.mass_dependent_sigma_uv = mass_dependent_sigma_uv
 
     def call_likelihood(
             self,
@@ -287,16 +285,6 @@ class LikelihoodUVLFBase:
         else:
             fstar_norm = 0.0
 
-        if "sigma_SHMR" in dic_params:
-            sigma_SHMR = dic_params["sigma_SHMR"]
-        else:
-            sigma_SHMR = 0.3
-
-        if "sigma_SFMS_norm" in dic_params:
-            sigma_SFMS_norm = dic_params["sigma_SFMS_norm"]
-        else:
-            sigma_SFMS_norm = 0.0
-
         if "t_star" in dic_params:
             t_star = dic_params["t_star"]
         else:
@@ -307,92 +295,35 @@ class LikelihoodUVLFBase:
         else:
             alpha_star = 0.5
 
-        if "a_sig_SFR" in dic_params:
-            a_sig_SFR = dic_params["a_sig_SFR"]
-        else:
-            a_sig_SFR = -0.11654893
+
 
         if "M_knee" in dic_params:
             M_knee = 10**dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
-        if "sigma_UV" in dic_params:
-            sigma_UV = dic_params["sigma_UV"]
+        if "sigma_uv_simple" in dic_params:
+            sigma_uv_simple = dic_params["sigma_uv_simple"]
         else:
-            sigma_UV = 0.2
+            sigma_uv_simple = 0.3
 
         lnL = 0
         if use_BPASS:
-            if self.sigma_uv:
-                preds = UV_calc_numba(
-                    muvs_o,
-                    np.log10(self.hmf_loc.m / cosmo.h),
-                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
-                    f_star_norm=10 ** fstar_norm,
-                    alpha_star=alpha_star,
-                    sigma_SHMR=sigma_SHMR,
-                    sigma_SFMS_norm=sigma_SFMS_norm,
-                    t_star=t_star,
-                    a_sig_SFR=a_sig_SFR,
-                    z=self.z,
-                    vect_func=vect_func,
-                    bpass_read=bpass_read,
-                    SFH_samp=sfr_samp_inst,
-                    M_knee=M_knee,
-                    sigma_kuv=sigma_UV,
-                    mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
-                )
-
-                # preds = UV_calc_BPASS_op(
-                #     muvs_o,
-                #     np.log10(self.hmf_loc.m),
-                #     self.hmf_loc.dndlog10m,
-                #     f_star_norm=10 ** fstar_norm,
-                #     alpha_star=alpha_star,
-                #     sigma_SHMR=sigma_SHMR,
-                #     sigma_SFMS_norm=sigma_SFMS_norm,
-                #     t_star=t_star,
-                #     a_sig_SFR=a_sig_SFR,
-                #     z=self.z,
-                #     vect_func=vect_func,
-                #     bpass_read=bpass_read,
-                #     SFH_samp=sfr_samp_inst,
-                #     M_knee=M_knee,
-                #     sigma_kuv=sigma_UV,
-                #     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
-                # )
-            else:
-                preds = UV_calc_BPASS(
-                    muvs_o,
-                    np.log10(self.hmf_loc.m / cosmo.h),
-                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
-                    f_star_norm=10 ** fstar_norm,
-                    alpha_star=alpha_star,
-                    sigma_SHMR=sigma_SHMR,
-                    sigma_SFMS_norm=sigma_SFMS_norm,
-                    t_star=t_star,
-                    a_sig_SFR=a_sig_SFR,
-                    z=self.z,
-                    vect_func=vect_func,
-                    bpass_read=bpass_read,
-                    SFH_samp=sfr_samp_inst,
-                    M_knee = M_knee
-                )
-        else:
-            preds = UV_calc(
+            preds = UV_simple(
                 muvs_o,
                 np.log10(self.hmf_loc.m / cosmo.h),
                 self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                 f_star_norm=10 ** fstar_norm,
                 alpha_star=alpha_star,
-                sigma_SHMR=sigma_SHMR,
-                sigma_SFMS_norm=sigma_SFMS_norm,
+                sigma_uv_simple=sigma_uv_simple,
                 t_star=t_star,
-                a_sig_SFR=a_sig_SFR,
                 z=self.z,
-                M_knee = M_knee,
+                vect_func=vect_func,
+                bpass_read=bpass_read,
+                SFH_samp=sfr_samp_inst,
+                M_knee=M_knee,
             )
+
 
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
@@ -427,29 +358,10 @@ class LikelihoodUVLFBase:
                     sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_this = sig_a + sig_b * (preds[index] - uvlf_o[index])
-                    # L = intg.trapezoid(
-                    #     y=np.exp(
-                    #         -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
-                    #                     sig_this ** 2))
-                    #     ) / 2 / np.pi / sig_this / 0.5 * np.exp(
-                    #         -0.5 * ((np.log10(
-                    #             preds[index]) - pred_x) ** 2 / 0.5 ** 2)
-                    #     ),
-                    #     x=pred_x
-                    # )
-                    # lnL += np.log(L)
+
                     lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2))
             else:
-                pred_x = np.linspace(-13,-1.0, 100000)
-                # L = intg.trapezoid(
-                #     y = np.exp(
-                #         -0.5 * (( 10**pred_x - uvlf_o[index])**2 / (sig_o[index] ** 2))
-                #     ) / 2 / np.pi / sig_o[index] / 0.5 * np.exp(
-                #         -0.5 * ((np.log10(preds[index]) - pred_x) ** 2 / 0.5**2)
-                #     ),
-                #     x = pred_x
-                # )
-                # lnL += np.log(L)
+
                 lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
                    index] ** 2))
         return lnL
@@ -1271,8 +1183,6 @@ if __name__ == "__main__":
         action="store_false",
         help="Use exact specifications from Paquereau+25 in computing\n integral constraint and use only linear bias",
     )
-    parser.add_argument("--sigma_uv", action="store_false")
-    parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1310,39 +1220,11 @@ if __name__ == "__main__":
 
     if not os.path.exists(inputs.output_directory):
         os.makedirs(inputs.output_directory, exist_ok=True)
-    if params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR",]:
-        priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]:
-        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV"]:
-        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5)]
-        if not inputs.sigma_uv:
-            raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
-    elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
-        priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
-        priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
+
+    if params == ["fstar_norm", "sigma_uv_simple", "t_star", "alpha_star_low", "M_knee"]:
+        priors = [(-6.0, 1.0), (0.001, 3.0), (0.001, 1.0), (0.0, 2.0), (11.5,16.0)]
     else:
-        raise ValueError("Invalid parameter list provided.")
-
-    if inputs.mass_dependent_sigma_uv:
-        if "sigma_UV" not in params or not inputs.sigma_uv:
-            raise ValueError("You need to include 'sigma_UV' in the params list to use mass-dependent sigma_UV.")
-
-    #, "M_knee"]
-    #params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
-    #priors = [(-3.0,0.0), (0.001,2.0), (0.0,1.2)]
-   # priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
-   #          (-1.0, 0.5)]#, (10.0,16.0)]
-
-    #priors = [(-1.0,1.0),(0.01,1.0), (0.0,1.0)]
-    #more possibilities: "M_1", "M_0", "alpha" -> relating to satellite params.
-    #new possibility: "a_sig_SFR" -> relating to sigma_SFMS scaling with stellar mass.
-    #"write a list of all possible parameters"
+        raise ValueError("This is simple model, choose another branch.")
 
     run_mcmc(
         likelihoods,
@@ -1355,6 +1237,4 @@ if __name__ == "__main__":
         output_dir = inputs.output_directory,
         hmf_choice = inputs.hmf,
         exact_specs=inputs.exact_specs,
-        sigma_uv=inputs.sigma_uv,
-        mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
     )
