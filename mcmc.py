@@ -438,7 +438,14 @@ class LikelihoodUVLFBase:
                     #     x=pred_x
                     # )
                     # lnL += np.log(L)
-                    lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2))
+                    sigma_eff = abs(sig_a + sig_b * (preds[index] - uvlf_o[index]))
+                    sigma_eff = max(float(sigma_eff), 1e-12)
+
+                    lnL += -0.5 * (
+                            (preds[index] - uvlf_o[index])**2 / (
+                            (sig_a + sig_b * (preds[index] - uvlf_o[index])
+                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
+                    )
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
                 # L = intg.trapezoid(
@@ -451,7 +458,7 @@ class LikelihoodUVLFBase:
                 # )
                 # lnL += np.log(L)
                 lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
-                   index] ** 2))
+                   index] ** 2)) - 0.5*np.log(2*np.pi) - np.log(float(sig_o[index]))
         return lnL
 
 def run_mcmc(
