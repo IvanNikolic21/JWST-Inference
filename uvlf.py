@@ -609,7 +609,7 @@ def UV_calc_BPASS_op(
     if mass_dependent_sigma_uv:
         sigma_kuv_var = linear_model_kuv((ms_obs_log, z), sigma_kuv)
     else:
-        sigma_kuv_var = sigma_kuv
+        sigma_kuv_var = sigma_kuv * np.ones(np.shape(ms_obs_log))
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = [uv_calc_op(
