@@ -476,6 +476,7 @@ def run_mcmc(
         exact_specs=True,
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
+        use_only_faint_end=False,
 ):
 
     if priors is None:
@@ -771,11 +772,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = sig_o[muvs_mask]
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Mc11.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst = SFR_samp_11,
                     bpass_read = bpass_read,
@@ -794,11 +804,21 @@ def run_mcmc(
                     )
             elif li == "UVLF_z9_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Donnan24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
+
                 lnL+=UVLFBase_Don24.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -828,11 +848,20 @@ def run_mcmc(
                     )
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Don24_10.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst = SFR_samp_10,
                     bpass_read=bpass_read,
@@ -840,11 +869,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z11_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Don24_11.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_11,
                     bpass_read=bpass_read,
@@ -852,11 +890,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z12_5_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Don24_12_5.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12_5,
                     bpass_read=bpass_read,
@@ -864,11 +911,21 @@ def run_mcmc(
                 )
             elif li == "UVLF_z7_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
+
                 lnL+=UVLFBase_Har24_7.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_7,
                     bpass_read=bpass_read,
@@ -876,11 +933,21 @@ def run_mcmc(
                 )
             elif li == "UVLF_z8_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
+
                 lnL+=UVLFBase_Har24_8.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
@@ -888,11 +955,21 @@ def run_mcmc(
                 )
             elif li == "UVLF_z9_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
+
                 lnL+=UVLFBase_Har24_9.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -921,11 +998,20 @@ def run_mcmc(
                     )
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Har24_10.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
@@ -934,11 +1020,20 @@ def run_mcmc(
 
             elif li == "UVLF_z12_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Har24_12.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12,
                     bpass_read=bpass_read,
@@ -947,11 +1042,20 @@ def run_mcmc(
 
             elif li == "UVLF_z14_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Harikane24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Har24_14.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_14,
                     bpass_read=bpass_read,
@@ -959,11 +1063,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z8_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Willot23()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Wil23_8.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
@@ -971,11 +1084,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z9_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Willot23()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Wil23_9.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -983,11 +1105,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z10_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Willot23()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Wil23_10.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
@@ -995,11 +1126,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z12_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Willot23()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Wil23_12.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12,
                     bpass_read=bpass_read,
@@ -1007,11 +1147,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_8_Whitler25()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Whitler25_9_8.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9_8,
                     bpass_read=bpass_read,
@@ -1019,11 +1168,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z12_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_8_Whitler25()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Whitler25_12_8.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_12_8,
                     bpass_read=bpass_read,
@@ -1031,11 +1189,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z14_3_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_3_Whitler25()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Whitler25_14_3.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_14_3,
                     bpass_read=bpass_read,
@@ -1043,11 +1210,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Finkelstein24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Fin24_9.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -1055,11 +1231,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z11_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Finkelstein24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Fin24_11.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_11,
                     bpass_read=bpass_read,
@@ -1067,11 +1252,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z14_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Finkelstein24()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Fin24_14.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_14,
                     bpass_read=bpass_read,
@@ -1079,11 +1273,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z5_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z5_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Bouwens21_5.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_5,
                     bpass_read=bpass_read,
@@ -1092,11 +1295,20 @@ def run_mcmc(
 
             elif li=="UVLF_z6_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z6_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Bouwens21_6.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_6,
                     bpass_read=bpass_read,
@@ -1104,11 +1316,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z7_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Bouwens21_7.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_7,
                     bpass_read=bpass_read,
@@ -1116,11 +1337,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z8_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Bouwens21_8.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
@@ -1128,11 +1358,20 @@ def run_mcmc(
                 )
             elif li=="UVLF_z9_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL+=UVLFBase_Bouwens21_9.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
@@ -1140,11 +1379,20 @@ def run_mcmc(
                 )
             elif li == "UVLF_z10_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Bouwens21()
+                if use_only_faint_end:
+                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_c = muvs_o[muvs_mask]
+                    uvlf_c = uvlf_o[muvs_mask]
+                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                else:
+                    muvs_c = muvs_o
+                    uvlf_c = uvlf_o
+                    sig_c = sig_o
                 lnL += UVLFBase_Bouwens21_10.call_likelihood(
                     p_new,
-                    muvs_o=muvs_o,
-                    uvlf_o=uvlf_o,
-                    sig_o=sig_o,
+                    muvs_o=muvs_c,
+                    uvlf_o=uvlf_c,
+                    sig_o=sig_c,
                     use_BPASS=use_BPASS,
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
@@ -1280,6 +1528,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
+    parser.add_argument("--use_only_faint_end", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1364,4 +1613,5 @@ if __name__ == "__main__":
         exact_specs=inputs.exact_specs,
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
+        use_only_faint_end=inputs.use_only_faint_end,
     )

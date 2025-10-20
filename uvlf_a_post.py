@@ -55,4 +55,4 @@ if __name__ == "__main__":
                 sigma_kuv=post_sample[7],
                 mass_dependent_sigma_uv=True,
             )
-        np.savetxt(parser.parse_args().directory_of_posteriors + f"UVLFs_{post_sample:.8f}.txt", preds)
+        np.savetxt(parser.parse_args().directory_of_posteriors + f"UVLFs_{post_sample[0]:.8f}.txt", preds)
