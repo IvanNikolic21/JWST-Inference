@@ -6,6 +6,7 @@ import pymultinest
 from astropy.cosmology import Planck18 as cosmo
 import json
 import ultranest
+import math
 
 import scipy.integrate as intg
 
@@ -16,6 +17,7 @@ import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
+from uvlf import uvlf_numba_vectorized, UV_calc_numba
 import argparse
 
 class LikelihoodAngBase():
@@ -329,10 +331,10 @@ class LikelihoodUVLFBase:
         lnL = 0
         if use_BPASS:
             if self.sigma_uv:
-                preds = UV_calc_BPASS_op(
+                preds = UV_calc_numba(
                     muvs_o,
-                    np.log10(self.hmf_loc.m),
-                    self.hmf_loc.dndlog10m,
+                    np.log10(self.hmf_loc.m / cosmo.h),
+                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -348,11 +350,30 @@ class LikelihoodUVLFBase:
                     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
                     slope_SFR = slope_SFR,
                 )
+
+                # preds = UV_calc_BPASS_op(
+                #     muvs_o,
+                #     np.log10(self.hmf_loc.m),
+                #     self.hmf_loc.dndlog10m,
+                #     f_star_norm=10 ** fstar_norm,
+                #     alpha_star=alpha_star,
+                #     sigma_SHMR=sigma_SHMR,
+                #     sigma_SFMS_norm=sigma_SFMS_norm,
+                #     t_star=t_star,
+                #     a_sig_SFR=a_sig_SFR,
+                #     z=self.z,
+                #     vect_func=vect_func,
+                #     bpass_read=bpass_read,
+                #     SFH_samp=sfr_samp_inst,
+                #     M_knee=M_knee,
+                #     sigma_kuv=sigma_UV,
+                #     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
+                # )
             else:
                 preds = UV_calc_BPASS(
                     muvs_o,
-                    np.log10(self.hmf_loc.m),
-                    self.hmf_loc.dndlog10m,
+                    np.log10(self.hmf_loc.m / cosmo.h),
+                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                     f_star_norm=10 ** fstar_norm,
                     alpha_star=alpha_star,
                     sigma_SHMR=sigma_SHMR,
@@ -368,8 +389,8 @@ class LikelihoodUVLFBase:
         else:
             preds = UV_calc(
                 muvs_o,
-                np.log10(self.hmf_loc.m),
-                self.hmf_loc.dndlog10m,
+                np.log10(self.hmf_loc.m / cosmo.h),
+                self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
                 f_star_norm=10 ** fstar_norm,
                 alpha_star=alpha_star,
                 sigma_SHMR=sigma_SHMR,
@@ -413,31 +434,38 @@ class LikelihoodUVLFBase:
                     sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
                     sig_this = sig_a + sig_b * (preds[index] - uvlf_o[index])
-                    L = intg.trapezoid(
-                        y=np.exp(
-                            -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
-                                        sig_this ** 2))
-                        ) / 2 / np.pi / sig_this / 0.5 * np.exp(
-                            -0.5 * ((np.log10(
-                                preds[index]) - pred_x) ** 2 / 0.5 ** 2)
-                        ),
-                        x=pred_x
+                    # L = intg.trapezoid(
+                    #     y=np.exp(
+                    #         -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
+                    #                     sig_this ** 2))
+                    #     ) / 2 / np.pi / sig_this / 0.5 * np.exp(
+                    #         -0.5 * ((np.log10(
+                    #             preds[index]) - pred_x) ** 2 / 0.5 ** 2)
+                    #     ),
+                    #     x=pred_x
+                    # )
+                    # lnL += np.log(L)
+                    sigma_eff = abs(sig_a + sig_b * (preds[index] - uvlf_o[index]))
+                    sigma_eff = max(float(sigma_eff), 1e-12)
+
+                    lnL += -0.5 * (
+                            (preds[index] - uvlf_o[index])**2 / (
+                            (sig_a + sig_b * (preds[index] - uvlf_o[index])
+                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
                     )
-                    lnL += np.log(L)
-                    #lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / ((sig_a + sig_b * (preds[index] - uvlf_o[index])) ** 2 + 0.5**2))
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
-                L = intg.trapezoid(
-                    y = np.exp(
-                        -0.5 * (( 10**pred_x - uvlf_o[index])**2 / (sig_o[index] ** 2))
-                    ) / 2 / np.pi / sig_o[index] / 0.5 * np.exp(
-                        -0.5 * ((np.log10(preds[index]) - pred_x) ** 2 / 0.5**2)
-                    ),
-                    x = pred_x
-                )
-                lnL += np.log(L)
-                #lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
-                #    index] ** 2 + 0.5**2))
+                # L = intg.trapezoid(
+                #     y = np.exp(
+                #         -0.5 * (( 10**pred_x - uvlf_o[index])**2 / (sig_o[index] ** 2))
+                #     ) / 2 / np.pi / sig_o[index] / 0.5 * np.exp(
+                #         -0.5 * ((np.log10(preds[index]) - pred_x) ** 2 / 0.5**2)
+                #     ),
+                #     x = pred_x
+                # )
+                # lnL += np.log(L)
+                lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
+                   index] ** 2)) - 0.5*np.log(2*np.pi) - np.log(float(sig_o[index]))
         return lnL
 
 def run_mcmc(
@@ -1172,20 +1200,13 @@ def run_mcmc(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
                 )
             elif M_knee and sigma_uv:
-                if slope_SFR:
-                    cov_mat = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_slope_SFR.txt'
-                    )
-                    mu = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_slope_SFR.txt'
-                    )
-                else:
-                    cov_mat = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
-                    )
-                    mu = np.loadtxt(
-                        '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
-                    )
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
+                ) / 5
+                print("I reduced cov mat")
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
+                )
             else:
                 cov_mat = 2 * np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
