@@ -927,3 +927,51 @@ def UV_calc_numba(
     )
 
     return uvlf
+
+def gimme_dust(Muv):
+    beta = -0.17 * Muv - 5.40
+    Auv = 4.43 + 1.99 * beta
+    return np.clip(Auv,0,5)
+
+def apply_dust_to_uvlf(Mint, phi_int, gimme_dust, Mobs_grid=None):
+    """
+    Mint: 1D array of intrinsic magnitudes (ascending or descending is fine)
+    phi_int: 1D array of intrinsic UVLF values (same length as Mint), in e.g. dex^-1 Mpc^-3 or mag^-1 Mpc^-3
+    gimme_dust: function A(M) returning attenuation in mag (>=0)
+    Mobs_grid: optional grid of observed magnitudes to interpolate onto (if None, use the mapped Mint grid)
+
+    Returns
+    -------
+    Mobs: array of observed magnitudes
+    phi_obs: array of dust-attenuated UVLF on Mobs grid
+    """
+    Mint = np.asarray(Mint)
+    phi_int = np.asarray(phi_int)
+
+    # 1) Map intrinsic magnitudes to observed ones
+    A = gimme_dust(Mint)
+    Mobs = Mint + A
+
+    # Ensure monotonicity for interpolation/grid work (your law is monotonic, but numerics benefit from sorting)
+    order = np.argsort(Mobs)
+    Mobs_sorted = Mobs[order]
+    Mint_sorted = Mint[order]
+    phi_int_sorted = phi_int[order]
+
+    # 2) Jacobian dMobs/dMint (numerical to handle clipping pieces)
+    dMobs_dMint = np.gradient(Mobs_sorted, Mint_sorted)
+
+    # Guard against any tiny/negative derivatives (can happen at clip boundaries); floor them
+    dMobs_dMint = np.clip(dMobs_dMint, 1e-3, None)
+
+    # 3) Number conservation: phi_obs(Mobs(Mint)) = phi_int(Mint) / (dMobs/dMint)
+    phi_obs_at_Mint = phi_int_sorted / dMobs_dMint
+
+    # 4) Put result on a clean Mobs grid
+    if Mobs_grid is None:
+        # return on the native mapped grid
+        return Mobs_sorted, phi_obs_at_Mint
+    else:
+        # Interpolate φ to the requested observed-magnitude grid
+        phi_obs_grid = np.interp(Mobs_grid, Mobs_sorted, phi_obs_at_Mint, left=0.0, right=0.0)
+        return Mobs_grid, phi_obs_grid

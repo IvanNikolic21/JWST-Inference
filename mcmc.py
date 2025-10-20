@@ -17,7 +17,7 @@ import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
-from uvlf import uvlf_numba_vectorized, UV_calc_numba
+from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust
 import argparse
 
 class LikelihoodAngBase():
@@ -252,7 +252,7 @@ class LikelihoodUVLFBase:
 
     """
 
-    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True, mass_dependent_sigma_uv=False):
+    def __init__(self, params, z, hmf_choice="Tinker08", sigma_uv=True, mass_dependent_sigma_uv=False,add_dust=False):
         self.z = z
         self.hmf_loc = hmf.MassFunction(
             z=z,
@@ -264,7 +264,7 @@ class LikelihoodUVLFBase:
         self.params = params
         self.sigma_uv = sigma_uv
         self.mass_dependent_sigma_uv = mass_dependent_sigma_uv
-
+        self.add_dust=add_dust
     def call_likelihood(
             self,
             p,
@@ -325,24 +325,49 @@ class LikelihoodUVLFBase:
         lnL = 0
         if use_BPASS:
             if self.sigma_uv:
-                preds = UV_calc_numba(
-                    muvs_o,
-                    np.log10(self.hmf_loc.m / cosmo.h),
-                    self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
-                    f_star_norm=10 ** fstar_norm,
-                    alpha_star=alpha_star,
-                    sigma_SHMR=sigma_SHMR,
-                    sigma_SFMS_norm=sigma_SFMS_norm,
-                    t_star=t_star,
-                    a_sig_SFR=a_sig_SFR,
-                    z=self.z,
-                    vect_func=vect_func,
-                    bpass_read=bpass_read,
-                    SFH_samp=sfr_samp_inst,
-                    M_knee=M_knee,
-                    sigma_kuv=sigma_UV,
-                    mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
-                )
+                if self.add_dust:
+                    preds = apply_dust_to_uvlf(
+                        muvs_o,
+                        UV_calc_numba(
+                            muvs_o,
+                            np.log10(self.hmf_loc.m / cosmo.h),
+                            self.hmf_loc.dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (self.hmf_loc.m / cosmo.h) ),
+                            f_star_norm=10 ** fstar_norm,
+                            alpha_star=alpha_star,
+                            sigma_SHMR=sigma_SHMR,
+                            sigma_SFMS_norm=sigma_SFMS_norm,
+                            t_star=t_star,
+                            a_sig_SFR=a_sig_SFR,
+                            z=self.z,
+                            vect_func=vect_func,
+                            bpass_read=bpass_read,
+                            SFH_samp=sfr_samp_inst,
+                            M_knee=M_knee,
+                            sigma_kuv=sigma_UV,
+                            mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
+                        ),
+                        gimme_dust,
+                    )[1]
+                else:
+                    preds = UV_calc_numba(
+                        muvs_o,
+                        np.log10(self.hmf_loc.m / cosmo.h),
+                        self.hmf_loc.dndlog10m * cosmo.h ** 3 * np.exp(
+                            - 5e8 / (self.hmf_loc.m / cosmo.h)),
+                        f_star_norm=10 ** fstar_norm,
+                        alpha_star=alpha_star,
+                        sigma_SHMR=sigma_SHMR,
+                        sigma_SFMS_norm=sigma_SFMS_norm,
+                        t_star=t_star,
+                        a_sig_SFR=a_sig_SFR,
+                        z=self.z,
+                        vect_func=vect_func,
+                        bpass_read=bpass_read,
+                        SFH_samp=sfr_samp_inst,
+                        M_knee=M_knee,
+                        sigma_kuv=sigma_UV,
+                        mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
+                    )
 
                 # preds = UV_calc_BPASS_op(
                 #     muvs_o,
@@ -476,6 +501,7 @@ def run_mcmc(
         exact_specs=True,
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
+        add_dust=False,
         use_only_faint_end=False,
 ):
 
@@ -544,125 +570,125 @@ def run_mcmc(
 
     if "UVLF_z11_McLeod23" in likelihoods:
         uvlf = True
-        UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Mc11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_11 = SFH_sampler(z=11)
     if "UVLF_z9_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Don24 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9 = SFH_sampler(z=9)
 
     if "UVLF_z10_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Don24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if "UVLF_z11_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Don24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_11 = SFH_sampler(z=11)
 
 
     if "UVLF_z12_5_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Don24_12_5 = LikelihoodUVLFBase(params, z=12.5, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_12_5 = SFH_sampler(z=12.5)
 
     if "UVLF_z7_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_7 = SFH_sampler(z=7)
 
     if "UVLF_z8_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_8 = SFH_sampler(z=8)
 
     if "UVLF_z9_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9 = SFH_sampler(z=9)
 
     if "UVLF_z10_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if "UVLF_z12_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_12 = SFH_sampler(z=12)
 
     if "UVLF_z14_Harikane24" in likelihoods:
         uvlf = True
-        UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Har24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_14 = SFH_sampler(z=14)
 
     if "UVLF_z8_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Wil23_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_8 = SFH_sampler(z=8)
     if "UVLF_z9_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Wil23_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z10_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Wil23_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_10 = SFH_sampler(z=10)
     if "UVLF_z12_Willot23" in likelihoods:
         uvlf = True
-        UVLFBase_Wil23_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Wil23_12 = LikelihoodUVLFBase(params, z=12, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_12 = SFH_sampler(z=12)
 
     if "UVLF_z9_8_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_9_8 = LikelihoodUVLFBase(params, z=9.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Whitler25_9_8 = LikelihoodUVLFBase(params, z=9.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9_8 = SFH_sampler(z=9.8)
     if "UVLF_z12_8_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_12_8 = LikelihoodUVLFBase(params, z=12.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Whitler25_12_8 = LikelihoodUVLFBase(params, z=12.8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_12_8 = SFH_sampler(z=12.8)
     if "UVLF_z14_3_Whitler25" in likelihoods:
         uvlf = True
-        UVLFBase_Whitler25_14_3 = LikelihoodUVLFBase(params, z=14.3, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Whitler25_14_3 = LikelihoodUVLFBase(params, z=14.3, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_14_3 = SFH_sampler(z=14.3)
 
     if "UVLF_z9_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Fin24_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z11_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Fin24_11 = LikelihoodUVLFBase(params, z=11, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_11 = SFH_sampler(z=11)
     if "UVLF_z14_Finkelstein24" in likelihoods:
         uvlf = True
-        UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Fin24_14 = LikelihoodUVLFBase(params, z=14, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_14 = SFH_sampler(z=14)
 
     if "UVLF_z5_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_5 = LikelihoodUVLFBase(params, z=5, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_5 = LikelihoodUVLFBase(params, z=5, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_5 = SFH_sampler(z=5)
     if "UVLF_z6_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_6 = LikelihoodUVLFBase(params, z=6, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_6 = LikelihoodUVLFBase(params, z=6, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_6 = SFH_sampler(z=6)
     if "UVLF_z7_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_7 = LikelihoodUVLFBase(params, z=7, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_7 = SFH_sampler(z=7)
     if "UVLF_z8_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_8 = LikelihoodUVLFBase(params, z=8, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_8 = SFH_sampler(z=8)
     if "UVLF_z9_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_9 = LikelihoodUVLFBase(params, z=9, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z10_Bouwens21" in likelihoods:
         uvlf = True
-        UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv)
+        UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, add_dust=add_dust)
         SFR_samp_10 = SFH_sampler(z=10)
 
     if uvlf and use_BPASS:
@@ -1528,6 +1554,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
+    parser.add_argument("--add_dust", action="store_true")
     parser.add_argument("--use_only_faint_end", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
@@ -1613,5 +1640,6 @@ if __name__ == "__main__":
         exact_specs=inputs.exact_specs,
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
+        add_dust=inputs.add_dust,
         use_only_faint_end=inputs.use_only_faint_end,
     )
