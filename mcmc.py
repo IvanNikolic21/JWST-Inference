@@ -1483,14 +1483,22 @@ def run_mcmc(
 
     def prior(cube, ndim, nparams):
         if covariance:
-
-            if M_knee and not sigma_uv:
+            if z_dependent_SHMR and dependence_on_alpha_star:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_alphastarz.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_alphastarz.txt'
+                )
+            elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
                 # mu = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/means_Mknee.txt'
                 # )
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_Mknee_wide.txt'
                 )
@@ -1498,6 +1506,8 @@ def run_mcmc(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
                 )
             elif M_knee and sigma_uv:
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
                 ) / 5
@@ -1506,6 +1516,8 @@ def run_mcmc(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
                 )
             else:
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = 2 * np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
                 ) #my default is twice the covariance.
