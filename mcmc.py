@@ -1664,13 +1664,13 @@ if __name__ == "__main__":
             raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV","alpha_z_SHMR"]:
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee","alpha_z_SHMR", "sigma_UV"]:
         if not inputs.dependence_on_alpha_star:
             priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(0.001,0.5), (-10.0,10.0)]
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-10.0,10.0),(0.001,0.5)]
         else:
             priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(0.001,0.5), (-2.0,2.0)]
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(-2.0,2.0),(0.001,0.5)]
         if inputs.z_dependent_SHMR is False:
             raise ValueError("You need to set --z_dependent_SHMR to use alpha_z_SHMR parameter.")
         if inputs.covariance is True:
