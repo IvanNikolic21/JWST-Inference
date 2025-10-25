@@ -1492,7 +1492,7 @@ def run_mcmc(
                 )
             elif z_dependent_SHMR and not dependence_on_alpha_star:
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_fstarrz.txt'
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_fstarz.txtcov_matr_fstarz.txt.txt'
                 )
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_fstarz.txt'
