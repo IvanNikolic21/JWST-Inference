@@ -1673,8 +1673,7 @@ if __name__ == "__main__":
                   (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(-2.0,2.0),(0.001,0.5)]
         if inputs.z_dependent_SHMR is False:
             raise ValueError("You need to set --z_dependent_SHMR to use alpha_z_SHMR parameter.")
-        if inputs.covariance is True:
-            raise ValueError("Not implemented in the covariance matrix.")
+
     else:
         raise ValueError("Invalid parameter list provided.")
 
