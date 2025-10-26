@@ -1604,9 +1604,9 @@ if __name__ == "__main__":
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5)]
         if not inputs.sigma_uv:
             raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "sigma_UV", "slope_SFR"]:
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee","slope_SFR", "sigma_UV"]:
         priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5), (0.5,1.5)]
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0),(0.5,1.5), (0.001,0.5)]
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
