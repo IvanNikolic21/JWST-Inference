@@ -484,6 +484,7 @@ def run_mcmc(
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
         slope_SFR=False,
+        use_only_faint_end=False,
 ):
 
     if priors is None:
@@ -1424,8 +1425,15 @@ def run_mcmc(
 
     def prior(cube, ndim, nparams):
         if covariance:
-
-            if M_knee and not sigma_uv:
+            if slope_SFR:
+                print("Using slope SFR prior")
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_tstarslopez.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_tstarslopez.txt'
+                )
+            elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
