@@ -52,7 +52,8 @@ if __name__ == "__main__":
                 bpass_read=bpass_read,
                 SFH_samp=SFR_samps[index_z],
                 M_knee=10**post_sample[6],
-                sigma_kuv=post_sample[7],
+                slope_SFR=post_sample[7],
+                sigma_kuv=post_sample[8],
                 mass_dependent_sigma_uv=True,
             )
         np.savetxt(parser.parse_args().directory_of_posteriors + f"UVLFs_{post_sample[0]:.8f}.txt", preds)
