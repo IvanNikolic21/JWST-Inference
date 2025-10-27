@@ -1428,10 +1428,10 @@ def run_mcmc(
             if slope_SFR:
                 print("Using slope SFR prior")
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_tstarslopez.txt'
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_tstarslopez.txt'
                 )
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_tstarslopez.txt'
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_tstarslopez.txt'
                 )
             elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
