@@ -1,10 +1,14 @@
 import numpy as np
-
-dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
+import os
+#dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
 
 
 class Observations():
     def __init__(self, ang, uvlf):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+        #     dir_dat = "/groups/astro/ivannik/programs/JWST-Inference/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
+        dir_dat = script_dir + "/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
         if ang:
             self.cons_theta = [
                 i.strip().split() for i in open(
