@@ -34,19 +34,19 @@ class LikelihoodAngBase():
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
             with open(
-                    '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105_alt.csv',
+                    './Nz_8_105_alt.csv',
                     newline='') as csvfile:
                 Nz_8_10 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_6_8_alt.csv',
+                './Nz_6_8_alt.csv',
                 newline='') as csvfile:
                 Nz_6_8 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_5_6_alt.csv',
+                './Nz_5_6_alt.csv',
                 newline='') as csvfile:
                 Nz_5_6 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
