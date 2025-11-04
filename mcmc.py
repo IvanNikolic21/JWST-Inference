@@ -484,6 +484,7 @@ def run_mcmc(
         sigma_uv=True,
         mass_dependent_sigma_uv=False,
         slope_SFR=False,
+        use_only_faint_end=False,
 ):
 
     if priors is None:
@@ -1548,6 +1549,7 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     parser.add_argument("--slope_SFR", action="store_true",)
+    parser.add_argument("use_only_faint_end", action="store_true",)
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1636,4 +1638,5 @@ if __name__ == "__main__":
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
         slope_SFR=inputs.slope_SFR,
+        use_only_faint_end=inputs.use_only_faint_end,
     )
