@@ -870,6 +870,7 @@ def run_mcmc(
                     )
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
+                print(muvs_o, uvlf_o, sig_o, observations_inst)
                 if use_only_faint_end:
                     muvs_mask = [muvs_o >= -20.0]
                     muvs_c = muvs_o[muvs_mask]
@@ -1559,7 +1560,7 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     parser.add_argument("--slope_SFR", action="store_true",)
-    parser.add_argument("use_only_faint_end", action="store_true",)
+    parser.add_argument("--use_only_faint_end", action="store_true",)
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
