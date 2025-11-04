@@ -1459,11 +1459,11 @@ def run_mcmc(
                 )
             elif M_knee and sigma_uv:
                 cov_mat = np.loadtxt(
-                    os.path.join(script_dir + 'cov_matr_uv.txt')
+                    os.path.join(script_dir + '/cov_matr_uv.txt')
                 ) / 5
                 print("I reduced cov mat")
                 mu = np.loadtxt(
-                    os.path.join(script_dir + 'means_uv.txt')
+                    os.path.join(script_dir + '/means_uv.txt')
                 )
             else:
                 cov_mat = 2 * np.loadtxt(
