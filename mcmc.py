@@ -33,20 +33,21 @@ class LikelihoodAngBase():
         self.exact_specs = exact_specs
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
             with open(
-                    './Nz_8_105_alt.csv',
+                    os.path.join(script_dir, 'Nz_8_105_alt.csv'),
                     newline='') as csvfile:
                 Nz_8_10 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                './Nz_6_8_alt.csv',
+                os.path.join(script_dir, 'Nz_6_8_alt.csv'),
                 newline='') as csvfile:
                 Nz_6_8 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                './Nz_5_6_alt.csv',
+                os.path.join(script_dir, 'Nz_5_6_alt.csv'),
                 newline='') as csvfile:
                 Nz_5_6 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
@@ -676,9 +677,18 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, slope_SFR=slope_SFR)
         SFR_samp_10 = SFH_sampler(z=10)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 
     if uvlf and use_BPASS:
-        bpass_read = bpass_loader()
+        print(script_dir)
+        if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+            bpass_read = bpass_loader(
+                filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
+            )
+        else:
+            bpass_read = bpass_loader()
         vect_func = np.vectorize(bpass_read.get_UV)
     else:
         bpass_read = None
@@ -1449,11 +1459,11 @@ def run_mcmc(
                 )
             elif M_knee and sigma_uv:
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
+                    os.path.join(script_dir + 'cov_matr_uv.txt')
                 ) / 5
                 print("I reduced cov mat")
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
+                    os.path.join(script_dir + 'means_uv.txt')
                 )
             else:
                 cov_mat = 2 * np.loadtxt(
