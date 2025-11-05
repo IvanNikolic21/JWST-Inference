@@ -32,7 +32,13 @@ if __name__ == "__main__":
     SFR_samps = [
         SFH_sampler(z=z) for z in z_s
     ]
-    bpass_read = bpass_loader()
+     script_dir = os.path.dirname(os.path.abspath(__file__))
+    if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+        bpass_read = bpass_loader(
+            filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
+        )
+    else:
+        bpass_read = bpass_loader()
     vect_func = np.vectorize(bpass_read.get_UV)
     for index_in, post_sample in enumerate(posteriors):
         preds = np.zeros((len(z_s), len(muvs_o)))
