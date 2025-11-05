@@ -32,7 +32,7 @@ if __name__ == "__main__":
     SFR_samps = [
         SFH_sampler(z=z) for z in z_s
     ]
-     script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
         bpass_read = bpass_loader(
             filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
