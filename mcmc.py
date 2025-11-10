@@ -1322,7 +1322,7 @@ def run_mcmc(
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1343,7 +1343,7 @@ def run_mcmc(
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1364,7 +1364,7 @@ def run_mcmc(
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1385,7 +1385,7 @@ def run_mcmc(
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1406,7 +1406,7 @@ def run_mcmc(
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
