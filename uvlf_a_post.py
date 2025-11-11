@@ -20,7 +20,7 @@ if __name__ == "__main__":
     ) #this is also where database will be stored.
     z_s = [6.0,8.0,10.0,11.0,12.5,14.0]
     muvs_o = np.linspace(-23,-16,20)
-    posteriors =  np.loadtxt(parser.parse_args().directory_of_posteriors + "post_equal_weights.dat")
+    posteriors =  np.genfromtxt(parser.parse_args().directory_of_posteriors + "post_equal_weights.dat")
     hmf_locs = [
         hmf.MassFunction(
             z=z,
