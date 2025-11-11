@@ -486,6 +486,7 @@ def run_mcmc(
         mass_dependent_sigma_uv=False,
         slope_SFR=False,
         use_only_faint_end=False,
+        resume=False,
 ):
 
     if priors is None:
@@ -513,6 +514,7 @@ def run_mcmc(
         "multimodal": False,
         "n_iter_before_update": 20,
         'n_live_points': 1000,
+        'resume': resume,
     }
     uvlf = False
     ang = False
@@ -1561,6 +1563,7 @@ if __name__ == "__main__":
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     parser.add_argument("--slope_SFR", action="store_true",)
     parser.add_argument("--use_only_faint_end", action="store_true",)
+    parser.add_argument("--resume", action="store_true",)
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1650,4 +1653,5 @@ if __name__ == "__main__":
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
         slope_SFR=inputs.slope_SFR,
         use_only_faint_end=inputs.use_only_faint_end,
+        resume=inputs.resume,
     )
