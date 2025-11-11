@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import hmf as hmf
+from astropy.cosmology import Planck18 as cosmo
 
 try:
     from uvlf import UV_calc_numba as uvlf_func
@@ -46,8 +47,8 @@ if __name__ == "__main__":
         for index_z, z in enumerate(z_s):
             preds[index_z] = uvlf_func(
                 muvs_o,
-                np.log10(hmf_locs[index_z].m),
-                hmf_locs[index_z].dndlog10m,
+                np.log10(hmf_locs[index_z].m/ cosmo.h),
+                hmf_locs[index_z].dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (hmf_locs[index_z].m / cosmo.h) ),
                 f_star_norm=10 ** post_sample[0],
                 alpha_star=post_sample[3],
                 sigma_SHMR=post_sample[1],
