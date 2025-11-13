@@ -707,93 +707,129 @@ def run_mcmc(
         for li in likelihoods:
             if li == "Ang_z9_m87":
                 thet, w, wsig = observations_inst.get_obs_z9_m87()
-                lnL+=AngBase_z9.call_likelihood(
-                    p_new,
-                    obs="Ang_z9_m87",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig
-                )
+                try:
+                    lnL+=AngBase_z9.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m87",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z9_m87 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z9_m9":
                 thet, w, wsig = observations_inst.get_obs_z9_m90()
-                lnL+=AngBase_z9.call_likelihood(
-                    p_new,
-                    obs="Ang_z9_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z9.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z9_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m87":
                 thet, w, wsig = observations_inst.get_obs_z7_m87()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m87",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m87",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m87 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m9":
                 thet, w, wsig = observations_inst.get_obs_z7_m90()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m93":
                 thet, w, wsig = observations_inst.get_obs_z7_m93()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m93",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m93",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m93 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m85":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m85()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m85",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m85",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m85 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m9":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m90()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m92_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m92_5()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m92_5",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m92_5",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m92_5 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m9_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m95()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m9_5",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m9_5",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m9_5 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
                 if use_only_faint_end:
@@ -850,26 +886,32 @@ def run_mcmc(
                 )
                 if ang==False and len(likelihoods) == 1:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z9_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Don24 for this parameters:", p_new)
                 if ang==False:
                     thet, w, wsig = observations_inst.get_obs_z7_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z7_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Don24 for this parameters:", p_new)
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
                 print(muvs_o, uvlf_o, sig_o, observations_inst)
@@ -1002,25 +1044,31 @@ def run_mcmc(
                 )
                 if not ang:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z9_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
                     thet, w, wsig = observations_inst.get_obs_z7_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z7_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
                 if use_only_faint_end:
