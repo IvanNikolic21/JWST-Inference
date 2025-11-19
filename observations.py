@@ -333,32 +333,32 @@ class Observations():
 
     def get_obs_uvlf_z8_Willot23(self):
         Willot_Muvs = np.array(
-            [-20.78, -20.21, -19.68, -19.29, -18.83, -18.27]
+            [-20.78, -20.21, -19.68, -18.83, -18.27]
         )
         Willot_uvlf = np.array(
-            [8.8, 13, 42, 80, 116, 253]
+            [8.8, 13, 42, 116, 253]
         ) * 1e-5
         Willot_sig_p = np.array(
-            [7.1, 6, 11, 18,28, 79]
+            [7.1, 6, 11,28, 79]
         ) * 1e-5
         Willot_sig_m = np.array(
-            [4.4, 6, 11, 18,28, 79]
+            [4.4, 6, 11,28, 79]
         ) * 1e-5
 
         return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
 
     def get_obs_uvlf_z9_Willot23(self):
         Willot_Muvs = np.array(
-            [-20.58, -20.30, -19.53, -19.34, -18.89, -18.35]
+            [-20.58, -20.30, -19.53, -19.34, -18.35]
         )
         Willot_uvlf = np.array(
-            [7.1, 9.5, 23, 31, 67, 39]
+            [7.1, 9.5, 23, 31, 39]
         ) * 1e-5
         Willot_sig_p = np.array(
-            [7.0, 7.7, 9, 11,24, 52]
+            [7.0, 7.7, 9, 11, 52]
         ) * 1e-5
         Willot_sig_m = np.array(
-            [4.0, 4.8, 9, 11,24, 26]
+            [4.0, 4.8, 9, 11, 26]
         ) * 1e-5
 
         return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
@@ -774,7 +774,6 @@ class Observations():
                 -20.25,
                 -19.25,
                 -18.25,
-                -17.25,
             ]
         )
         Bouwens_uvlf = np.array(
@@ -783,7 +782,6 @@ class Observations():
                 0.000010,
                 0.000034,
                 0.000190,
-                0.000630,
             ]
         )
         Bouwens_sig = np.array(
@@ -792,7 +790,7 @@ class Observations():
                 0.000005,
                 0.000022,
                 0.000120,
-                0.000520,
+
             ]
         )
 
