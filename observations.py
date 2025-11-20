@@ -198,16 +198,16 @@ class Observations():
 
     def get_obs_uvlf_z10_Donnan24(self):
         Don_Muvs = np.array(
-            [-20.75,-20.25,-19.75,-19.25,-18.55,-18.05,-17.55]
+            [-20.75,-20.25,-19.25,-18.05]
         )
         Don_uvlf = np.array(
-            [4,27,92,177,321,686,1278]
+            [4,27,177,686]
         )*1e-6
         Don_sig_p = np.array(
-            [10,13,25,53,127,245,486]
+            [10,13,53,245]
         )*1e-6
         Don_sig_m = np.array(
-            [4,10,20,45,111,223,432]
+            [4,10,45,223]
         )*1e-6
         return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
 
@@ -228,16 +228,16 @@ class Observations():
 
     def get_obs_uvlf_z12_5_Donnan24(self):
         Don_Muvs = np.array(
-            [-21.25,-20.75,-20.25,-19.75,-19.25,-18.75,-18.25]
+            [-20.75,-19.75,-18.75,-18.25]
         )
         Don_uvlf = np.array(
-            [3,4,16,34,43,80,217]
+            [4,34,80,217]
         )*1e-6
         Don_sig_p = np.array(
-            [4,5,9,23,35,51,153]
+            [5,23,51,153]
         )*1e-6
         Don_sig_m = np.array(
-            [2,3,6,15,22,36,104]
+            [3,15,36,104]
         )*1e-6
         return Don_Muvs, Don_uvlf, (Don_sig_p, Don_sig_m)
 
@@ -412,22 +412,22 @@ class Observations():
     def get_obs_uvlf_z9_8_Whitler25(self):
         Willot_Muvs = np.array(
             [
-                -21.4, -20.4, -19.4, -18.4,-17.4
+                -21.4, -20.4, -19.4, -18.4
             ]
         )
         Willot_uvlf = np.array(
             [
-                0.4,3.6,17,78,330
+                0.4,3.6,17,78
             ]
         ) * 1e-5
         Willot_sig_p = np.array(
             [
-                0.45,1.2,3,10,50
+                0.45,1.2,3,10
             ]
         ) * 1e-5
         Willot_sig_m = np.array(
             [
-                0.26,1.1,3,9,40
+                0.26,1.1,3,9
             ]
         ) * 1e-5
         return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
