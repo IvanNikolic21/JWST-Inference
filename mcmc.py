@@ -685,7 +685,7 @@ def run_mcmc(
 
     if uvlf and use_BPASS:
         print(script_dir)
-        if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+        if script_dir[:7] == "/groups":
             bpass_read = bpass_loader(
                 filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
             )
