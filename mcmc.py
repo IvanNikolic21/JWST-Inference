@@ -452,8 +452,8 @@ class LikelihoodUVLFBase:
                     lnL += -0.5 * (
                             (preds[index] - uvlf_o[index])**2 / (
                             (sig_a + sig_b * (preds[index] - uvlf_o[index])
-                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
-                    )
+                             ) ** 2)) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
+
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
                 # L = intg.trapezoid(
