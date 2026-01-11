@@ -1176,6 +1176,33 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
+                if not ang:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
+                    thet, w, wsig = observations_inst.get_obs_z7_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
             elif li == "UVLF_z10_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Willot23()
                 if use_only_faint_end:

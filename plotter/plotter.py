@@ -231,3 +231,263 @@ def get_highphotoz_plot(posterior):
     plt.savefig(
         '/home/inikolic/projects/UVLF_FMs/run_speed/analysis_post/diff_num_PG25.pdf',
         bbox_inches='tight')
+
+def corner_for_the_paper():
+    params = [
+        r"f$_{\ast}$",
+        r"$\sigma_{\rm SHMR}$",
+        r"$t_{\ast}$",
+        r"$\alpha_{\ast}$",
+        r"$\sigma_{\rm SFMS, 0}$",
+        r"$a_{\sigma, \rm SFR}$",
+        r"M$_{\rm knee}$"]
+    # priors = [(-2.0, 1.0), (0.001, 1.0), (0.001, 1.0), (0.0, 1.0), (0.001, 1.2),
+    #               (-1.0, 0.5)]
+
+    sampls_diag = np.random.multivariate_normal(mean,
+                                                cov_matr_diag_changed * 6 / 5,
+                                                size=40000)
+    priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+              (0.001, 1.5), (-1.0, 0.5), (11.5, 16.0)]
+    mins = np.array([b[0] for b in priors])
+    maxs = np.array([b[1] for b in priors])
+    mask = np.all((sampls_diag >= mins) & (sampls_diag <= maxs), axis=1)
+    samps_diag_Mknee_done = sampls_diag[mask]
+    dataset2_padded = np.hstack(
+        [
+            np.random.random((post_FLARES_transormed.shape[1], 2)) - 10,
+            (post_FLARES_transormed[:1, :]).T,
+            np.random.random((post_FLARES_transormed.shape[1], 1)) - 10,
+            (post_FLARES_transormed[1:, :]).T,
+            np.random.random((post_FLARES_transormed.shape[1], 1)) - 10
+        ]
+    )
+    import matplotlib.lines as mlines
+
+    fig = corner.corner(
+        post_FL_transormed.T,
+        bins=40,
+        smooth=True,
+        labels=params,
+        range=[(-6.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0), (0.0, 1.0),
+               (-0.3, 0.3), (11.0, 16.0)],
+
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        # quantiles=(0.16, 0.84),
+        plot_datapoints=False, plot_density=False,
+        weights=np.ones(len(post_FL_transormed.T)) / len(post_FL_transormed.T),
+        label_kwargs={'fontsize': 18},
+        color='#a6cee3',
+        label='FirstLight',
+        contour_kwargs={"linewidths": 3}, hist_kwargs={
+            "linewidth": 2.5,
+            "histtype": "step",
+        },
+    )
+
+    fig2 = corner.corner(
+        post_ASTRID_transormed.T,
+        bins=40,
+        fig=fig,
+        smooth=True,
+        labels=params,
+        range=[(-6.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0), (0.0, 1.0),
+               (-0.3, 0.3), (11.0, 16.0)],
+
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        # quantiles=(0.16, 0.84),
+        # range=ranges,
+        plot_datapoints=False, plot_density=False,
+        weights=np.ones(len(post_ASTRID_transormed.T)) / len(
+            post_ASTRID_transormed.T),
+        label_kwargs={'fontsize': 18},
+        color='#1f78b4',
+        label='ASTRID', contour_kwargs={"linewidths": 3}, hist_kwargs={
+            "linewidth": 2.5,
+            "histtype": "step",
+        },
+    )
+
+    fig3 = corner.corner(
+        post_SERRA_transormed.T,
+        bins=40,
+        smooth=True,
+        labels=params,
+        fig=fig,
+        range=[(-6.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0), (0.0, 1.0),
+               (-0.3, 0.3), (11.0, 16.0)],
+
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        # quantiles=(0.16, 0.84),
+        # range=ranges,
+        plot_datapoints=False, plot_density=False,
+        weights=np.ones(len(post_SERRA_transormed.T)) / len(
+            post_SERRA_transormed.T),
+        label_kwargs={'fontsize': 18},
+        color='#b2df8a',
+        label='SERRA', contour_kwargs={"linewidths": 3}, hist_kwargs={
+            "linewidth": 2.5,
+            "histtype": "step",
+        },
+    )
+
+    fig3 = corner.corner(
+        post_FIRE_transormed.T,
+        bins=40,
+        smooth=True,
+        labels=params,
+        fig=fig,
+        range=[(-6.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0), (0.0, 1.0),
+               (-0.3, 0.3), (11.0, 16.0)],
+
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        # quantiles=(0.16, 0.84),
+        # range=ranges,
+        plot_datapoints=False, plot_density=False,
+        weights=np.ones(len(post_FIRE_transormed.T)) / len(
+            post_FIRE_transormed.T),
+        label_kwargs={'fontsize': 18},
+        color='#33a02c',
+        label='FIRE', contour_kwargs={"linewidths": 3}, hist_kwargs={
+            "linewidth": 2.5,
+            "histtype": "step",
+        },
+    )
+    fig5 = corner.corner(
+        samps_diag_Mknee_done,
+        bins=40,
+        smooth=True,
+        labels=params,
+        fig=fig,
+        range=[(-6.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0), (0.0, 1.0),
+               (-0.3, 0.3), (11.0, 16.0)],
+
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        # quantiles=(0.16, 0.84),
+        # range=ranges,
+        plot_datapoints=False, plot_density=False,
+        weights=np.ones(len(samps_diag_Mknee_done)) / len(
+            samps_diag_Mknee_done),
+        label_kwargs={'fontsize': 18},
+        color='black', zorder=0,
+        label='Combined', contour_kwargs={"linewidths": 2.0}, hist_kwargs={
+            "linewidth": 2.0,
+            "histtype": "step",
+        },
+    )
+
+    fig4 = corner.corner(
+        dataset2_padded,
+        bins=40,
+        smooth=True,
+        labels=params,
+        fig=fig,
+        # levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+        levels=(0.68, 0.95),
+        range=[(-10, -9), (-10, -9), (0.01, 1.0), (-10, -9), (0.0, 1.0),
+               (-0.3, 0.3), (-10, -9)],
+
+        # range=[(-1.2,0.6), (0.05,0.6), (0.01,0.6), (0.1,1.0),(0.0,0.8), (-0.3,0.3)],
+        # quantiles=(0.16, 0.84),
+        # range=ranges,
+        plot_datapoints=False, plot_density=False, plot_contours=True,
+        weights=np.ones(len(dataset2_padded)) / len(dataset2_padded),
+        label_kwargs={'fontsize': 18},
+        color='#fb9a99',
+        label='FLARES',
+        zorder=-1, lw=3, contour_kwargs={"linewidths": 3}, hist_kwargs={
+            "linewidth": 2.5,
+            "histtype": "step",
+        },
+    )
+
+    # fig3 = corner.corner(
+    #     sampls_diag,
+    #     bins=40 ,
+    #     smooth=True,
+    #     labels = params,
+    #     fig=fig,
+    #     range=[(-6.0,0.0), (0.05,1.0), (0.01,1.0), (0.1,1.0),(0.0,1.0), (-0.3,0.3),(11.0,16.0)],
+
+    #     #levels= (1-np.exp(-2./2),1-np.exp(-4./2.)),#, 1-np.exp(-5/2.)),
+    #     levels = (0.68,0.95),
+    #     #quantiles=(0.16, 0.84),
+    #     #range=ranges,
+    #     plot_datapoints=False, plot_density=False,
+    #     weights=np.ones(len(sampls_diag))/len(sampls_diag),
+    #     label_kwargs = {'fontsize':18},
+    #     color='gray',
+    #     label='Combined'
+    # )
+
+    def set_corner_ranges(fig, ranges):
+        """
+        Force all axes in an existing corner figure to use the provided ranges.
+
+        ranges: list of (min,max) with length ndim, in the same order as params.
+        """
+        ndim = len(ranges)
+
+        # corner uses ndim*ndim axes; this reshape matches corner's internal layout
+        axes = np.array(fig.get_axes()).reshape((ndim, ndim))
+
+        # Diagonal: 1D histograms
+        for i in range(ndim):
+            axes[i, i].set_xlim(ranges[i])
+
+        # Lower triangle: 2D panels
+        for y in range(1, ndim):
+            for x in range(0, y):
+                ax = axes[y, x]
+                ax.set_xlim(ranges[x])
+                ax.set_ylim(ranges[y])
+
+    # ---- call this right before savefig ----
+    ranges = [(-5.0, 0.0), (0.05, 0.8), (0.01, 1.0), (0.1, 1.0),
+              (0.0, 1.0), (-0.3, 0.3), (11.0, 16.0)]
+
+    set_corner_ranges(fig, ranges)
+
+    def style_corner_axes(fig, labelsize=22, ticksize=16, tickwidth=1.8,
+                          ticklength=6):
+        for ax in fig.get_axes():
+            # Axis labels (parameter names)
+            ax.xaxis.label.set_size(labelsize)
+            ax.yaxis.label.set_size(labelsize)
+
+            # Tick labels + ticks
+            ax.tick_params(
+                axis='both',
+                which='major',
+                labelsize=ticksize,
+                width=tickwidth,
+                length=ticklength,
+                direction='in'
+            )
+
+    style_corner_axes(
+        fig,
+        labelsize=22,  # parameter names
+        ticksize=16,  # numbers on axes
+        tickwidth=1.8,
+        ticklength=6
+    )
+    colors = ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', 'gray', ]
+    sample_labels = ['First Light', 'ASTRID', 'SERRA', 'FIRE', 'FLARES',
+                     'Combined']
+    plt.legend(
+        handles=[
+            mlines.Line2D([], [], color=colors[i], label=sample_labels[i], lw=3)
+            for i in range(len(colors))
+        ],
+        fontsize=40, frameon=True,
+        bbox_to_anchor=(1, len(post_FL_transormed)), loc="upper right"
+    )
+    plt.savefig(
+        '/home/inikolic/projects/UVLF_FMs/priors/prior_for_the_paper.pdf',
+        bbox_inches='tight')
