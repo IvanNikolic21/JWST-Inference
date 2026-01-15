@@ -903,11 +903,12 @@ def UV_calc_numba(
         sigma_kuv = 0.1,
         mass_dependent_sigma_uv=False,
         seed=0,
+        slope_SFR=1.0,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
                             fstar_norm=f_star_norm, M_knee=M_knee)
-    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+    sfrs = SFMS_new(msss, SFR_norm=t_star, z=z, slope_SFR=slope_SFR)
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
