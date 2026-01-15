@@ -33,20 +33,21 @@ class LikelihoodAngBase():
         self.exact_specs = exact_specs
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
             with open(
-                    '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_8_105_alt.csv',
+                    os.path.join(script_dir, 'Nz_8_105_alt.csv'),
                     newline='') as csvfile:
                 Nz_8_10 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_6_8_alt.csv',
+                os.path.join(script_dir, 'Nz_6_8_alt.csv'),
                 newline='') as csvfile:
                 Nz_6_8 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
                 )
             with open(
-                '/home/inikolic/projects/UVLF_FMs/github_code/JWST-Inference/Nz_5_6_alt.csv',
+                os.path.join(script_dir, 'Nz_5_6_alt.csv'),
                 newline='') as csvfile:
                 Nz_5_6 = list(
                     csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC)
@@ -485,6 +486,7 @@ def run_mcmc(
         mass_dependent_sigma_uv=False,
         slope_SFR=False,
         use_only_faint_end=False,
+        resume=False,
 ):
 
     if priors is None:
@@ -512,6 +514,7 @@ def run_mcmc(
         "multimodal": False,
         "n_iter_before_update": 20,
         'n_live_points': 1000,
+        'resume': resume,
     }
     uvlf = False
     ang = False
@@ -676,9 +679,18 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Bouwens21_10 = LikelihoodUVLFBase(params, z=10, hmf_choice=hmf_choice, sigma_uv=sigma_uv, mass_dependent_sigma_uv=mass_dependent_sigma_uv, slope_SFR=slope_SFR)
         SFR_samp_10 = SFH_sampler(z=10)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 
     if uvlf and use_BPASS:
-        bpass_read = bpass_loader()
+        print(script_dir)
+        if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+            bpass_read = bpass_loader(
+                filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
+            )
+        else:
+            bpass_read = bpass_loader()
         vect_func = np.vectorize(bpass_read.get_UV)
     else:
         bpass_read = None
@@ -695,97 +707,133 @@ def run_mcmc(
         for li in likelihoods:
             if li == "Ang_z9_m87":
                 thet, w, wsig = observations_inst.get_obs_z9_m87()
-                lnL+=AngBase_z9.call_likelihood(
-                    p_new,
-                    obs="Ang_z9_m87",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig
-                )
+                try:
+                    lnL+=AngBase_z9.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m87",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z9_m87 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z9_m9":
                 thet, w, wsig = observations_inst.get_obs_z9_m90()
-                lnL+=AngBase_z9.call_likelihood(
-                    p_new,
-                    obs="Ang_z9_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z9.call_likelihood(
+                        p_new,
+                        obs="Ang_z9_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z9_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m87":
                 thet, w, wsig = observations_inst.get_obs_z7_m87()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m87",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m87",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m87 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m9":
                 thet, w, wsig = observations_inst.get_obs_z7_m90()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z7_m93":
                 thet, w, wsig = observations_inst.get_obs_z7_m93()
-                lnL+=AngBase_z7.call_likelihood(
-                    p_new,
-                    obs="Ang_z7_m93",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z7.call_likelihood(
+                        p_new,
+                        obs="Ang_z7_m93",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z7_m93 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m85":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m85()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m85",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m85",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m85 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m9":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m90()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m9",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m9",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m9 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m92_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m92_5()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m92_5",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m92_5",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m92_5 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "Ang_z5_5_m9_5":
                 thet, w, wsig = observations_inst.get_obs_z5_5_m95()
-                lnL+=AngBase_z5.call_likelihood(
-                    p_new,
-                    obs="Ang_z5_5_m9_5",
-                    thet=thet,
-                    w=w,
-                    sig_w=wsig,
-                    savedir=output_filename,
-                )
+                try:
+                    lnL+=AngBase_z5.call_likelihood(
+                        p_new,
+                        obs="Ang_z5_5_m9_5",
+                        thet=thet,
+                        w=w,
+                        sig_w=wsig,
+                        savedir=output_filename,
+                    )
+                except ZeroDivisionError:
+                    print("ZeroDivisionError in Ang_z5_5_m9_5 for this parameters:", p_new)
+                    lnL+= -np.inf
             elif li == "UVLF_z11_McLeod23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_McLeod23()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = sig_o[muvs_mask]
@@ -817,7 +865,7 @@ def run_mcmc(
             elif li == "UVLF_z9_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Donnan24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -838,30 +886,37 @@ def run_mcmc(
                 )
                 if ang==False and len(likelihoods) == 1:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z9_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Don24 for this parameters:", p_new)
                 if ang==False:
                     thet, w, wsig = observations_inst.get_obs_z7_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z7_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Don24 for this parameters:", p_new)
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
+                print(muvs_o, uvlf_o, sig_o, observations_inst)
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -882,7 +937,7 @@ def run_mcmc(
             elif li == "UVLF_z11_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -903,7 +958,7 @@ def run_mcmc(
             elif li == "UVLF_z12_5_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -924,7 +979,7 @@ def run_mcmc(
             elif li == "UVLF_z7_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -946,7 +1001,7 @@ def run_mcmc(
             elif li == "UVLF_z8_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -968,7 +1023,7 @@ def run_mcmc(
             elif li == "UVLF_z9_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -989,29 +1044,35 @@ def run_mcmc(
                 )
                 if not ang:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z9_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
                     thet, w, wsig = observations_inst.get_obs_z7_m90()
-                    _ = AngBase.call_likelihood(
-                        p_new,
-                        obs="Ang_z7_m9",
-                        thet=thet,
-                        w=w,
-                        sig_w=wsig,
-                        savedir=output_filename,
-                        no_call=True
-                    )
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
             elif li == "UVLF_z10_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1033,7 +1094,7 @@ def run_mcmc(
             elif li == "UVLF_z12_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1055,7 +1116,7 @@ def run_mcmc(
             elif li == "UVLF_z14_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Harikane24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1076,7 +1137,7 @@ def run_mcmc(
             elif li == "UVLF_z8_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Willot23()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1097,7 +1158,7 @@ def run_mcmc(
             elif li == "UVLF_z9_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Willot23()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1115,10 +1176,37 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
+                if not ang:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
+                    thet, w, wsig = observations_inst.get_obs_z7_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
             elif li == "UVLF_z10_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Willot23()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1139,7 +1227,7 @@ def run_mcmc(
             elif li == "UVLF_z12_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Willot23()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1160,7 +1248,7 @@ def run_mcmc(
             elif li=="UVLF_z9_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_8_Whitler25()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1181,7 +1269,7 @@ def run_mcmc(
             elif li=="UVLF_z12_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_8_Whitler25()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1202,7 +1290,7 @@ def run_mcmc(
             elif li=="UVLF_z14_3_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_3_Whitler25()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1223,7 +1311,7 @@ def run_mcmc(
             elif li=="UVLF_z9_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Finkelstein24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1244,7 +1332,7 @@ def run_mcmc(
             elif li=="UVLF_z11_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Finkelstein24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1265,7 +1353,7 @@ def run_mcmc(
             elif li=="UVLF_z14_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Finkelstein24()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1286,7 +1374,7 @@ def run_mcmc(
             elif li=="UVLF_z5_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z5_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
                     sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
@@ -1308,10 +1396,10 @@ def run_mcmc(
             elif li=="UVLF_z6_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z6_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1329,10 +1417,10 @@ def run_mcmc(
             elif li=="UVLF_z7_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1350,10 +1438,10 @@ def run_mcmc(
             elif li=="UVLF_z8_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1371,10 +1459,10 @@ def run_mcmc(
             elif li=="UVLF_z9_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1392,10 +1480,10 @@ def run_mcmc(
             elif li == "UVLF_z10_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Bouwens21()
                 if use_only_faint_end:
-                    muvs_mask = [muvs_o >= -20.0]
+                    muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]
                     uvlf_c = uvlf_o[muvs_mask]
-                    sig_c = (sig_o[0][muvs_mask], sig_o[1][muvs_mask])
+                    sig_c = sig_o[muvs_mask]
                 else:
                     muvs_c = muvs_o
                     uvlf_c = uvlf_o
@@ -1410,8 +1498,70 @@ def run_mcmc(
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
+
+            elif li == "empty":
+                lnL += 0  # an option for testing
+                if not ang:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print(
+                            "ZeroDivisionError in UVLFBase_Har24_9 for this parameters:",
+                            p_new)
+                    thet, w, wsig = observations_inst.get_obs_z7_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print(
+                            "ZeroDivisionError in UVLFBase_Har24_9 for this parameters:",
+                            p_new)
             else:
                 lnL+=0 #an option for testing
+                if not ang:
+                    thet, w, wsig = observations_inst.get_obs_z9_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z9_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
+                    thet, w, wsig = observations_inst.get_obs_z7_m90()
+                    try:
+                        _ = AngBase.call_likelihood(
+                            p_new,
+                            obs="Ang_z7_m9",
+                            thet=thet,
+                            w=w,
+                            sig_w=wsig,
+                            savedir=output_filename,
+                            no_call=True
+                        )
+                    except ZeroDivisionError:
+                        print("ZeroDivisionError in UVLFBase_Har24_9 for this parameters:", p_new)
+
         return lnL
 
     def phi(x):
@@ -1456,11 +1606,11 @@ def run_mcmc(
                 )
             elif M_knee and sigma_uv:
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_uv.txt'
+                    os.path.join(script_dir + '/cov_matr_uv.txt')
                 ) / 5
                 print("I reduced cov mat")
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_uv.txt'
+                    os.path.join(script_dir + '/means_uv.txt')
                 )
             else:
                 cov_mat = 2 * np.loadtxt(
@@ -1556,6 +1706,8 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_uv", action="store_false")
     parser.add_argument("--mass_dependent_sigma_uv", action="store_true")
     parser.add_argument("--slope_SFR", action="store_true",)
+    parser.add_argument("--use_only_faint_end", action="store_true",)
+    parser.add_argument("--resume", action="store_true",)
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1644,4 +1796,6 @@ if __name__ == "__main__":
         sigma_uv=inputs.sigma_uv,
         mass_dependent_sigma_uv=inputs.mass_dependent_sigma_uv,
         slope_SFR=inputs.slope_SFR,
+        use_only_faint_end=inputs.use_only_faint_end,
+        resume=inputs.resume,
     )

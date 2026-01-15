@@ -1,10 +1,14 @@
 import numpy as np
-
-dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
+import os
+#dir_dat = "/home/inikolic/projects/UVLF_FMs/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
 
 
 class Observations():
     def __init__(self, ang, uvlf):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+        #     dir_dat = "/groups/astro/ivannik/programs/JWST-Inference/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
+        dir_dat = script_dir + "/data/Paquereau_2025_clustering/GalClustering_COSMOS-Web_Paquereau2025/clustering_measurements/"
         if ang:
             self.cons_theta = [
                 i.strip().split() for i in open(
@@ -793,3 +797,42 @@ class Observations():
         )
 
         return Bouwens_Muvs, Bouwens_uvlf, Bouwens_sig
+
+class Sigm_UV():
+    def __init__(self):
+        pass
+    def get_Carvajal_Bohorquez_25(self):
+        redshifts_min = np.array([6,7,9])
+        redshifts_max = np.array([7,9,12])
+
+        #Note that they don't report the full range in their paper, but 16-84 percentile of the distribution of the
+        #sample which is not publicly available.
+
+        sigma_uvs = np.array([0.72, 0.54, 0.57])
+        sigma_uv_unc_min = np.array([0.02,0.02,0.03])
+        sigma_uv_unc_max = np.array([0.02,0.02,0.03])
+
+        #Note that this is 16-84 percentile.
+        #Note that their median log stellar mass is ~ 8.1 (a bit below my 1e11 halo mass).
+        #With that in mind their sigma_UV is actually defined through p(Muv|Mstar).
+        print("Returning redshift ranges (as min and max separately), sigma_uv, and uncertainty separately.")
+        return redshifts_min, redshifts_max, sigma_uvs, sigma_uv_unc_min, sigma_uv_unc_max
+
+    def get_Pallottini_23(self):
+        redshift = 7.7
+        sigma_uv = 0.61
+
+        #couple of notes:
+        #it's not clear whether sigma_UV in their paper is related to the halo or stellar mass. I believe it's Mast!
+        print("Returning redshift and sigma_UV from SERRA simulation")
+        return redshift, sigma_uv
+
+    def get_Shen_23(self):
+        redshifts = np.array([9,10,12])
+        sigma_uvs = np.array([0.75,1.5,2.0])
+
+        #couple of notes:
+        #This is a theoretical work that doesn't attempt inference or simulation prediction so all the values of
+        #sigma_uv are qualitative
+        #z=9 result is a good fit for Mv<-19, but not for lower
+        #z=10 and 12 are good fits throughout the range.
