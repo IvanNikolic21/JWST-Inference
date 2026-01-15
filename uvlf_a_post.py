@@ -19,6 +19,8 @@ if __name__ == "__main__":
         type=str,
         default="/home/user/Documents/projects/UVLF_clust/analysis_post/Harikane_only/"
     ) #this is also where database will be stored.
+    parser.add_argument("--z_dependent_SHMR", action="store_true")
+    parser.add_argument("--dependence_on_alpha_star", action="store_true")
     z_s = [6.0,8.0,10.0,11.0,12.5,14.0]
     muvs_o = np.linspace(-25,-16,20)
     posteriors =  np.genfromtxt(parser.parse_args().directory_of_posteriors + "post_equal_weights.dat")
@@ -60,7 +62,10 @@ if __name__ == "__main__":
                 bpass_read=bpass_read,
                 SFH_samp=SFR_samps[index_z],
                 M_knee=10**post_sample[6],
-                sigma_kuv=post_sample[7],
+                sigma_kuv=post_sample[8],
+                #z_dependent_SHMR=parser.parse_args().z_dependent_SHMR,
                 mass_dependent_sigma_uv=True,
+                alpha_z_SHMR=post_sample[7],
+                dependence_on_alpha_star=parser.parse_args().dependence_on_alpha_star,
             )
         np.savetxt(parser.parse_args().directory_of_posteriors + f"UVLFs_{post_sample[0]:.8f}.txt", preds)

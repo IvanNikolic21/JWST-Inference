@@ -277,6 +277,8 @@ class LikelihoodUVLFBase:
             vect_func=None,
             bpass_read=None,
             sfr_samp_inst=None,
+            z_dependent_SHMR=False,
+            dependence_on_alpha_star=False,
 ):
         # dic_params = dict.fromkeys(self.params, p)
         dic_params = {}
@@ -324,10 +326,10 @@ class LikelihoodUVLFBase:
         else:
             sigma_UV = 0.2
 
-        if "slope_SFR" not in dic_params:
-            slope_SFR = 1.0
+        if "alpha_z_SHMR" in dic_params:
+            alpha_z_SHMR = dic_params["alpha_z_SHMR"]
         else:
-            slope_SFR = dic_params["slope_SFR"]
+            alpha_z_SHMR = 0.0
 
         lnL = 0
         if use_BPASS:
@@ -349,7 +351,8 @@ class LikelihoodUVLFBase:
                     M_knee=M_knee,
                     sigma_kuv=sigma_UV,
                     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
-                    slope_SFR = slope_SFR,
+                    alpha_z_SHMR=alpha_z_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star,
                 )
 
                 # preds = UV_calc_BPASS_op(
@@ -385,7 +388,9 @@ class LikelihoodUVLFBase:
                     vect_func=vect_func,
                     bpass_read=bpass_read,
                     SFH_samp=sfr_samp_inst,
-                    M_knee = M_knee
+                    M_knee = M_knee,
+                    alpha_z_SHMR=alpha_z_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star,
                 )
         else:
             preds = UV_calc(
@@ -400,6 +405,8 @@ class LikelihoodUVLFBase:
                 a_sig_SFR=a_sig_SFR,
                 z=self.z,
                 M_knee = M_knee,
+                alpha_z_SHMR=alpha_z_SHMR,
+                dependence_on_alpha_star=dependence_on_alpha_star,
             )
 
         for index, muvi in enumerate(muvs_o):
@@ -487,6 +494,8 @@ def run_mcmc(
         slope_SFR=False,
         use_only_faint_end=False,
         resume=False,
+        z_dependent_SHMR=False,
+        dependence_on_alpha_star = False,
 ):
 
     if priors is None:
@@ -850,6 +859,8 @@ def run_mcmc(
                     sfr_samp_inst = SFR_samp_11,
                     bpass_read = bpass_read,
                     vect_func = vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
                 if ang==False:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -883,6 +894,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
                 if ang==False and len(likelihoods) == 1:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -933,6 +946,8 @@ def run_mcmc(
                     sfr_samp_inst = SFR_samp_10,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z11_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Donnan24()
@@ -954,6 +969,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_11,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z12_5_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_5_Donnan24()
@@ -975,6 +992,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_12_5,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z7_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Harikane24()
@@ -997,6 +1016,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_7,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z8_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Harikane24()
@@ -1019,6 +1040,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z9_Harikane24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Harikane24()
@@ -1041,6 +1064,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star,
                 )
                 if not ang:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -1089,6 +1114,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
 
             elif li == "UVLF_z12_Harikane24":
@@ -1111,6 +1138,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_12,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
 
             elif li == "UVLF_z14_Harikane24":
@@ -1133,6 +1162,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_14,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z8_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Willot23()
@@ -1154,6 +1185,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z9_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Willot23()
@@ -1175,6 +1208,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
                 if not ang:
                     thet, w, wsig = observations_inst.get_obs_z9_m90()
@@ -1223,6 +1258,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z12_Willot23":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_Willot23()
@@ -1244,6 +1281,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_12,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z9_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_8_Whitler25()
@@ -1265,6 +1304,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z12_8_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z12_8_Whitler25()
@@ -1286,6 +1327,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_12_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z14_3_Whitler25":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_3_Whitler25()
@@ -1307,6 +1350,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_14_3,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z9_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Finkelstein24()
@@ -1328,6 +1373,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z11_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z11_Finkelstein24()
@@ -1349,6 +1396,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_11,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z14_Finkelstein24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z14_Finkelstein24()
@@ -1370,6 +1419,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_14,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z5_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z5_Bouwens21()
@@ -1391,6 +1442,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_5,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
 
             elif li=="UVLF_z6_Bouwens21":
@@ -1413,6 +1466,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_6,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z7_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z7_Bouwens21()
@@ -1434,6 +1489,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_7,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z8_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z8_Bouwens21()
@@ -1455,6 +1512,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li=="UVLF_z9_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z9_Bouwens21()
@@ -1476,6 +1535,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
             elif li == "UVLF_z10_Bouwens21":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Bouwens21()
@@ -1497,6 +1558,8 @@ def run_mcmc(
                     sfr_samp_inst=SFR_samp_10,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
+                    z_dependent_SHMR=z_dependent_SHMR,
+                    dependence_on_alpha_star=dependence_on_alpha_star
                 )
 
             elif li == "empty":
@@ -1575,8 +1638,21 @@ def run_mcmc(
 
     def prior(cube, ndim, nparams):
         if covariance:
-
-            if M_knee and not sigma_uv:
+            if z_dependent_SHMR and dependence_on_alpha_star:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_alphastarz.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_alphastarz.txt'
+                )
+            elif z_dependent_SHMR and not dependence_on_alpha_star:
+                cov_mat = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_fstarz.txt'
+                )
+                mu = np.loadtxt(
+                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_fstarz.txt'
+                )
+            elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
@@ -1591,6 +1667,8 @@ def run_mcmc(
                 #         '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_slope_SFR.txt'
                 #     )
                 # else:
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/cov_matr_Mknee_wide.txt'
                 )
@@ -1598,6 +1676,8 @@ def run_mcmc(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
                 )
             elif M_knee and sigma_uv:
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = np.loadtxt(
                     os.path.join(script_dir + '/cov_matr_uv.txt')
                 ) / 5
@@ -1606,6 +1686,8 @@ def run_mcmc(
                     os.path.join(script_dir + '/means_uv.txt')
                 )
             else:
+                if z_dependent_SHMR and dependence_on_alpha_star:
+                    raise ValueError("How did I end up here, flag error?")
                 cov_mat = 2 * np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_SMHM.txt'
                 ) #my default is twice the covariance.
@@ -1701,6 +1783,10 @@ if __name__ == "__main__":
     parser.add_argument("--slope_SFR", action="store_true",)
     parser.add_argument("--use_only_faint_end", action="store_true",)
     parser.add_argument("--resume", action="store_true",)
+    parser.add_argument("--add_dust", action="store_true")
+    parser.add_argument("--use_only_faint_end", action="store_true")
+    parser.add_argument("--z_dependent_SHMR", action="store_true")
+    parser.add_argument("--dependence_on_alpha_star", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -1754,9 +1840,16 @@ if __name__ == "__main__":
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5), (0.5,1.5)]
     elif params == ["fstar_norm", "sigma_SHMR", "alpha_star_low"]:
         priors = [(-3.0,1.0), (0.001,2.0), (0.0,2.0)]
-    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_z_SHMR"]:
-        priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
-                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee","alpha_z_SHMR", "sigma_UV"]:
+        if not inputs.dependence_on_alpha_star:
+            priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0), (-10.0,10.0),(0.001,0.5)]
+        else:
+            priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.2), (-1.0, 0.5), (11.5,16.0),(-2.0,2.0),(0.001,0.5)]
+        if inputs.z_dependent_SHMR is False:
+            raise ValueError("You need to set --z_dependent_SHMR to use alpha_z_SHMR parameter.")
+
     else:
         raise ValueError("Invalid parameter list provided.")
 
@@ -1764,7 +1857,7 @@ if __name__ == "__main__":
         if "sigma_UV" not in params or not inputs.sigma_uv:
             raise ValueError("You need to include 'sigma_UV' in the params list to use mass-dependent sigma_UV.")
 
-    #, "M_knee"]
+    #, "M_knee"]Ad
     #params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
     #priors = [(-3.0,0.0), (0.001,2.0), (0.0,1.2)]
    # priors = [(-5.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0), (0.001, 1.2),
@@ -1791,4 +1884,6 @@ if __name__ == "__main__":
         slope_SFR=inputs.slope_SFR,
         use_only_faint_end=inputs.use_only_faint_end,
         resume=inputs.resume,
+        z_dependent_SHMR=inputs.z_dependent_SHMR,
+        dependence_on_alpha_star=inputs.dependence_on_alpha_star,
     )
