@@ -1,5 +1,7 @@
+import os
 import numpy as np
 import hmf as hmf
+from astropy.cosmology import Planck18 as cosmo
 
 try:
     from uvlf import UV_calc_numba as uvlf_func
@@ -20,8 +22,8 @@ if __name__ == "__main__":
     parser.add_argument("--z_dependent_SHMR", action="store_true")
     parser.add_argument("--dependence_on_alpha_star", action="store_true")
     z_s = [6.0,8.0,10.0,11.0,12.5,14.0]
-    muvs_o = np.linspace(-23,-16,20)
-    posteriors =  np.loadtxt(parser.parse_args().directory_of_posteriors + "post_equal_weights.dat")
+    muvs_o = np.linspace(-25,-16,20)
+    posteriors =  np.genfromtxt(parser.parse_args().directory_of_posteriors + "post_equal_weights.dat")
     hmf_locs = [
         hmf.MassFunction(
             z=z,
@@ -34,15 +36,21 @@ if __name__ == "__main__":
     SFR_samps = [
         SFH_sampler(z=z) for z in z_s
     ]
-    bpass_read = bpass_loader()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+        bpass_read = bpass_loader(
+            filename='/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.',
+        )
+    else:
+        bpass_read = bpass_loader()
     vect_func = np.vectorize(bpass_read.get_UV)
     for index_in, post_sample in enumerate(posteriors):
         preds = np.zeros((len(z_s), len(muvs_o)))
         for index_z, z in enumerate(z_s):
             preds[index_z] = uvlf_func(
                 muvs_o,
-                np.log10(hmf_locs[index_z].m),
-                hmf_locs[index_z].dndlog10m,
+                np.log10(hmf_locs[index_z].m/ cosmo.h),
+                hmf_locs[index_z].dndlog10m * cosmo.h**3 * np.exp(- 5e8 / (hmf_locs[index_z].m / cosmo.h) ),
                 f_star_norm=10 ** post_sample[0],
                 alpha_star=post_sample[3],
                 sigma_SHMR=post_sample[1],

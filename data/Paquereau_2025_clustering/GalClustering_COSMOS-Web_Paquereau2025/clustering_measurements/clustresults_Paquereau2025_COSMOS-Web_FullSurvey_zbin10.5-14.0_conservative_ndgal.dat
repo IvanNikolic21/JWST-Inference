@@ -1,0 +1,3 @@
+# file_type = Number density of galaxies and 1sigma uncertainty [Mpc^-3]; zmin = 10.5; zmax = 14.0; N_SMbins = 1; logSM_bins = [8.85, 12.0, nan, nan, nan, nan, nan, nan]; N_thetabins = 16; N_patches = 5; theta_lim = [0.0002, 0.2]; Area = COSMOS-Web_FullSurvey; RR_pairs = [4647554.0, 10948444.0, 25907065.0, 61123580.0, 143837753.0, 337313926.0, 785648959.0, 1818580824.0, 4177352000.0, 9556231632.0, 21775923904.0, 49647879471.0, 112487594950.0, 250100054480.0, 546091310857.0, 1153840012344.0]
+3.789449537525727625e-06
+2.635113965129810049e-06
