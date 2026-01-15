@@ -1784,7 +1784,6 @@ if __name__ == "__main__":
     parser.add_argument("--use_only_faint_end", action="store_true",)
     parser.add_argument("--resume", action="store_true",)
     parser.add_argument("--add_dust", action="store_true")
-    parser.add_argument("--use_only_faint_end", action="store_true")
     parser.add_argument("--z_dependent_SHMR", action="store_true")
     parser.add_argument("--dependence_on_alpha_star", action="store_true")
     inputs = parser.parse_args()
