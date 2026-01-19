@@ -1580,10 +1580,10 @@ def run_mcmc(
             if slope_SFR:
                 print("Using slope SFR prior")
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_tstarslopez.txt'
+                    os.path.join(script_dir + '/priors/cov_matr_tstarslopez.txt')
                 )
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_tstarslopez.txt'
+                    os.path.join(script_dir + '/priors/means_tstarslopez.txt')
                 )
             elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
