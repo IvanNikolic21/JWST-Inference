@@ -1641,17 +1641,17 @@ def run_mcmc(
         if covariance:
             if z_dependent_SHMR and dependence_on_alpha_star:
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_alphastarz.txt'
+                    os.path.join(script_dir + '/priors/cov_matr_alphastarz.txt')
                 )
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_alphastarz.txt'
+                    os.path.join(script_dir + '/priors/means_alphastarz.txt')
                 )
             elif z_dependent_SHMR and not dependence_on_alpha_star:
                 cov_mat = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/cov_matr_fstarz.txt'
+                    os.path.join(script_dir + '/priors/cov_matr_fstarz.txt')
                 )
                 mu = np.loadtxt(
-                    '/home/inikolic/projects/UVLF_FMs/priors/new_priors_final/means_fstarz.txt'
+                    os.path.join(script_dir + '/priors/means_fstarz.txt')
                 )
             elif M_knee and not sigma_uv:
                 # cov_mat = np.loadtxt(
