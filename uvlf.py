@@ -10,6 +10,7 @@ from scipy.interpolate import splrep, BSpline
 import scipy.integrate as intg
 from timeit import default_timer as timer
 import math
+from numpy.polynomial.hermite import hermgauss
 
 #hmf_loc = hmf.MassFunction(z=11)
 def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
@@ -462,6 +463,75 @@ class bpass_loader:
             else:
                 if sigma_uv:
                     SFH_short, self.index_age = SFH_samp.get_SFH_const(Mstar, SFR)
+                else:
+                    SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
+            self.SFH = np.zeros(self.ages - 1)
+            self.SFH[:len(SFH_short)] = np.array(SFH_short)
+            self.SFH /= 1e6
+
+        # wv_UV = self.wv[1450:1550]
+        # UV_p = np.zeros(self.ages-1)
+        # UV_n = np.zeros(self.ages-1)
+
+        UVs_all = np.sum(self.SEDS[0:10, :, 1449:1549],
+                         axis=2) / 100 * self.SFH * (
+                          self.ag[1:] - self.ag[:-1]) * ang_to_hz
+        FUVs = np.sum(UVs_all, axis=1)
+        s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
+        UV_final = float(BSpline(*s)(metal))
+        return UV_final
+
+    def get_UV_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=True):
+        """
+        Function returs the specific luminosity at 1500 angstroms averaged over
+        100 angstroms.
+        Input
+        ----------
+            metal : float,
+                Metallicity of the galaxy.
+            Mstar : float,
+                Stellar mass of the galaxy.
+            SFR : float,
+                Star formation rate of the galaxy.
+            z : float,
+                redshift of observation.
+            SFH_samp : boolean,
+                whether SFH is sampled or it's given by previous properties.
+                So far sampling does nothing so it's all the same.
+        Output
+        ----------
+            UV_final : float,
+                UV luminosity in ergs Hz^-1
+        """
+        metal = OH_to_mass_fraction(metal)
+
+        # to get solar metalicity need to take 0.42 according to Strom+18
+
+        metal = metal / 10 ** 0.42
+        for i, met_cur in enumerate(self.metal_avail):
+            if metal < met_cur:
+                break
+        met_prev = None
+        if i != 0:
+            met_prev = self.metal_avail[i - 1]
+        met_next = self.metal_avail[i]
+
+        # SEDp = self.SEDS[i-1]
+        # SEDn = self.SEDS[i]
+
+        try:
+            self.SFH = np.zeros(self.ages - 1)
+            self.SFH[:len(SFH_samp)] = np.array(SFH_samp)
+            self.SFH /= 1e6
+
+        except TypeError:  # not even set-up
+
+            if SFH_samp is None:
+                SFH_short, self.index_age = get_SFH_exp(Mstar, SFR, z)
+            else:
+                if sfr_10 is not None:
+                    SFH_short, self.index_age = SFH_samp.get_SFH_const(Mstar, SFR)
+                    SFH_short[self.ag[:len(SFH_short)] < 1e8] +=  sfr_10
                 else:
                     SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
             self.SFH = np.zeros(self.ages - 1)
@@ -987,3 +1057,220 @@ def apply_dust_to_uvlf(Mint, phi_int, gimme_dust, Mobs_grid=None):
         # Interpolate φ to the requested observed-magnitude grid
         phi_obs_grid = np.interp(Mobs_grid, Mobs_sorted, phi_obs_at_Mint, left=0.0, right=0.0)
         return Mobs_grid, phi_obs_grid
+
+
+INV_SQRT2PI = 0.3989422804014327
+@njit(fastmath=True)
+def _find_interval(xgrid, x):
+    # returns i such that xgrid[i] <= x < xgrid[i+1], clamped
+    n = xgrid.size
+    if x <= xgrid[0]:
+        return 0
+    if x >= xgrid[n-2]:
+        return n-2
+    lo = 0
+    hi = n - 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if xgrid[mid] <= x:
+            lo = mid
+        else:
+            hi = mid
+    if lo > n-2:
+        lo = n-2
+    return lo
+@njit(fastmath=True)
+def bilinear_interp_regular(xgrid, ygrid, F, x, y):
+    """
+    xgrid: (Nx,), ygrid: (Ny,), F: (Nx, Ny)
+    returns F(x,y) with bilinear interpolation (clamped).
+    """
+    i = _find_interval(xgrid, x)
+    j = _find_interval(ygrid, y)
+    x0 = xgrid[i]; x1 = xgrid[i+1]
+    y0 = ygrid[j]; y1 = ygrid[j+1]
+    # avoid divide by zero
+    tx = 0.0 if x1 == x0 else (x - x0) / (x1 - x0)
+    ty = 0.0 if y1 == y0 else (y - y0) / (y1 - y0)
+    f00 = F[i,   j  ]
+    f10 = F[i+1, j  ]
+    f01 = F[i,   j+1]
+    f11 = F[i+1, j+1]
+    f0 = f00 + tx * (f10 - f00)
+    f1 = f01 + tx * (f11 - f01)
+    return f0 + ty * (f1 - f0)
+
+def setup_sample_probabilities_fast_with_sfr10(
+    muv_grid,
+    sfr_grid, mstar_grid, mh_grid,
+    sigma_sfr_grid,
+    sigma_SHMR,
+    dndlnm_grid,
+    # NEW: mapping inputs for μ_uv(SFR,x)
+    sfr_map_grid, x_map_grid, muuv_map,
+    # NEW: x|SFR model
+    sigma_x_of_sfr_fn,       # callable: sigma_x_of_sfr_fn(sfr_samples)->array
+    mu_x_of_sfr_fn=None,     # callable; if None, use mu_x=sfr (centered)
+    sigma_muv_const=0.1,
+    *,
+    Nsfr, Nmstar, Nmh, seed=0,
+    gh_n=24,
+):
+    rng = np.random.default_rng(seed)
+    sfr_range   = (-5.0, 5.0)
+    mstar_range = ( 2.0,12.0)
+    mh_range    = ( 5.0,15.0)
+
+    sfr_samples   = rng.uniform(*sfr_range,   Nsfr).astype(np.float64)
+    mstar_samples = rng.uniform(*mstar_range, Nmstar).astype(np.float64)
+    mh_samples    = rng.uniform(*mh_range,    Nmh).astype(np.float64)
+
+    scale_sfr   = (sfr_range[1]   - sfr_range[0])   / float(Nsfr)
+    scale_mstar = (mstar_range[1] - mstar_range[0]) / float(Nmstar)
+    scale_mh    = (mh_range[1]    - mh_range[0])    / float(Nmh)
+    total_scale = scale_sfr * scale_mstar * scale_mh
+
+    # Interpolations needed for the other factors
+    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid, sigma_sfr_grid).astype(np.float64)
+    sfr_target_of_ms = np.interp(mstar_samples, mstar_grid, sfr_grid).astype(np.float64)
+    dndlnm_on_mh     = np.interp(mh_samples, mh_grid, dndlnm_grid).astype(np.float64)
+    mstar_tgt_of_mh  = np.interp(mh_samples, mh_grid, mstar_grid).astype(np.float64)
+
+    # Build p_sfr_mstar and p_mstar_mh the same way you already do
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    p_mstar_mh  = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)        # (Nmh, Nmstar)
+
+    # --- NEW: build p_muv_sfr by integrating over x ---
+    gh_t, gh_w = hermgauss(gh_n)
+    gh_t = gh_t.astype(np.float64)
+    gh_w = (gh_w / np.sqrt(np.pi)).astype(np.float64)
+
+    if mu_x_of_sfr_fn is None:
+        mu_x = sfr_samples.copy()
+    else:
+        mu_x = np.asarray(mu_x_of_sfr_fn(sfr_samples), dtype=np.float64)
+    sig_x = np.asarray(sigma_x_of_sfr_fn(sfr_samples), dtype=np.float64)
+    # :white_check_mark: FIX: accept scalar-returning functions
+    if mu_x.ndim == 0:
+        mu_x = np.full_like(sfr_samples, float(mu_x), dtype=np.float64)
+    if sig_x.ndim == 0:
+        sig_x = np.full_like(sfr_samples, float(sig_x), dtype=np.float64)
+
+    p_muv_sfr = build_p_muv_sfr_with_x(
+        np.asarray(muv_grid, dtype=np.float64),
+        sfr_samples,
+        mu_x,
+        sig_x,
+        float(sigma_muv_const),
+        np.asarray(sfr_map_grid, dtype=np.float64),
+        np.asarray(x_map_grid, dtype=np.float64),
+        np.asarray(muuv_map, dtype=np.float64),
+        gh_t, gh_w
+    )  # (Nsfr, Nmuv)
+
+    return p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale
+
+def uvlf_fast_einsum_sfr10version(
+    muv_grid,
+    sfr_grid, mstar_grid, mh_grid,
+    sigma_sfr_grid, sigma_SHMR, dndlnm_grid,
+    sfr_map_grid, x_map_grid, muuv_map,
+    sigma_x_of_sfr_fn,
+    mu_x_of_sfr_fn=None,
+    sigma_muv_const=0.1,
+    *,
+    Nsfr, Nmstar, Nmh, seed=0, gh_n=24
+):
+    p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = (
+        setup_sample_probabilities_fast_with_sfr10(
+            muv_grid,
+            sfr_grid, mstar_grid, mh_grid,
+            sigma_sfr_grid,
+            sigma_SHMR,
+            dndlnm_grid,
+            sfr_map_grid, x_map_grid, muuv_map,
+            sigma_x_of_sfr_fn,
+            mu_x_of_sfr_fn=mu_x_of_sfr_fn,
+            sigma_muv_const=sigma_muv_const,
+            Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, gh_n=gh_n
+        )
+    )
+    out = np.einsum('m,ma,ar,ru->u',
+                    dndlnm_on_mh,
+                    p_mstar_mh,
+                    p_sfr_mstar,
+                    p_muv_sfr,
+                    optimize='greedy')
+    return out * total_scale
+
+def linear_model_sfr10(X, sigma_sfr_10_norm):
+    a,b,c = (0.05041177782984782, -0.029117831879005154, -0.04726733615202826)
+    M, z = X
+    sigmas = a * (M-9) + b * (z-6) - c * (z-6) * (M-9) + sigma_sfr_10_norm
+    sigmas = np.clip(sigmas, 0.0, 2 * sigma_sfr_10_norm)
+    return sigmas
+
+
+def UV_calc_numba_sfr10(
+        Muv,
+        masses_hmf,
+        dndm,
+        f_star_norm=1.0,
+        alpha_star=0.5,
+        sigma_SHMR=0.3,
+        sigma_SFMS_norm=0.0,
+        t_star=0.5,
+        a_sig_SFR=-0.11654893,
+        z=11,
+        vect_func=None,
+        SFH_samp=None,
+        M_knee=2.6e11,
+        sigma_sfr10=0.1,
+        mass_dependent_sfr10=False,
+        seed=0,
+        **kw,
+):
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
+                            fstar_norm=f_star_norm, M_knee=M_knee)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+
+    Zs = metalicity_from_FMR(msss, sfrs)
+    Zs += DeltaZ_z(z)
+    sfr_map_grid = np.log10(sfrs)  # (Nsfr_map,)
+    x_map_grid = np.linspace(-3, 3, 1000)  # x = log10(SFR10/SFR)  (nice, centered)
+    # Build SFR10 grid per SFR:
+    sfr10_grid = (10 ** sfr_map_grid)[:, None] * (10 ** x_map_grid)[None, :]  # (Nsfr_map, Nx_map)
+    # Evaluate mapping: muuv_map[sfr_i, x_j] = MUV_mean(SFR=sfr_i, SFR10=sfr10_ij)
+    # You can compute luminosity then convert to Muv:
+    F_UVs = np.array(
+        [
+            vect_func(Zs, msss, 10 ** sfr_map_grid, z=z, SFH_samp=SFH_samp, sfr_10=sfr10_grid[:, i]) for i in
+            range(1000)
+        ]
+    ).T
+    muuv_map = Muv_Luv(F_UVs * 3.846e33)  # (Nsfr_map, Nx_map)
+
+    if mass_dependent_sfr10:
+        sigma_sfr10_var = linear_model_sfr10((msss, z), mass_dependent_sfr10)
+    else:
+        sigma_sfr10_var = mass_dependent_sfr10 * np.ones(np.shape(msss))
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
+                                        a_sig_SFR=a_sig_SFR)
+    uvlf = uvlf_fast_einsum_sfr10version(
+        Muv,
+        np.log10(sfrs),  # SFR grid (log10)
+        np.log10(msss),  # M* grid (log10) for interpolation of mu_SFR(M*)
+        masses_hmf,  # Mh grid (log10)
+        sigma_SFMS_var,  # sigma_SFR(SFR) tabulated on sfr_grid
+        sigma_SHMR,  # scalar (dispersion of log10 M* | Mh)
+        dndm,  # d n / d ln M on mh_grid
+        sfr_map_grid,
+        x_map_grid,
+        muuv_map,
+        sigma_x_of_sfr_fn=lambda x: sigma_sfr10,
+        Nsfr=10_000,
+        Nmstar=10_000,
+        Nmh=10_000,
+        seed=seed,
+    )
+    return uvlf
