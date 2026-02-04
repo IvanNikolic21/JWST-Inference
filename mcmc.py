@@ -83,7 +83,12 @@ class LikelihoodAngBase():
             self.p1 = p1
             self.p1_z7 = p1_z7
             self.p1_z5_5 = p1_z5_5
-
+        if hmf_choice=="custom":
+            hmf_model = "ST",
+            hmf_params = {"a": 0.73, "p": 0.175, "A": 0.353}
+        else:
+            hmf_model = hmf_choice
+            hmf_params = {}
         fid_params = {
             'p1':p1,
             'zmin': 0,
@@ -95,7 +100,8 @@ class LikelihoodAngBase():
             'hod_model': My_HOD,
             'tracer_concentration_model': hm.concentration.Duffy08,
             'tracer_profile_model': hm.profiles.NFW,
-            'hmf_model': hmf_choice,
+            'hmf_model': hmf_model,
+            'hmf_params': hmf_params,
             'bias_model': "Tinker10",
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
@@ -264,13 +270,25 @@ class LikelihoodUVLFBase:
             slope_SFR=False
     ):
         self.z = z
-        self.hmf_loc = hmf.MassFunction(
-            z=z,
-            Mmin=5,
-            Mmax=19,
-            dlog10m=0.05,
-            hmf_model=hmf_choice
-        )
+        if hmf_choice=="custom":
+            self.hmf_loc = hmf.MassFunction(
+                z=z,
+                Mmin=5,
+                Mmax=19,
+                dlog10m=0.05,
+                cosmo_model=cosmo,
+                hmf_model="ST",
+                hmf_params={"a": 0.73, "p": 0.175, "A": 0.353},
+                transfer_model="EH",
+            )
+        else:
+            self.hmf_loc = hmf.MassFunction(
+                z=z,
+                Mmin=5,
+                Mmax=19,
+                dlog10m=0.05,
+                hmf_model=hmf_choice
+            )
         self.params = params
         self.sigma_sfr_10_explicit = sigma_sfr_10_explicit
         self.sigma_uv = sigma_uv
