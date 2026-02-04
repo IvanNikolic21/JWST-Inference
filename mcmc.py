@@ -1848,7 +1848,7 @@ def run_mcmc(
     def prior(cube, ndim, nparams):
         if covariance:
 
-            if M_knee and not sigma_uv:
+            if M_knee and not sigma_uv and not sigma_sfr_10_explicit:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
