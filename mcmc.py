@@ -963,7 +963,10 @@ def run_mcmc(
             )
         else:
             bpass_read = bpass_loader()
-        vect_func = np.vectorize(bpass_read.get_UV)
+        if sigma_sfr_10_explicit:
+            vect_func = np.vectorize(bpass_read.get_UV_sfr10)
+        else:
+            vect_func = np.vectorize(bpass_read.get_UV)
     else:
         bpass_read = None
         vect_func = None
