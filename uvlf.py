@@ -1100,6 +1100,61 @@ def bilinear_interp_regular(xgrid, ygrid, F, x, y):
     f1 = f01 + tx * (f11 - f01)
     return f0 + ty * (f1 - f0)
 
+@njit(parallel=True, fastmath=True)
+def build_p_muv_sfr_with_x(
+    muv_grid,               # (Nmuv,)
+    sfr_samples,            # (Nsfr,) samples (log10 SFR)
+    mu_x_of_sfr,            # (Nsfr,) mean of x|SFR (dex)
+    sigma_x_of_sfr,         # (Nsfr,) sigma of x|SFR (dex)
+    sigma_muv_const,        # scalar, e.g. 0.1
+    sfr_map_grid,           # (Nsfr_map,) grid for the mapping table (log10 SFR)
+    x_map_grid,             # (Nx_map,) grid for the mapping table (dex)
+    muuv_map,               # (Nsfr_map, Nx_map) -> mean Muv from mapping
+    gh_t, gh_w              # (Nq,) nodes+weights for N(0,1) expectation
+):
+    """
+    Returns p_muv_sfr: (Nsfr, Nmuv)
+    p(Muv | sfr_sample) = E_{x~N(mu_x, sigma_x)} [ N(Muv; muuv_map(sfr,x), sigma_muv_const) ]
+    where expectation is computed by Gauss-Hermite: x = mu_x + sqrt(2)*sigma_x*t_q
+    """
+    Nsfr = sfr_samples.size
+    Nmuv = muv_grid.size
+    Nq   = gh_t.size
+
+    out = np.empty((Nsfr, Nmuv), dtype=np.float64)
+
+    inv_sig_muv = 1.0 / sigma_muv_const
+    norm_muv    = INV_SQRT2PI * inv_sig_muv
+    c_muv       = -0.5 * inv_sig_muv * inv_sig_muv
+
+    for i in prange(Nsfr):
+        sfr = sfr_samples[i]
+        mux = mu_x_of_sfr[i]
+        sigx = sigma_x_of_sfr[i]
+
+        # accumulate mixture over quadrature nodes
+        # init row
+        for j in range(Nmuv):
+            out[i, j] = 0.0
+
+        # if sigx is zero, just one evaluation
+        if sigx <= 0.0:
+            mu = bilinear_interp_regular(sfr_map_grid, x_map_grid, muuv_map, sfr, mux)
+            for j in range(Nmuv):
+                dx = muv_grid[j] - mu
+                out[i, j] += norm_muv * math.exp(c_muv * dx * dx)
+        else:
+            s = math.sqrt(2.0) * sigx
+            for q in range(Nq):
+                xq = mux + s * gh_t[q]
+                wq = gh_w[q]
+                mu = bilinear_interp_regular(sfr_map_grid, x_map_grid, muuv_map, sfr, xq)
+                for j in range(Nmuv):
+                    dx = muv_grid[j] - mu
+                    out[i, j] += wq * (norm_muv * math.exp(c_muv * dx * dx))
+
+    return out
+
 def setup_sample_probabilities_fast_with_sfr10(
     muv_grid,
     sfr_grid, mstar_grid, mh_grid,
