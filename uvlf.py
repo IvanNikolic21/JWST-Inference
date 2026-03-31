@@ -1059,7 +1059,6 @@ def apply_dust_to_uvlf(Mint, phi_int, gimme_dust, Mobs_grid=None):
         return Mobs_grid, phi_obs_grid
 
 
-INV_SQRT2PI = 0.3989422804014327
 @njit(fastmath=True)
 def _find_interval(xgrid, x):
     # returns i such that xgrid[i] <= x < xgrid[i+1], clamped
