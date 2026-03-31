@@ -481,7 +481,7 @@ class bpass_loader:
         UV_final = float(BSpline(*s)(metal))
         return UV_final
 
-    def get_UV_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=True):
+    def get_UV_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=0.0):
         """
         Function returs the specific luminosity at 1500 angstroms averaged over
         100 angstroms.
