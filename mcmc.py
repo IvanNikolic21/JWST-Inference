@@ -426,7 +426,9 @@ class LikelihoodUVLFBase:
                     SFH_samp=sfr_samp_inst,
                     M_knee=M_knee,
                     sigma_sfr10=sigma_SFR_10,
-                    mass_dependent_sfr10=self.mass_dependent_sigma_uv, #need to develop a flag for that
+                    # TODO: introduce a dedicated flag for mass-dependent SFR10 scatter
+                    # and thread it through CLI/prior validation. Until then, use a fixed default.
+                    mass_dependent_sfr10=False,
                 )
             else:
                 preds = UV_calc_BPASS(
