@@ -652,7 +652,7 @@ def run_mcmc(
 ):
 
     if priors is None:
-        if model_choice is "Mason+15":
+        if model_choice == "Mason+15":
             raise ValueError("You made a mistake in setting up priors, params and model choice")
         if M_knee and sigma_uv:
             if slope_SFR:
@@ -2194,5 +2194,5 @@ if __name__ == "__main__":
         use_only_faint_end=inputs.use_only_faint_end,
         resume=inputs.resume,
         sigma_sfr_10_explicit = inputs.sigma_sfr_10_explicit,
-        model_choice = inputs.model_choice,
+        model_choice = inputs.model,
     )
