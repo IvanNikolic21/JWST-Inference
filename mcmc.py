@@ -357,10 +357,14 @@ class LikelihoodUVLFBase:
         else:
             slope_SFR = dic_params["slope_SFR"]
 
-        if "sigma_SFR_10" not in dic_params:
-            sigma_SFR_10 = 0.2
-        else:
+        # Accept both the new parameter name `sigma_sfr_10` and the legacy
+        # name `sigma_SFR_10`, preferring the new one if both are present.
+        if "sigma_sfr_10" in dic_params:
+            sigma_SFR_10 = dic_params["sigma_sfr_10"]
+        elif "sigma_SFR_10" in dic_params:
             sigma_SFR_10 = dic_params["sigma_SFR_10"]
+        else:
+            sigma_SFR_10 = 0.2
 
         lnL = 0
         if use_BPASS:
