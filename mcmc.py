@@ -8,7 +8,6 @@ import json
 import ultranest
 import math
 import sys
-import scipy.integrate as intg
 
 from scipy.special import erf, erfinv
 from uvlf import UV_calc
