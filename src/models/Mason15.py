@@ -69,5 +69,5 @@ class Mason15(object):
         self.z = z
 
     def calculate_UVLF(self, Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = np.linspace(-25, -13, 100)):
-        UVLF_pred = calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = Muv_grid, z=z)
+        UVLF_pred = calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = Muv_grid, z=self.z)
         return UVLF_pred
