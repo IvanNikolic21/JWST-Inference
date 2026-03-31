@@ -50,7 +50,13 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
     if z is None:
         z = 10.0
     if mf is None:
-        mf = hmf.MassFunction(z=10.0)
+        mf = hmf.MassFunction(
+            z=z,
+            Mmin=8,
+            Mmax=14,
+            dlog10m=0.05,
+            hmf_model=hmf_choice
+        )
     if Muv_grid is None:
         Muv_grid = np.linspace(-25, -13, 100)
 
@@ -65,8 +71,9 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
     return UVLF_stochier
 
 class Mason15(object):
-    def __init__(self, z=10.0, ):
+    def __init__(self, z=10.0, hm_inst = None):
         self.z = z
+
         if z==10.0:
             Muv_Mh_file = '/groups/astro/ivannik/notebooks/clustering_project/Muv_Mh_z=10.txt'
             Muv_Mh = np.genfromtxt(Muv_Mh_file, dtype=None, names=True)
