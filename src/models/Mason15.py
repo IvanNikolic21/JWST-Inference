@@ -46,15 +46,15 @@ def Muv_from_logMh(logMh, Muv_Mh_dict, use_scatter=True, sigmaUV=0.3, dust=False
         return Muv_Mh_dict[logMh][1] + scatter
     return Muv_Mh_dict[logMh][0] + scatter
 
-def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = None, z = None):
+def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = None, z = None, Muv_Mh_dict = None):
     if z is None:
-        z = 10.5
+        z = 10.0
     if mf is None:
-        mf = hmf.MassFunction(z=10.5)
+        mf = hmf.MassFunction(z=10.0)
     if Muv_grid is None:
         Muv_grid = np.linspace(-25, -13, 100)
 
-    if z==10.5:
+    if z==10.0 and Muv_Mh_dict is None :
         Muv_Mh_file = '/groups/astro/ivannik/notebooks/clustering_project/Muv_Mh_z=10.txt'
         Muv_Mh = np.genfromtxt(Muv_Mh_file, dtype=None, names=True)
         Muv_Mh_dict = {Muv_Mh['logMh'][i]: [Muv_Mh['Muv'][i], Muv_Mh['Muv_dust'][i]] for i in range(len(Muv_Mh))}
@@ -65,9 +65,15 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
     return UVLF_stochier
 
 class Mason15(object):
-    def __init__(self, z=10.5, ):
+    def __init__(self, z=10.0, ):
         self.z = z
+        if z==10.5:
+            Muv_Mh_file = '/groups/astro/ivannik/notebooks/clustering_project/Muv_Mh_z=10.txt'
+            Muv_Mh = np.genfromtxt(Muv_Mh_file, dtype=None, names=True)
+            self.Muv_Mh_dict = {Muv_Mh['logMh'][i]: [Muv_Mh['Muv'][i], Muv_Mh['Muv_dust'][i]] for i in range(len(Muv_Mh))}
 
     def calculate_UVLF(self, Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = np.linspace(-25, -13, 100)):
-        UVLF_pred = calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = Muv_grid, z=self.z)
+        UVLF_pred = calculate_uvlf(
+            Muv_shift, sigma_UV_a, sigma_UV_b, Muv_grid = Muv_grid, z=self.z, Muv_Mh_dict = self.Muv_Mh_dict
+        )
         return UVLF_pred

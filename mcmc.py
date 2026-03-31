@@ -764,7 +764,7 @@ def run_mcmc(
                 slope_SFR=slope_SFR
             )
         elif model_choice == "Mason+15":
-            UVLFBase_Don24_10 = LikelihoodUVLF_Mason15(params, z=10)
+            UVLFBase_Don24_10 = LikelihoodUVLF_Mason15(params, z=10.0)
         else:
             raise ValueError("model_choice must be either 'Nikolic+26' or 'Mason+15'")
         SFR_samp_10 = SFH_sampler(z=10)
