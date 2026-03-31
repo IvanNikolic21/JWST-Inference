@@ -20,7 +20,7 @@ from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme
 import argparse
 
 base_dir = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(os.path.join(base_dir, '../../src/models')))
+sys.path.append(os.path.abspath(os.path.join(base_dir, 'src/models')))
 from Mason15 import Mason15 as Mason15_class
 
 class LikelihoodAngBase():
