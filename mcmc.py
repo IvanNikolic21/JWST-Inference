@@ -556,6 +556,10 @@ class LikelihoodUVLF_Mason15:
             muvs_o=None,
             uvlf_o=None,
             sig_o=None,
+            use_BPASS=True,
+            vect_func=None,
+            bpass_read=None,
+            sfr_samp_inst=None,
     ):
         dic_params = {}
         paramida = p
