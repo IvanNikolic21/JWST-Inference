@@ -84,7 +84,7 @@ class LikelihoodAngBase():
             self.p1_z7 = p1_z7
             self.p1_z5_5 = p1_z5_5
         if hmf_choice=="custom":
-            hmf_model = "ST",
+            hmf_model = "ST"
             hmf_params = {"a": 0.73, "p": 0.175, "A": 0.353}
         else:
             hmf_model = hmf_choice
