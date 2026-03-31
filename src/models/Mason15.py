@@ -67,7 +67,7 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
 class Mason15(object):
     def __init__(self, z=10.0, ):
         self.z = z
-        if z==10.5:
+        if z==10.0:
             Muv_Mh_file = '/groups/astro/ivannik/notebooks/clustering_project/Muv_Mh_z=10.txt'
             Muv_Mh = np.genfromtxt(Muv_Mh_file, dtype=None, names=True)
             self.Muv_Mh_dict = {Muv_Mh['logMh'][i]: [Muv_Mh['Muv'][i], Muv_Mh['Muv_dust'][i]] for i in range(len(Muv_Mh))}
