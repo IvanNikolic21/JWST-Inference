@@ -55,7 +55,6 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
             Mmin=8,
             Mmax=14,
             dlog10m=0.05,
-            hmf_model=hmf_choice
         )
     if Muv_grid is None:
         Muv_grid = np.linspace(-25, -13, 100)
