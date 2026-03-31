@@ -547,6 +547,7 @@ class LikelihoodUVLF_Mason15:
             z,
 
     ):
+        self.params = params
         self.z = z
         self.model_class = Mason15_class(z=z)
 
