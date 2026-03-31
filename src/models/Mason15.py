@@ -15,6 +15,12 @@ def pMuv_Mh(Muv, logMh, Muv_Mh_dict, sigmaUV_a=-0.34, sigmaUV_b=0.42, Muv_add=0,
     a = −0.34 and b = 0.42,
     """
     sigmaUV = sigmaUV_a * (logMh - 12) + sigmaUV_b
+    # Ensure sigmaUV is strictly positive to define a valid Gaussian PDF
+    sigmaUV_floor = 1e-3
+    if np.isscalar(sigmaUV):
+        sigmaUV = max(sigmaUV, sigmaUV_floor)
+    else:
+        sigmaUV = np.maximum(sigmaUV, sigmaUV_floor)
 
     # Get the Muv-Mh relation for the given redshift
     Muv_Mh_med = np.array(
