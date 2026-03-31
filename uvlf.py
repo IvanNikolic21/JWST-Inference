@@ -1321,9 +1321,9 @@ def UV_calc_numba_sfr10(
     muuv_map = Muv_Luv(F_UVs * 3.846e33)  # (Nsfr_map, Nx_map)
 
     if mass_dependent_sfr10:
-        sigma_sfr10_var = linear_model_sfr10((msss, z), mass_dependent_sfr10)
+        sigma_sfr10_var = linear_model_sfr10((msss, z), sigma_sfr10)
     else:
-        sigma_sfr10_var = mass_dependent_sfr10 * np.ones(np.shape(msss))
+        sigma_sfr10_var = sigma_sfr10 * np.ones(np.shape(msss))
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = uvlf_fast_einsum_sfr10version(
@@ -1337,7 +1337,7 @@ def UV_calc_numba_sfr10(
         sfr_map_grid,
         x_map_grid,
         muuv_map,
-        sigma_x_of_sfr_fn=lambda x: sigma_sfr10,
+        sigma_x_of_sfr_fn=lambda x: np.interp(x, sfr_map_grid, sigma_sfr10_var),
         Nsfr=10_000,
         Nmstar=10_000,
         Nmh=10_000,
