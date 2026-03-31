@@ -19,7 +19,8 @@ from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
 import argparse
 
-sys.path.append(os.path.abspath('src/models/'))
+base_dir = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(base_dir, '../../src/models')))
 from Mason15 import Mason15 as Mason15_class
 
 class LikelihoodAngBase():
