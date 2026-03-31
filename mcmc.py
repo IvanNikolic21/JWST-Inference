@@ -2160,7 +2160,7 @@ if __name__ == "__main__":
         if inputs.sigma_uv or not inputs.sigma_sfr_10_explicit:
             raise ValueError("Choose either sigma_uv or sigma_sfr_10_explicit.")
     elif params ==["Muv_shift", "sigma_UV_a", "sigma_UV_b"]:
-        priors = [(-1.0,2.0), (-2.0, 2.0), (0.0, 2.0)]
+        priors = [(-1.5,2.0), (-1.0, 1.5), (0.0, 3.0)]
 
         if inputs.model == "Nikolic+26":
             raise ValueError("This choice of parameters can only be used with Mason+15 model")
