@@ -1092,6 +1092,15 @@ def bilinear_interp_regular(xgrid, ygrid, F, x, y):
     # avoid divide by zero
     tx = 0.0 if x1 == x0 else (x - x0) / (x1 - x0)
     ty = 0.0 if y1 == y0 else (y - y0) / (y1 - y0)
+    # clamp interpolation parameters to [0, 1] to avoid extrapolation
+    if tx < 0.0:
+        tx = 0.0
+    elif tx > 1.0:
+        tx = 1.0
+    if ty < 0.0:
+        ty = 0.0
+    elif ty > 1.0:
+        ty = 1.0
     f00 = F[i,   j  ]
     f10 = F[i+1, j  ]
     f01 = F[i,   j+1]
