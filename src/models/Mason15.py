@@ -47,11 +47,11 @@ def Muv_from_logMh(logMh, Muv_Mh_dict, use_scatter=True, sigmaUV=0.3, dust=False
     return Muv_Mh_dict[logMh][0] + scatter
 
 def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = None, z = None):
-    if z==None:
+    if z is None:
         z = 10.5
-    if mf == None:
+    if mf is None:
         mf = hmf.MassFunction(z=10.5)
-    if Muv_grid == None:
+    if Muv_grid is None:
         Muv_grid = np.linspace(-25, -13, 100)
 
     if z==10.5:
