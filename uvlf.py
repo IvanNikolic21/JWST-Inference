@@ -1297,12 +1297,18 @@ def UV_calc_numba_sfr10(
     sfr10_grid = (10 ** sfr_map_grid)[:, None] * (10 ** x_map_grid)[None, :]  # (Nsfr_map, Nx_map)
     # Evaluate mapping: muuv_map[sfr_i, x_j] = MUV_mean(SFR=sfr_i, SFR10=sfr10_ij)
     # You can compute luminosity then convert to Muv:
-    F_UVs = np.array(
-        [
-            vect_func(Zs, msss, 10 ** sfr_map_grid, z=z, SFH_samp=SFH_samp, sfr_10=sfr10_grid[:, i]) for i in
-            range(1000)
-        ]
-    ).T
+    Nsfr_map = sfr_map_grid.size
+    Nx_map = x_map_grid.size
+    F_UVs = np.empty((Nsfr_map, Nx_map))
+    for i in range(Nsfr_map):
+        F_UVs[i, :] = vect_func(
+            Zs[i],
+            msss[i],
+            10 ** sfr_map_grid[i],
+            z=z,
+            SFH_samp=SFH_samp,
+            sfr_10=sfr10_grid[i],
+        )
     muuv_map = Muv_Luv(F_UVs * 3.846e33)  # (Nsfr_map, Nx_map)
 
     if mass_dependent_sfr10:
