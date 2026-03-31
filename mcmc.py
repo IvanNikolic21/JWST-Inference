@@ -20,6 +20,9 @@ from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
 import argparse
 
+sys.path.append(os.path.abspath('src/models/'))
+from Mason15 import Mason15 as Mason15_class
+
 class LikelihoodAngBase():
     """
 
@@ -529,6 +532,103 @@ class LikelihoodUVLFBase:
                    index] ** 2)) - 0.5*np.log(2*np.pi) - np.log(float(sig_o[index]))
         return lnL
 
+
+class LikelihoodUVLF_Mason15:
+    """
+    To be filled
+    Returns
+    -------
+
+    """
+
+    def __init__(
+            self,
+            params,
+            z,
+
+    ):
+        self.z = z
+        self.model_class = Mason15_class(z=z)
+
+    def call_likelihood(
+            self,
+            p,
+            muvs_o=None,
+            uvlf_o=None,
+            sig_o=None,
+    ):
+        dic_params = {}
+        paramida = p
+        for index, pary in enumerate(self.params):
+            dic_params[pary] = paramida[index]
+        if "Muv_shift" in dic_params:
+            Muv_shift = dic_params["Muv_shift"]
+        else:
+            Muv_shift = 0.0
+
+        if "sigma_UV_a" in dic_params:
+            sigma_UV_a = dic_params["sigma_UV_a"]
+        else:
+            sigma_UV_a = 0.0
+
+        if "sigma_UV_b" in dic_params:
+            sigma_UV_b = dic_params["sigma_UV_b"]
+        else:
+            sigma_UV_b = 0.0
+
+        lnL = 0.0
+        preds = self.model_class.calculate_UVLF(
+            Muv_shift=Muv_shift,
+            sigma_UV_a=sigma_UV_a,
+            sigma_UV_b=sigma_UV_b,
+            Muv_grid = muvs_o,
+        )
+
+        for index, muvi in enumerate(muvs_o):
+            if isinstance(sig_o, tuple):
+                if sig_o[0][index] < 0.0:
+                    if muvi==-23.5:
+                        erf_modifier = -1
+                    else:
+                        erf_modifier = +1
+                    #trick for lower limits for spectroscopic estimates
+                    sig_a = - 2 * (sig_o[0][index] * sig_o[1][index]) / (
+                                sig_o[0][index] + sig_o[1][index])
+                    sig_b = (sig_o[0][index] - sig_o[1][index]) / (
+                                sig_o[0][index] + sig_o[1][index])
+                    lnL += np.log(
+                        0.5*(
+                            1+erf_modifier*erf(
+                                (
+                                    (
+                                        (preds[index] - uvlf_o[index]) / np.sqrt(
+                                        2
+                                    )/abs(
+                                            np.sqrt((sig_a + sig_b * (preds[index] - uvlf_o[index]))**2)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                else:
+                    sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
+                    sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
+
+                    sigma_eff = abs(sig_a + sig_b * (preds[index] - uvlf_o[index]))
+                    sigma_eff = max(float(sigma_eff), 1e-12)
+
+                    lnL += -0.5 * (
+                            (preds[index] - uvlf_o[index])**2 / (
+                            (sig_a + sig_b * (preds[index] - uvlf_o[index])
+                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
+                    )
+            else:
+                lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
+                   index] ** 2)) - 0.5*np.log(2*np.pi) - np.log(float(sig_o[index]))
+        return lnL
+
+
 def run_mcmc(
         likelihoods,
         params,
@@ -548,9 +648,12 @@ def run_mcmc(
         use_only_faint_end=False,
         resume=False,
         sigma_sfr_10_explicit=False,
+        model_choice="Nikolic+26",
 ):
 
     if priors is None:
+        if model_choice is "Mason+15":
+            raise ValueError("You made a mistake in setting up priors, params and model choice")
         if M_knee and sigma_uv:
             if slope_SFR:
                 priors = [(-5.0, 1.0), (0.0, 1.0), (0.05, 0.9), (0.01, 1.0),
@@ -645,15 +748,20 @@ def run_mcmc(
 
     if "UVLF_z10_Donnan24" in likelihoods:
         uvlf = True
-        UVLFBase_Don24_10 = LikelihoodUVLFBase(
-            params,
-            z=10,
-            hmf_choice=hmf_choice,
-            sigma_sfr_10_explicit= sigma_sfr_10_explicit,
-            sigma_uv=sigma_uv,
-            mass_dependent_sigma_uv=mass_dependent_sigma_uv,
-            slope_SFR=slope_SFR
-        )
+        if model_choice == "Nikolic+26":
+            UVLFBase_Don24_10 = LikelihoodUVLFBase(
+                params,
+                z=10,
+                hmf_choice=hmf_choice,
+                sigma_sfr_10_explicit= sigma_sfr_10_explicit,
+                sigma_uv=sigma_uv,
+                mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+                slope_SFR=slope_SFR
+            )
+        elif model_choice == "Mason+15":
+            UVLFBase_Don24_10 = LikelihoodUVLF_Mason15(z=10)
+        else:
+            raise ValueError("model_choice must be either 'Nikolic+26' or 'Mason+15'")
         SFR_samp_10 = SFH_sampler(z=10)
 
     if "UVLF_z11_Donnan24" in likelihoods:
@@ -1984,7 +2092,7 @@ if __name__ == "__main__":
     parser.add_argument("--resume", action="store_true",)
 
     parser.add_argument("--sigma_sfr_10_explicit", action="store_true")
-
+    parser.add_argument("--model", default="Nikolic+26") #otherwise Mason+15
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -2046,7 +2154,11 @@ if __name__ == "__main__":
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5), ]
         if inputs.sigma_uv or not inputs.sigma_sfr_10_explicit:
             raise ValueError("Choose either sigma_uv or sigma_sfr_10_explicit.")
+    elif params ==["Muv_shift", "sigma_UV_a", "sigma_UV_b"]:
+        priors = [(-1.0,2.0), (-2.0, 2.0), (0.0, 2.0)]
 
+        if inputs.model == "Nikolic+26":
+            raise ValueError("This choice of parameters can only be used with Mason+15 model")
     else:
         raise ValueError("Invalid parameter list provided.")
 
@@ -2081,5 +2193,6 @@ if __name__ == "__main__":
         slope_SFR=inputs.slope_SFR,
         use_only_faint_end=inputs.use_only_faint_end,
         resume=inputs.resume,
-        sigma_sfr_10_explicit = inputs.sigma_sfr_10_explicit
+        sigma_sfr_10_explicit = inputs.sigma_sfr_10_explicit,
+        model_choice = inputs.model_choice,
     )
