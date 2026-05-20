@@ -35,6 +35,7 @@ class LikelihoodAngBase():
     def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25, exact_specs=True, fixed_Mknee=False,
 ):
         self.exact_specs = exact_specs
+        self.fixed_Mknee = fixed_Mknee
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -173,7 +174,7 @@ class LikelihoodAngBase():
             alpha_star_low = 0.5
 
         if "M_knee" in dic_params:
-            if fixed_Mknee:
+            if self.fixed_Mknee:
                 M_knee = 2e12
             else:
                 M_knee = 10**dic_params["M_knee"]
@@ -278,6 +279,7 @@ class LikelihoodUVLFBase:
             fixed_Mknee = False,
     ):
         self.z = z
+        self.fixed_Mknee = fixed_Mknee
         if hmf_choice=="custom":
             self.hmf_loc = hmf.MassFunction(
                 z=z,
@@ -351,7 +353,7 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         if "M_knee" in dic_params:
-            if fixed_Mknee:
+            if self.fixed_Mknee:
                 M_knee = 2e12
             else:
                 M_knee = 10 ** dic_params["M_knee"]
