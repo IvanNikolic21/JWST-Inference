@@ -32,7 +32,8 @@ class LikelihoodAngBase():
     -------
 
     """
-    def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25, exact_specs=True):
+    def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25, exact_specs=True, fixed_Mknee=False,
+):
         self.exact_specs = exact_specs
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
@@ -172,7 +173,10 @@ class LikelihoodAngBase():
             alpha_star_low = 0.5
 
         if "M_knee" in dic_params:
-            M_knee = 10**dic_params["M_knee"]
+            if fixed_Mknee:
+                M_knee = 2e12
+            else:
+                M_knee = 10**dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
@@ -270,7 +274,8 @@ class LikelihoodUVLFBase:
             sigma_sfr_10_explicit= False,
             sigma_uv=True,
             mass_dependent_sigma_uv=False,
-            slope_SFR=False
+            slope_SFR=False,
+            fixed_Mknee = False,
     ):
         self.z = z
         if hmf_choice=="custom":
@@ -346,7 +351,10 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         if "M_knee" in dic_params:
-            M_knee = 10**dic_params["M_knee"]
+            if fixed_Mknee:
+                M_knee = 2e12
+            else:
+                M_knee = 10 ** dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
@@ -654,6 +662,7 @@ def run_mcmc(
         resume=False,
         sigma_sfr_10_explicit=False,
         model_choice="Nikolic+26",
+        fixed_Mknee=False,
 ):
 
     if priors is None:
@@ -703,13 +712,14 @@ def run_mcmc(
     if any({"Ang_z9_m87", "Ang_z9_m9"}.intersection(set(likelihoods))
            ):
         ang = True
-        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs)
+        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,)
     if any({"Ang_z7_m87",
             "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
            ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
-                                       hmf_choice=hmf_choice, z=7, exact_specs=exact_specs)
+                                       hmf_choice=hmf_choice, z=7, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
+)
     if any({"Ang_z5_5_m85", "Ang_z5_5_m9", "Ang_z5_5_m92_5",
             "Ang_z5_5_m9_5"}.intersection(set(likelihoods))
            ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
@@ -895,7 +905,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
-            slope_SFR=slope_SFR
+            slope_SFR=slope_SFR,
+            fixed_Mknee=fixed_Mknee,
         )
         SFR_samp_9 = SFH_sampler(z=9)
     if "UVLF_z10_Willot23" in likelihoods:
@@ -907,7 +918,8 @@ def run_mcmc(
             sigma_uv=sigma_uv,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
-            slope_SFR=slope_SFR
+            slope_SFR=slope_SFR,
+            fixed_Mknee=fixed_Mknee,
         )
         SFR_samp_10 = SFH_sampler(z=10)
     if "UVLF_z12_Willot23" in likelihoods:
@@ -919,7 +931,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
-            slope_SFR=slope_SFR
+            slope_SFR=slope_SFR,
+            fixed_Mknee = fixed_Mknee,
         )
         SFR_samp_12 = SFH_sampler(z=12)
 
@@ -2098,6 +2111,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--sigma_sfr_10_explicit", action="store_true")
     parser.add_argument("--model", default="Nikolic+26") #otherwise Mason+15
+    parser.add_argument("--fixed_Mknee", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -2200,4 +2214,5 @@ if __name__ == "__main__":
         resume=inputs.resume,
         sigma_sfr_10_explicit = inputs.sigma_sfr_10_explicit,
         model_choice = inputs.model,
+        fixed_Mknee = inputs.fixed_Mknee,
     )
