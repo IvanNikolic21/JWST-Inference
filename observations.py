@@ -495,13 +495,13 @@ class Observations():
             [
                 1.3, 4.0, 4.6, 11.5, 12.4
             ]
-        )
+        ) * 1e-5
 
         Fink_sig_m = np.array(
             [
                 1.0,3.2, 3.6, 9.1, 10.0
             ]
-        )
+        ) * 1e-5
         return Fink_Muvs, Fink_uvlf, (Fink_sig_p, Fink_sig_m)
 
     def get_obs_uvlf_z11_Finkelstein24(self):
@@ -520,13 +520,13 @@ class Observations():
             [
                 1.2, 2.7, 3.9
             ]
-        )
+        ) * 1e-5
 
         Fink_sig_m = np.array(
             [
                 0.9, 2.1, 3.0
             ]
-        )
+        ) * 1e-5
         return Fink_Muvs, Fink_uvlf, (Fink_sig_p, Fink_sig_m)
 
     def get_obs_uvlf_z14_Finkelstein24(self):
@@ -545,13 +545,13 @@ class Observations():
             [
                 3.3, 6.9
             ]
-        )
+        ) * 1e-5
 
         Fink_sig_m = np.array(
             [
                 1.8, 4.4
             ]
-        )
+        ) * 1e-5
         return Fink_Muvs, Fink_uvlf, (Fink_sig_p, Fink_sig_m)
 
     def get_obs_uvlf_z5_Bouwens21(self):
