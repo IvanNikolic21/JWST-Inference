@@ -17,7 +17,7 @@ hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=1,
 hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=1,
             Mmax=18,
             dlog10m=0.02,)
-from uvlf import ms_mh
+from uvlf import ms_mh, ms_mh_flattening
 
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
@@ -205,6 +205,8 @@ class My_HOD(hm.hod.Zheng05):
 
     """
 
+    truncate_shmr = True  # set to False to disable baryon-fraction ceiling on scatter
+
     _defaults = {
         'stellar_mass_min':8.75,
         'stellar_mass_sigma':0.05,
@@ -219,56 +221,70 @@ class My_HOD(hm.hod.Zheng05):
         'M_1':13.0,
         'alpha_star_low':0.5,
         'M_knee':2.6e11,
-    }    
+    }
+
+    def _p_above_threshold(self, m, sigma):
+        """
+        P(M* > M*_min | Mh=m) using stellar-mass-space Gaussian with optional
+        truncation at the baryon-fraction ceiling M*_max = (Ob0/Om0)*Mh.
+
+        Both paths work in stellar mass space via the forward SHMR, so the only
+        difference between truncate_shmr=True and False is the truncation itself.
+        """
+        mu = np.log10(ms_mh_flattening(
+            m, cosmo,
+            fstar_norm=self.params["fstar_norm"],
+            alpha_star_low=self.params["alpha_star_low"],
+            M_knee=self.params["M_knee"],
+        ))
+        ms_min = self.params["stellar_mass_min"]
+        s2 = sigma * np.sqrt(2)
+
+        if self.truncate_shmr:
+            b = np.log10(cosmo.Ob0 / cosmo.Om0) + np.log10(m)  # log10 M*_max
+            # P(M*_min < M* <= M*_max) / P(M* <= M*_max) for truncated Gaussian
+            cdf_b   = 0.5 * erfc(-(b     - mu) / s2)   # Φ((b - μ)/σ)
+            cdf_min = 0.5 * erfc(-(ms_min - mu) / s2)  # Φ((m*_min - μ)/σ)
+            return np.maximum(0.0, (cdf_b - cdf_min) / np.maximum(cdf_b, 1e-300))
+        else:
+            return 0.5 * erfc((ms_min - mu) / s2)
 
     def _central_occupation(self, m):
         """Amplitude of central tracer at mass M."""
-        #print(self.params["stellar_mass_sigma"])
-        return 0.5 * erfc(
-            -(
-                np.log10(m)-np.log10(
-                    ms_mh(10**self.params["stellar_mass_min"],
-                          fstar_norm=self.params["fstar_norm"],
-                          alpha_star_low=self.params["alpha_star_low"],
-                          M_knee=self.params["M_knee"]
-                         )
-                )
-            )/self.params["stellar_mass_sigma"] / np.sqrt(2)
-        )
-    
+        return self._p_above_threshold(m, self.params["stellar_mass_sigma"])
+
     def _satellite_occupation(self, m):
         """Amplitude of satellite tracer at mass M."""
         ns = np.zeros_like(m)
-        # ns_0 = np.zeros_like(m)
-        #
-        # ns_0[m > 10 ** self.params["M_0"]] = (
-        #     (m[m > 10 ** self.params["M_0"]] - 10 ** self.params["M_0"]) / 10 ** self.params["M_1"]
-        # ) ** self.params["alpha"]
-    
-        ns[m > 10 ** self.params["M_0"]] = 0.5 * erfc(
-                -(
-                    np.log10(m[m > 10 ** self.params["M_0"]])-np.log10(
-                        ms_mh(10**self.params["stellar_mass_min"],
-                              fstar_norm=self.params["fstar_norm"],
-                              alpha_star_low=self.params["alpha_star_low"],
-                              M_knee=self.params["M_knee"]
-                             )
-                    )
-                )/self.params["stellar_mass_sigma"] / np.sqrt(2)
-            ) * ((m[m > 10 ** self.params["M_0"]]-10 ** self.params["M_0"])/10**self.params["M1"])**self.params["alpha"]
-            
+        mask = m > 10 ** self.params["M_0"]
+        ns[mask] = (
+            self._p_above_threshold(m[mask], self.params["stellar_mass_sigma"])
+            * ((m[mask] - 10 ** self.params["M_0"]) / 10 ** self.params["M1"]) ** self.params["alpha"]
+        )
         return ns
 
     @property
     def mmin(self):
         """Minimum turnover mass for tracer."""
-        return np.log10(
-            ms_mh(10 ** self.params["stellar_mass_min"],
-                  fstar_norm=self.params["fstar_norm"],
-                  alpha_star_low=self.params["alpha_star_low"],
-                  M_knee=self.params["M_knee"]
-                  )
-        ) - 5 * self.params["stellar_mass_sigma"]
+        if self.truncate_shmr:
+            # N_cen is exactly zero below the halo mass where the baryon-fraction
+            # ceiling first reaches M*_min: Mh = M*_min / (Ob0/Om0).
+            # Subtract 1 dex as a buffer for the numerical integrator.
+            return (
+                self.params["stellar_mass_min"]
+                - np.log10(cosmo.Ob0 / cosmo.Om0)
+                - 1.0
+            )
+        else:
+            return (
+                np.log10(ms_mh(
+                    10 ** self.params["stellar_mass_min"],
+                    fstar_norm=self.params["fstar_norm"],
+                    alpha_star_low=self.params["alpha_star_low"],
+                    M_knee=self.params["M_knee"],
+                ))
+                - 5 * self.params["stellar_mass_sigma"]
+            )
 
 #FIDUCIALS
 # fid_params = {
