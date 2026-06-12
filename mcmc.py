@@ -704,6 +704,21 @@ def run_mcmc(
             'w') as f:
         json.dump(prior_pars, f)
 
+    run_config = {
+        "uvlf_func": (
+            "UV_calc_numba_sfr10" if sigma_sfr_10_explicit
+            else "UV_calc_numba" if sigma_uv
+            else "UV_calc_BPASS"
+        ),
+        "params": list(params),
+        "sigma_sfr_10_explicit": bool(sigma_sfr_10_explicit),
+        "sigma_uv": bool(sigma_uv),
+        "mass_dependent_sigma_uv": bool(mass_dependent_sigma_uv),
+        "mass_dependent_sfr10": False,
+    }
+    with open(output_filename + 'run_config.json', 'w') as f:
+        json.dump(run_config, f, indent=2)
+
     if mult_params is None:
         mult_params = mult_params_fid
     else:
