@@ -887,11 +887,42 @@ def _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR):
             out[i, j] = norm * math.exp(c * dx * dx)
     return out  # (Nmh, Nmstar)
 
+@njit(parallel=True, fastmath=True)
+def _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR):
+    """
+    Same as _gauss_mstar_mh but truncated above at mstar_max_of_mh (log10 M*_max per halo).
+    Enforces M* <= (Ob0/Om0)*Mh. Renormalises so each row integrates to 1.
+    """
+    Nmstar   = mstar_samples.size
+    Nmh      = mstar_tgt_of_mh.size
+    invs     = 1.0 / sigma_SHMR
+    norm     = INV_SQRT2PI * invs
+    c        = -0.5 * invs * invs
+    invsqrt2 = 1.0 / math.sqrt(2.0)
+    out = np.empty((Nmh, Nmstar), dtype=np.float64)
+    for i in prange(Nmh):
+        mu  = mstar_tgt_of_mh[i]
+        b   = mstar_max_of_mh[i]
+        # CDF of N(mu,sigma) evaluated at the upper truncation point b
+        alpha = (b - mu) * invs * invsqrt2   # (b-mu) / (sigma*sqrt(2))
+        cdf_b = 0.5 * (1.0 + math.erf(alpha))
+        if cdf_b < 1e-300:
+            cdf_b = 1e-300
+        inv_cdf_b = 1.0 / cdf_b
+        for j in range(Nmstar):
+            x = mstar_samples[j]
+            if x > b:
+                out[i, j] = 0.0
+            else:
+                dx = x - mu
+                out[i, j] = norm * math.exp(c * dx * dx) * inv_cdf_b
+    return out  # (Nmh, Nmstar)
+
 # ---------- your setup(), but leaner & faster ----------
 def setup_sample_probabilities_fast(
     muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
     mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR,
-    dndlnm_grid, *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False
+    dndlnm_grid, *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False, truncate_shmr=True
 ):
     rng = np.random.default_rng(seed)
     sfr_range   = (-5.0, 5.0)
@@ -923,7 +954,11 @@ def setup_sample_probabilities_fast(
     # Build Gaussian tables with Numba
     p_muv_sfr   = _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr)      # (Nsfr,   Nmuv)
     p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
-    p_mstar_mh  = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR) # (Nmh,    Nmstar)
+    if truncate_shmr:
+        mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + mh_samples
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+    else:
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)  # (Nmh, Nmstar)
 
     if use_float32:
         p_muv_sfr   = np.ascontiguousarray(p_muv_sfr,   dtype=np.float32)
@@ -936,12 +971,13 @@ def setup_sample_probabilities_fast(
 def uvlf_fast_einsum(
     muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
     mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR, dndlnm_grid,
-    *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False
+    *, Nsfr, Nmstar, Nmh, seed=0, use_float32=False, truncate_shmr=True
 ):
     p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = setup_sample_probabilities_fast(
         muv_grid, sigma_UV, muuv_of_sfr_grid, sfr_grid,
         mstar_grid, sigma_sfr_grid, mh_grid, sigma_SHMR, dndlnm_grid,
-        Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, use_float32=use_float32
+        Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, use_float32=use_float32,
+        truncate_shmr=truncate_shmr,
     )
 
     # Contract: dnd * B(mh,m*) * H(m*,sfr) * G(sfr,muv)  -> (Nmuv,)
@@ -973,6 +1009,7 @@ def UV_calc_numba(
         sigma_kuv = 0.1,
         mass_dependent_sigma_uv=False,
         seed=0,
+        truncate_shmr=True,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
@@ -1006,6 +1043,7 @@ def UV_calc_numba(
         Nmstar=10_000,
         Nmh=10_000,
         seed=seed,
+        truncate_shmr=truncate_shmr,
     )
 
     return uvlf
@@ -1178,6 +1216,7 @@ def setup_sample_probabilities_fast_with_sfr10(
     *,
     Nsfr, Nmstar, Nmh, seed=0,
     gh_n=24,
+    truncate_shmr=True,
 ):
     rng = np.random.default_rng(seed)
     sfr_range   = (-5.0, 5.0)
@@ -1201,7 +1240,11 @@ def setup_sample_probabilities_fast_with_sfr10(
 
     # Build p_sfr_mstar and p_mstar_mh the same way you already do
     p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
-    p_mstar_mh  = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)        # (Nmh, Nmstar)
+    if truncate_shmr:
+        mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + mh_samples
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+    else:
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)     # (Nmh, Nmstar)
 
     # --- NEW: build p_muv_sfr by integrating over x ---
     gh_t, gh_w = hermgauss(gh_n)
@@ -1242,7 +1285,7 @@ def uvlf_fast_einsum_sfr10version(
     mu_x_of_sfr_fn=None,
     sigma_muv_const=0.1,
     *,
-    Nsfr, Nmstar, Nmh, seed=0, gh_n=24
+    Nsfr, Nmstar, Nmh, seed=0, gh_n=24, truncate_shmr=True
 ):
     p_muv_sfr, p_sfr_mstar, p_mstar_mh, dndlnm_on_mh, total_scale = (
         setup_sample_probabilities_fast_with_sfr10(
@@ -1255,7 +1298,8 @@ def uvlf_fast_einsum_sfr10version(
             sigma_x_of_sfr_fn,
             mu_x_of_sfr_fn=mu_x_of_sfr_fn,
             sigma_muv_const=sigma_muv_const,
-            Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, gh_n=gh_n
+            Nsfr=Nsfr, Nmstar=Nmstar, Nmh=Nmh, seed=seed, gh_n=gh_n,
+            truncate_shmr=truncate_shmr,
         )
     )
     out = np.einsum('m,ma,ar,ru->u',
@@ -1291,6 +1335,7 @@ def UV_calc_numba_sfr10(
         sigma_sfr10=0.1,
         mass_dependent_sfr10=False,
         seed=0,
+        truncate_shmr=True,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
@@ -1341,5 +1386,6 @@ def UV_calc_numba_sfr10(
         Nmstar=10_000,
         Nmh=10_000,
         seed=seed,
+        truncate_shmr=truncate_shmr,
     )
     return uvlf
