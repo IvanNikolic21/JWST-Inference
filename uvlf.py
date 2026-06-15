@@ -911,11 +911,8 @@ def _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, s
         inv_cdf_b = 1.0 / cdf_b
         for j in range(Nmstar):
             x = mstar_samples[j]
-            if x > b:
-                out[i, j] = 0.0
-            else:
-                dx = x - mu
-                out[i, j] = norm * math.exp(c * dx * dx) * inv_cdf_b
+            dx = x - mu
+            out[i, j] = norm * math.exp(c * dx * dx) * inv_cdf_b * (x <= b)
     return out  # (Nmh, Nmstar)
 
 # ---------- your setup(), but leaner & faster ----------
