@@ -4,9 +4,14 @@ import numpy as np
 import hmf as hmf
 from astropy.cosmology import Planck18 as cosmo
 from uvlf import bpass_loader, SFH_sampler
+from mpi4py import MPI
 import argparse
 
 if __name__ == "__main__":
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--directory_of_posteriors",
@@ -36,6 +41,8 @@ if __name__ == "__main__":
     muvs_o = np.linspace(-25, -16, 20)
 
     posteriors = np.genfromtxt(os.path.join(directory, "post_equal_weights.dat"))
+    my_posteriors = posteriors[rank::size]
+    print(f"[rank {rank}/{size}] processing {len(my_posteriors)} of {len(posteriors)} samples", flush=True)
     hmf_locs = [
         hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08")
         for z in z_s
@@ -54,7 +61,7 @@ if __name__ == "__main__":
         bpass_read.get_UV_sfr10 if sigma_sfr_10_explicit else bpass_read.get_UV
     )
 
-    for post_sample in posteriors:
+    for post_sample in my_posteriors:
         dic = dict(zip(params, post_sample))
 
         kwargs = dict(
