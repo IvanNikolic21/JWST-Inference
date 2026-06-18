@@ -174,10 +174,7 @@ class LikelihoodAngBase():
             alpha_star_low = 0.5
 
         if "M_knee" in dic_params:
-            if self.fixed_Mknee:
-                M_knee = 2e12
-            else:
-                M_knee = 10**dic_params["M_knee"]
+            M_knee = 10**dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
@@ -353,10 +350,7 @@ class LikelihoodUVLFBase:
             a_sig_SFR = -0.11654893
 
         if "M_knee" in dic_params:
-            if self.fixed_Mknee:
-                M_knee = 2e12
-            else:
-                M_knee = 10 ** dic_params["M_knee"]
+            M_knee = 10 ** dic_params["M_knee"]
         else:
             M_knee = 2.6e11
 
@@ -2020,6 +2014,16 @@ def run_mcmc(
                 )
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
+                )
+            elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and fixed_Mknee:
+                # M_knee is kept as a sampled dimension (so ndim/limits still
+                # line up with the params list), but its prior is pinned to a
+                # tight spike around 2e12 so it doesn't waste a dimension.
+                cov_mat = np.loadtxt(
+                    os.path.join(script_dir + '/cov_matr_uv_fixedMknee.txt')
+                ) / 5
+                mu = np.loadtxt(
+                    os.path.join(script_dir + '/means_uv_fixedMknee.txt')
                 )
             elif M_knee and (sigma_uv or sigma_sfr_10_explicit):
                 cov_mat = np.loadtxt(
