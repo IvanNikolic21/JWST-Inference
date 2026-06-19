@@ -28,6 +28,7 @@ if __name__ == "__main__":
     sigma_sfr_10_explicit  = run_config["sigma_sfr_10_explicit"]
     sigma_uv               = run_config["sigma_uv"]
     mass_dependent_sigma_uv = run_config.get("mass_dependent_sigma_uv", False)
+    fixed_Mknee             = run_config.get("fixed_Mknee", False)
     mass_dependent_sfr10   = run_config.get("mass_dependent_sfr10", False)
 
     if func_name == "UV_calc_numba_sfr10":
@@ -71,7 +72,10 @@ if __name__ == "__main__":
             sigma_SFMS_norm = dic.get("sigma_SFMS_norm", 0.0),
             t_star          = dic.get("t_star", 0.5),
             a_sig_SFR       = dic.get("a_sig_SFR", -0.11654893),
-            M_knee          = 10 ** dic["M_knee"] if "M_knee" in dic else 2.6e11,
+            M_knee          = (
+                2e12 if fixed_Mknee
+                else 10 ** dic["M_knee"] if "M_knee" in dic else 2.6e11
+            ),
         )
         if sigma_sfr_10_explicit:
             kwargs["sigma_sfr10"]          = dic.get("sigma_sfr_10", dic.get("sigma_SFR_10", 0.2))

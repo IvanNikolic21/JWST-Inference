@@ -709,6 +709,7 @@ def run_mcmc(
         "sigma_uv": bool(sigma_uv),
         "mass_dependent_sigma_uv": bool(mass_dependent_sigma_uv),
         "mass_dependent_sfr10": False,
+        "fixed_Mknee": bool(fixed_Mknee),
     }
     with open(output_filename + 'run_config.json', 'w') as f:
         json.dump(run_config, f, indent=2)
