@@ -1386,3 +1386,110 @@ def UV_calc_numba_sfr10(
         truncate_shmr=truncate_shmr,
     )
     return uvlf
+
+def p_muv_given_mh_sfr10(
+        Muv,
+        masses_hmf,     # log10 Mh grid used only to tabulate the Mh->M*->SFR relations
+        mh_eval,        # (Nmh_eval,) log10 Mh values at which to evaluate p(Muv|Mh)
+        f_star_norm=1.0,
+        alpha_star=0.5,
+        sigma_SHMR=0.3,
+        sigma_SFMS_norm=0.0,
+        t_star=0.5,
+        a_sig_SFR=-0.11654893,
+        z=11,
+        vect_func=None,
+        SFH_samp=None,
+        M_knee=2.6e11,
+        sigma_sfr10=0.1,
+        mass_dependent_sfr10=False,
+        seed=0,
+        truncate_shmr=True,
+        Nsfr=10_000,
+        Nmstar=10_000,
+        **kw,
+):
+    """
+    Same forward model as UV_calc_numba_sfr10, but conditioned on Mh instead
+    of integrated over the halo mass function. Returns p(Muv | Mh) evaluated
+    at mh_eval, shape (len(mh_eval), len(Muv)).
+    """
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
+                            fstar_norm=f_star_norm, M_knee=M_knee)
+    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+
+    Zs = metalicity_from_FMR(msss, sfrs)
+    Zs += DeltaZ_z(z)
+    sfr_map_grid = np.log10(sfrs)
+    x_map_grid = np.linspace(-3, 3, 1000)
+    sfr10_grid = (10 ** sfr_map_grid)[:, None] * (10 ** x_map_grid)[None, :]
+    Nsfr_map = sfr_map_grid.size
+    Nx_map = x_map_grid.size
+    F_UVs = np.empty((Nsfr_map, Nx_map))
+    for i in range(Nsfr_map):
+        F_UVs[i, :] = vect_func(
+            Zs[i],
+            msss[i],
+            10 ** sfr_map_grid[i],
+            z=z,
+            SFH_samp=SFH_samp,
+            sfr_10=sfr10_grid[i],
+        )
+    muuv_map = Muv_Luv(F_UVs * 3.846e33)
+
+    if mass_dependent_sfr10:
+        sigma_sfr10_var = linear_model_sfr10((msss, z), sigma_sfr10)
+    else:
+        sigma_sfr10_var = sigma_sfr10 * np.ones(np.shape(msss))
+    sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
+                                        a_sig_SFR=a_sig_SFR)
+
+    mstar_grid = np.log10(msss)
+    sfr_grid = np.log10(sfrs)
+    mh_grid = masses_hmf
+
+    rng = np.random.default_rng(seed)
+    sfr_range   = (-5.0, 5.0)
+    mstar_range = ( 2.0, 12.0)
+
+    sfr_samples   = rng.uniform(*sfr_range,   Nsfr).astype(np.float64)
+    mstar_samples = rng.uniform(*mstar_range, Nmstar).astype(np.float64)
+
+    scale_sfr   = (sfr_range[1]   - sfr_range[0])   / float(Nsfr)
+    scale_mstar = (mstar_range[1] - mstar_range[0]) / float(Nmstar)
+
+    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid, sigma_SFMS_var).astype(np.float64)
+    sfr_target_of_ms = np.interp(mstar_samples, mstar_grid, sfr_grid).astype(np.float64)
+    mstar_tgt_of_mh  = np.interp(np.asarray(mh_eval, dtype=np.float64), mh_grid, mstar_grid).astype(np.float64)
+
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)
+    if truncate_shmr:
+        mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + np.asarray(mh_eval, dtype=np.float64)
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+    else:
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)
+
+    gh_n = 24
+    gh_t, gh_w = hermgauss(gh_n)
+    gh_t = gh_t.astype(np.float64)
+    gh_w = (gh_w / np.sqrt(np.pi)).astype(np.float64)
+    mu_x = sfr_samples.copy()
+    sig_x = np.interp(sfr_samples, sfr_map_grid, sigma_sfr10_var).astype(np.float64)
+
+    p_muv_sfr = build_p_muv_sfr_with_x(
+        np.asarray(Muv, dtype=np.float64),
+        sfr_samples,
+        mu_x,
+        sig_x,
+        0.1,
+        np.asarray(sfr_map_grid, dtype=np.float64),
+        np.asarray(x_map_grid, dtype=np.float64),
+        np.asarray(muuv_map, dtype=np.float64),
+        gh_t, gh_w,
+    )
+
+    p_muv_given_mh = np.einsum(
+        'ma,ar,ru->mu', p_mstar_mh, p_sfr_mstar, p_muv_sfr, optimize='greedy'
+    ) * (scale_sfr * scale_mstar)
+
+    return p_muv_given_mh  # (len(mh_eval), len(Muv))
