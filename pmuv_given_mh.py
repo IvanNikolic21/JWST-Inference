@@ -3,30 +3,55 @@ import json
 import numpy as np
 import hmf as hmf
 from astropy.cosmology import Planck18 as cosmo
+from scipy.optimize import curve_fit
 from uvlf import bpass_loader, SFH_sampler, p_muv_given_mh_sfr10
 from mpi4py import MPI
 import argparse
 
 
+def gauss(x, A, mu, sigma):
+    return A * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
+
+
 def gaussian_moments(muv_grid, pdf):
     """
-    Weighted mean/sigma of pdf (..., Nmuv) over muv_grid (Nmuv,), plus the
-    fraction of probability mass actually captured by the grid.
-
-    pdf is a density (not pre-normalized to sum to 1 over muv_grid), so
-    captured_frac = sum(pdf) * dmuv estimates how much of the true p(Muv|Mh)
-    falls inside [muv_grid[0], muv_grid[-1]]. If this is well below 1, the
-    grid is clipping the distribution and mu/sigma below are moments of a
-    truncated distribution, not the true ones.
+    mu/sigma of pdf (..., Nmuv) over muv_grid (Nmuv,) from a least-squares
+    Gaussian fit (curve_fit), not raw weighted moments. A weighted second
+    moment is mechanically biased low whenever the grid clips part of the
+    true distribution's tail; a curve_fit instead infers sigma from the
+    visible curvature around the peak, so it stays robust even when the
+    grid doesn't fully bound the support. Also returns captured_frac, the
+    fraction of probability mass actually inside the grid (sum(pdf)*dmuv) —
+    if this is well below 1 *and* the fit looks off, the visible window is
+    probably missing one whole side of the peak and the fit can't be trusted.
     """
+    *lead_shape, Nmuv = pdf.shape
+    flat = pdf.reshape(-1, Nmuv)
+    n = flat.shape[0]
+
     dmuv = muv_grid[1] - muv_grid[0]
-    raw_norm = np.sum(pdf, axis=-1)
-    captured_frac = raw_norm * dmuv
-    norm = np.where(raw_norm > 0, raw_norm, 1.0)
-    mu = np.sum(pdf * muv_grid, axis=-1) / norm
-    var = np.sum(pdf * (muv_grid - mu[..., None]) ** 2, axis=-1) / norm
-    sigma = np.sqrt(np.maximum(var, 0.0))
-    return mu, sigma, captured_frac
+    captured_frac = np.sum(flat, axis=-1) * dmuv
+
+    mu = np.full(n, np.nan)
+    sigma = np.full(n, np.nan)
+    for i in range(n):
+        row = flat[i]
+        if not np.any(row > 0):
+            continue
+        amp0 = row.max()
+        mu0 = muv_grid[np.argmax(row)]
+        try:
+            popt, _ = curve_fit(
+                gauss, muv_grid, row,
+                p0=[amp0, mu0, 2.0],
+                bounds=([0.0, muv_grid.min(), 1e-3], [np.inf, muv_grid.max(), 50.0]),
+                maxfev=5000,
+            )
+            mu[i], sigma[i] = popt[1], popt[2]
+        except RuntimeError:
+            mu[i] = mu0
+
+    return mu.reshape(lead_shape), sigma.reshape(lead_shape), captured_frac.reshape(lead_shape)
 
 
 def build_kwargs(dic, fixed_Mknee, sigma_sfr_10_explicit, mass_dependent_sfr10):
