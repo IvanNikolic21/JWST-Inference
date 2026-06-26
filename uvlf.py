@@ -1249,7 +1249,7 @@ def setup_sample_probabilities_fast_with_sfr10(
     gh_w = (gh_w / np.sqrt(np.pi)).astype(np.float64)
 
     if mu_x_of_sfr_fn is None:
-        mu_x = sfr_samples.copy()
+        mu_x = np.zeros_like(sfr_samples)
     else:
         mu_x = np.asarray(mu_x_of_sfr_fn(sfr_samples), dtype=np.float64)
     sig_x = np.asarray(sigma_x_of_sfr_fn(sfr_samples), dtype=np.float64)
@@ -1473,7 +1473,7 @@ def p_muv_given_mh_sfr10(
     gh_t, gh_w = hermgauss(gh_n)
     gh_t = gh_t.astype(np.float64)
     gh_w = (gh_w / np.sqrt(np.pi)).astype(np.float64)
-    mu_x = sfr_samples.copy()
+    mu_x = np.zeros_like(sfr_samples)
     sig_x = np.interp(sfr_samples, sfr_map_grid, sigma_sfr10_var).astype(np.float64)
 
     p_muv_sfr = build_p_muv_sfr_with_x(
