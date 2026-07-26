@@ -87,6 +87,10 @@ if __name__ == "__main__":
     parser.add_argument("--seeds", type=str, default="0,1")
     parser.add_argument("--nmstar_hires", type=int, default=100_000)
     parser.add_argument("--truncate_shmr", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--bpass_filename", type=str, default=None,
+                        help="Override path to BPASS spectra files, e.g. "
+                             "/path/to/spectra-bin-imf135_300.a+00. "
+                             "(same prefix convention as bpass_loader)")
     args = parser.parse_args()
     seeds = [int(s) for s in args.seeds.split(",")]
 
@@ -100,7 +104,9 @@ if __name__ == "__main__":
     SFR_samps = [SFH_sampler(z=z) for z in z_s]
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    if script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
+    if args.bpass_filename:
+        bpass_read = bpass_loader(filename=args.bpass_filename)
+    elif script_dir == "/groups/astro/ivannik/programs/JWST-Inference":
         bpass_read = bpass_loader(
             filename="/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.",
         )
@@ -126,6 +132,9 @@ if __name__ == "__main__":
     for i_z, z in enumerate(z_s):
         masses_hmf = np.log10(hmf_locs[i_z].m / cosmo.h)
         dndm = hmf_locs[i_z].dndlog10m * cosmo.h ** 3 * np.exp(-5e8 / (hmf_locs[i_z].m / cosmo.h))
+        print(f"  z={z}: masses_hmf range [{masses_hmf.min():.2f}, {masses_hmf.max():.2f}], "
+              f"dndm nan={np.isnan(dndm).sum()} finite_nonzero={(np.isfinite(dndm) & (dndm > 0)).sum()}/{dndm.size}",
+              flush=True)
         for label, seed, nmstar, truncate_shmr in configs:
             phi = uvlf_with_custom_N(
                 muvs_o, masses_hmf, dndm, z=z, vect_func=vect_func,
@@ -133,7 +142,10 @@ if __name__ == "__main__":
                 seed=seed, truncate_shmr=truncate_shmr, **fiducial,
             )
             results[label].append(phi)
-            print(f"  z={z}, {label}: done", flush=True)
+            n_nan = np.isnan(phi).sum()
+            finite = phi[np.isfinite(phi)]
+            rng_str = f"[{finite.min():.3e}, {finite.max():.3e}]" if finite.size else "n/a"
+            print(f"  z={z}, {label}: nan={n_nan}/{phi.size}, finite_range={rng_str}", flush=True)
 
     fig, axes = plt.subplots(1, len(z_s), figsize=(4.5 * len(z_s), 4), sharey=True)
     colors = {c[0]: col for c, col in zip(configs, plt.cm.viridis(np.linspace(0, 0.85, len(configs) - 1)))}
