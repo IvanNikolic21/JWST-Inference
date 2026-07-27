@@ -84,6 +84,11 @@ if __name__ == "__main__":
     parser.add_argument("--fstar_norm", type=float, default=1.0)
     parser.add_argument("--alpha_star_low", type=float, default=0.5)
     parser.add_argument("--M_knee", type=float, default=2.6e11)
+    parser.add_argument("--sigma_SFMS_norm", type=float, default=0.15,
+                        help="Must be nonzero: sigma_SFR_variable hard-sets "
+                             "sigma=norm for Mstar>1e10 Msun, so norm=0.0 "
+                             "creates a zero-width Gaussian kernel and NaNs "
+                             "out the whole einsum contraction.")
     parser.add_argument("--seeds", type=str, default="0,1")
     parser.add_argument("--nmstar_hires", type=int, default=100_000)
     parser.add_argument("--truncate_shmr", action=argparse.BooleanOptionalAction, default=True)
@@ -116,7 +121,7 @@ if __name__ == "__main__":
 
     fiducial = dict(
         f_star_norm=args.fstar_norm, alpha_star=args.alpha_star_low,
-        sigma_SHMR=args.sigma_SHMR, sigma_SFMS_norm=0.0, t_star=0.5,
+        sigma_SHMR=args.sigma_SHMR, sigma_SFMS_norm=args.sigma_SFMS_norm, t_star=0.5,
         a_sig_SFR=-0.11654893, M_knee=args.M_knee, sigma_kuv=0.2,
     )
 
