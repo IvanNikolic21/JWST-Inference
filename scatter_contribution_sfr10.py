@@ -1,5 +1,6 @@
 """
-Fractional contribution of each scatter source to sigma_UV at z=10, Muv=-20.
+Fractional contribution of each scatter source to sigma_UV at z=10, at a
+configurable Muv threshold (--target_muv, default -20).
 
 Sources decomposed:
     sigma_SFR10  — stochasticity of SFR over 10 Myr
@@ -7,9 +8,10 @@ Sources decomposed:
     sigma_SHMR   — scatter on the stellar-to-halo-mass relation
 
 Usage (cluster):
-    mpirun -n <N> python scatter_contribution_sfr10.py --directory_of_posteriors <dir>
+    mpirun -n <N> python scatter_contribution_sfr10.py --directory_of_posteriors <dir> \
+        [--target_muv -18]
 
-Saves:
+Saves (filenames suffixed with _muv<value> unless target_muv=-20, the default):
     <dir>/scatter_contribution_sfr10.npz   — sigmas + fracs arrays
     <dir>/fractional_sigma_sfr10.pdf       — CDF plot
 """
@@ -29,7 +31,6 @@ from uvlf import bpass_loader, SFH_sampler, p_muv_given_mh_sfr10
 
 # ── constants ──────────────────────────────────────────────────────────────────
 TARGET_Z   = 10
-TARGET_MUV = -20.0
 NEAR_ZERO  = 0.01
 
 SCENARIOS = [
@@ -78,8 +79,11 @@ if __name__ == "__main__":
                         help="First posterior sample index to use")
     parser.add_argument("--n_samples", type=int, default=500,
                         help="Number of posterior samples to use")
+    parser.add_argument("--target_muv", type=float, default=-20.0,
+                        help="Muv threshold to evaluate sigma_UV at")
     args = parser.parse_args()
     directory = args.directory_of_posteriors
+    TARGET_MUV = args.target_muv
 
     with open(os.path.join(directory, "run_config.json")) as f:
         run_config = json.load(f)
@@ -159,8 +163,10 @@ if __name__ == "__main__":
             for name in SCENARIO_NAMES if name != "full"
         }
 
-        # save raw arrays
-        out_path = os.path.join(directory, "scatter_contribution_sfr10.npz")
+        # save raw arrays; keep default filenames stable for target_muv=-20
+        # (the paper's existing figure), suffix otherwise
+        suffix = "" if TARGET_MUV == -20.0 else f"_muv{TARGET_MUV:g}"
+        out_path = os.path.join(directory, f"scatter_contribution_sfr10{suffix}.npz")
         np.savez(
             out_path,
             **{f"sigma_{name}": sigmas[name] for name in SCENARIO_NAMES},
@@ -186,6 +192,6 @@ if __name__ == "__main__":
         ax.text(0.08, 0.90, rf"z={TARGET_Z}, M$_{{\rm UV}}$ = {TARGET_MUV}", fontsize=14)
         plt.tight_layout()
 
-        plot_path = os.path.join(directory, "fractional_sigma_sfr10.pdf")
+        plot_path = os.path.join(directory, f"fractional_sigma_sfr10{suffix}.pdf")
         plt.savefig(plot_path, bbox_inches="tight")
         print(f"Saved: {plot_path}", flush=True)
