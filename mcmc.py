@@ -2128,6 +2128,27 @@ def run_mcmc(
                 mu = np.loadtxt(
                     '/home/inikolic/projects/UVLF_FMs/angular_clustering_debug/new_prior_analysis/means_Mknee_wide.txt'
                 )
+            elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and sigma_shmr_z_dependent and fixed_Mknee:
+                # Extension: linear redshift-dependent SHMR scatter
+                # (alpha_sigma_shmr_z), simulation-derived prior. Same
+                # 9th-dimension prior is reused whether the run uses
+                # sigma_UV or sigma_sfr_10 (both play the analogous role
+                # here). M_knee pinned to a tight spike around 2e12, as
+                # in the fixed_Mknee branches above.
+                cov_mat = np.loadtxt(
+                    os.path.join(script_dir, 'priors', 'cov_matr_sigma_star_z_fixedMknee.txt')
+                ) / 5
+                mu = np.loadtxt(
+                    os.path.join(script_dir, 'priors', 'means_sigma_star_z_fixedMknee.txt')
+                )
+            elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and sigma_shmr_z_dependent:
+                # Same extension as above, but with M_knee left free.
+                cov_mat = np.loadtxt(
+                    os.path.join(script_dir, 'priors', 'cov_matr_sigma_star_z.txt')
+                ) / 5
+                mu = np.loadtxt(
+                    os.path.join(script_dir, 'priors', 'means_sigma_star_z.txt')
+                )
             elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and fixed_Mknee:
                 # M_knee is kept as a sampled dimension (so ndim/limits still
                 # line up with the params list), but its prior is pinned to a
@@ -2320,6 +2341,24 @@ if __name__ == "__main__":
         # --sigma_shmr_z_dependent.
         priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_sigma_shmr_z", "sigma_UV"]:
+        # Extension: linear redshift-dependent SHMR scatter, run jointly
+        # with sigma_UV free. Requires --sigma_shmr_z_dependent and
+        # --sigma_uv. Uses the simulation-derived priors/*_sigma_star_z*
+        # files (see prior()); the 9th-dimension prior was fit assuming
+        # this role, but is reused as-is for sigma_sfr_10 below.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0), (0.001,0.5)]
+        if not inputs.sigma_uv:
+            raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_sigma_shmr_z", "sigma_sfr_10"]:
+        # Same extension as above, but for the sigma_sfr_10_explicit model
+        # instead of sigma_uv. Requires --sigma_shmr_z_dependent and
+        # --sigma_sfr_10_explicit.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0), (0.001,0.5)]
+        if inputs.sigma_uv or not inputs.sigma_sfr_10_explicit:
+            raise ValueError("Choose either sigma_uv or sigma_sfr_10_explicit.")
     elif params ==["Muv_shift", "sigma_UV_a", "sigma_UV_b"]:
         priors = [(-1.5,2.0), (-1.0, 1.5), (0.0, 3.0)]
 
