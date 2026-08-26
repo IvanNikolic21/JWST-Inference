@@ -17,7 +17,7 @@ hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=1,
 hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=1,
             Mmax=18,
             dlog10m=0.02,)
-from uvlf import ms_mh, ms_mh_flattening
+from uvlf import ms_mh, ms_mh_flattening, sigma_SHMR_variable
 
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
@@ -221,6 +221,7 @@ class My_HOD(hm.hod.Zheng05):
         'M_1':13.0,
         'alpha_star_low':0.5,
         'M_knee':2.6e11,
+        'a_sig_SHMR':0.0,
     }
 
     def _p_above_threshold(self, m, sigma):
@@ -230,6 +231,10 @@ class My_HOD(hm.hod.Zheng05):
 
         Both paths work in stellar mass space via the forward SHMR, so the only
         difference between truncate_shmr=True and False is the truncation itself.
+
+        If self.params['a_sig_SHMR'] != 0, the scatter is made mass-dependent
+        (piecewise, anchored at M_knee -- see uvlf.sigma_SHMR_variable()); the
+        default a_sig_SHMR=0 recovers the constant-scatter `sigma` exactly.
         """
         mu = np.log10(ms_mh_flattening(
             m, cosmo,
@@ -238,6 +243,11 @@ class My_HOD(hm.hod.Zheng05):
             M_knee=self.params["M_knee"],
         ))
         ms_min = self.params["stellar_mass_min"]
+        sigma = sigma_SHMR_variable(
+            m, norm=sigma,
+            a_sig_SHMR=self.params.get("a_sig_SHMR", 0.0),
+            M_char=self.params["M_knee"],
+        )
         s2 = sigma * np.sqrt(2)
 
         if self.truncate_shmr:

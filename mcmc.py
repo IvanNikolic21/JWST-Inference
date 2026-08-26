@@ -17,6 +17,7 @@ from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
+from uvlf import sigma_linear_z
 import argparse
 
 base_dir = os.path.dirname(__file__)
@@ -33,9 +34,13 @@ class LikelihoodAngBase():
 
     """
     def __init__(self, params, realistic_Nz=False, hmf_choice="Tinker08", z=9.25, exact_specs=True, fixed_Mknee=False,
+        mass_dependent_sigma_shmr=False, sigma_shmr_z_dependent=False,
 ):
         self.exact_specs = exact_specs
         self.fixed_Mknee = fixed_Mknee
+        self.z = z
+        self.mass_dependent_sigma_shmr = mass_dependent_sigma_shmr
+        self.sigma_shmr_z_dependent = sigma_shmr_z_dependent
         if realistic_Nz:
             print("this is redshift in Angular likelihood base", z)
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -133,6 +138,7 @@ class LikelihoodAngBase():
                 'M1': 12.0,
                 'fstar_norm_sat': 10 ** 0,
                 'stellar_mass_sigma_sat': 0.3,
+                'a_sig_SHMR': 0.0,
             }
         )
 
@@ -178,6 +184,27 @@ class LikelihoodAngBase():
         else:
             M_knee = 2.6e11
 
+        if "a_sig_SHMR" in dic_params:
+            a_sig_SHMR = dic_params["a_sig_SHMR"]
+        else:
+            a_sig_SHMR = 0.0
+
+        if "alpha_sigma_shmr_z" in dic_params:
+            alpha_sigma_shmr_z = dic_params["alpha_sigma_shmr_z"]
+        else:
+            alpha_sigma_shmr_z = 0.0
+
+        # Optional redshift-dependent (linear) rescaling of the SHMR
+        # scatter -- see sigma_linear_z(); no-op unless
+        # sigma_shmr_z_dependent=True was passed to run_mcmc().
+        if self.sigma_shmr_z_dependent:
+            sigma_SHMR = sigma_linear_z(sigma_SHMR, alpha_sigma_shmr_z, self.z)
+
+        # Optional mass-dependent SHMR scatter, applied inside My_HOD via
+        # the 'a_sig_SHMR' hod_param -- no-op unless
+        # mass_dependent_sigma_shmr=True was passed to run_mcmc().
+        a_sig_SHMR_eff = a_sig_SHMR if self.mass_dependent_sigma_shmr else 0.0
+
         if obs == "Ang_z9_m87":
             M_thresh = 8.75
         elif obs == "Ang_z7_m87":
@@ -208,6 +235,7 @@ class LikelihoodAngBase():
             'M1': M_1,
             'M_0': M_0,
             'M_knee': M_knee,
+            'a_sig_SHMR': a_sig_SHMR_eff,
         }
         self.angular_gal.update(p1=p1_chosen)
         ang_th = self.angular_gal.theta
@@ -274,9 +302,13 @@ class LikelihoodUVLFBase:
             mass_dependent_sigma_uv=False,
             slope_SFR=False,
             fixed_Mknee = False,
+            mass_dependent_sigma_shmr=False,
+            sigma_shmr_z_dependent=False,
     ):
         self.z = z
         self.fixed_Mknee = fixed_Mknee
+        self.mass_dependent_sigma_shmr = mass_dependent_sigma_shmr
+        self.sigma_shmr_z_dependent = sigma_shmr_z_dependent
         if hmf_choice=="custom":
             self.hmf_loc = hmf.MassFunction(
                 z=z,
@@ -349,6 +381,16 @@ class LikelihoodUVLFBase:
         else:
             a_sig_SFR = -0.11654893
 
+        if "a_sig_SHMR" in dic_params:
+            a_sig_SHMR = dic_params["a_sig_SHMR"]
+        else:
+            a_sig_SHMR = 0.0
+
+        if "alpha_sigma_shmr_z" in dic_params:
+            alpha_sigma_shmr_z = dic_params["alpha_sigma_shmr_z"]
+        else:
+            alpha_sigma_shmr_z = 0.0
+
         if "M_knee" in dic_params:
             M_knee = 10 ** dic_params["M_knee"]
         else:
@@ -396,6 +438,10 @@ class LikelihoodUVLFBase:
                     sigma_kuv=sigma_UV,
                     mass_dependent_sigma_uv=self.mass_dependent_sigma_uv,
                     slope_SFR = slope_SFR,
+                    mass_dependent_sigma_shmr=self.mass_dependent_sigma_shmr,
+                    a_sig_SHMR=a_sig_SHMR,
+                    sigma_shmr_z_dependent=self.sigma_shmr_z_dependent,
+                    alpha_sigma_shmr_z=alpha_sigma_shmr_z,
                 )
 
                 # preds = UV_calc_BPASS_op(
@@ -436,6 +482,10 @@ class LikelihoodUVLFBase:
                     # TODO: introduce a dedicated flag for mass-dependent SFR10 scatter
                     # and thread it through CLI/prior validation. Until then, use a fixed default.
                     mass_dependent_sfr10=False,
+                    mass_dependent_sigma_shmr=self.mass_dependent_sigma_shmr,
+                    a_sig_SHMR=a_sig_SHMR,
+                    sigma_shmr_z_dependent=self.sigma_shmr_z_dependent,
+                    alpha_sigma_shmr_z=alpha_sigma_shmr_z,
                 )
             else:
                 preds = UV_calc_BPASS(
@@ -659,6 +709,8 @@ def run_mcmc(
         sigma_sfr_10_explicit=False,
         model_choice="Nikolic+26",
         fixed_Mknee=False,
+        mass_dependent_sigma_shmr=False,
+        sigma_shmr_z_dependent=False,
 ):
 
     if priors is None:
@@ -710,6 +762,8 @@ def run_mcmc(
         "mass_dependent_sigma_uv": bool(mass_dependent_sigma_uv),
         "mass_dependent_sfr10": False,
         "fixed_Mknee": bool(fixed_Mknee),
+        "mass_dependent_sigma_shmr": bool(mass_dependent_sigma_shmr),
+        "sigma_shmr_z_dependent": bool(sigma_shmr_z_dependent),
     }
     with open(output_filename + 'run_config.json', 'w') as f:
         json.dump(run_config, f, indent=2)
@@ -724,21 +778,25 @@ def run_mcmc(
     if any({"Ang_z9_m87", "Ang_z9_m9"}.intersection(set(likelihoods))
            ):
         ang = True
-        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,)
+        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
+                                       mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,)
     if any({"Ang_z7_m87",
             "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
            ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
                                        hmf_choice=hmf_choice, z=7, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
+                                       mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,
 )
     if any({"Ang_z5_5_m85", "Ang_z5_5_m9", "Ang_z5_5_m92_5",
             "Ang_z5_5_m9_5"}.intersection(set(likelihoods))
            ):# or "Ang_z9_m9" in likelihoods or "Ang_z7_m9" in likelihoods:
         ang = True
-        AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5, exact_specs=exact_specs)
+        AngBase_z5 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=5.5, exact_specs=exact_specs,
+                                       mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,)
     if not ang:
-        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, exact_specs=exact_specs)
+        AngBase = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, exact_specs=exact_specs,
+                                    mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,)
 
     SFR_samp_11 = None
     SFR_samp_10 = None
@@ -757,6 +815,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_11 = SFH_sampler(z=11)
@@ -769,6 +829,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_9 = SFH_sampler(z=9)
@@ -783,6 +845,8 @@ def run_mcmc(
                 sigma_sfr_10_explicit= sigma_sfr_10_explicit,
                 sigma_uv=sigma_uv,
                 mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
                 slope_SFR=slope_SFR
             )
         elif model_choice == "Mason+15":
@@ -800,6 +864,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_11 = SFH_sampler(z=11)
@@ -814,6 +880,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_12_5 = SFH_sampler(z=12.5)
@@ -827,6 +895,8 @@ def run_mcmc(
             sigma_sfr_10_explicit=sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_7 = SFH_sampler(z=7)
@@ -840,6 +910,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_8 = SFH_sampler(z=8)
@@ -853,6 +925,8 @@ def run_mcmc(
             sigma_sfr_10_explicit=sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_9 = SFH_sampler(z=9)
@@ -866,6 +940,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_10 = SFH_sampler(z=10)
@@ -879,6 +955,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_12 = SFH_sampler(z=12)
@@ -892,6 +970,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_14 = SFH_sampler(z=14)
@@ -905,6 +985,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_8 = SFH_sampler(z=8)
@@ -917,6 +999,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR,
             fixed_Mknee=fixed_Mknee,
         )
@@ -930,6 +1014,8 @@ def run_mcmc(
             sigma_uv=sigma_uv,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR,
             fixed_Mknee=fixed_Mknee,
         )
@@ -943,6 +1029,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR,
             fixed_Mknee = fixed_Mknee,
         )
@@ -957,6 +1045,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_9_8 = SFH_sampler(z=9.8)
@@ -969,6 +1059,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_12_8 = SFH_sampler(z=12.8)
@@ -981,6 +1073,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_14_3 = SFH_sampler(z=14.3)
@@ -994,6 +1088,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_9 = SFH_sampler(z=9)
@@ -1006,6 +1102,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_11 = SFH_sampler(z=11)
@@ -1018,6 +1116,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_14 = SFH_sampler(z=14)
@@ -1031,6 +1131,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_5 = SFH_sampler(z=5)
@@ -1043,6 +1145,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_6 = SFH_sampler(z=6)
@@ -1055,6 +1159,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_7 = SFH_sampler(z=7)
@@ -1067,6 +1173,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_8 = SFH_sampler(z=8)
@@ -1079,6 +1187,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_9 = SFH_sampler(z=9)
@@ -1091,6 +1201,8 @@ def run_mcmc(
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
             mass_dependent_sigma_uv=mass_dependent_sigma_uv,
+            mass_dependent_sigma_shmr=mass_dependent_sigma_shmr,
+            sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
         SFR_samp_10 = SFH_sampler(z=10)
@@ -2134,6 +2246,8 @@ if __name__ == "__main__":
     parser.add_argument("--sigma_sfr_10_explicit", action="store_true")
     parser.add_argument("--model", default="Nikolic+26") #otherwise Mason+15
     parser.add_argument("--fixed_Mknee", action="store_true")
+    parser.add_argument("--mass_dependent_sigma_shmr", action="store_true")
+    parser.add_argument("--sigma_shmr_z_dependent", action="store_true")
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -2195,6 +2309,17 @@ if __name__ == "__main__":
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (0.001,0.5), ]
         if inputs.sigma_uv or not inputs.sigma_sfr_10_explicit:
             raise ValueError("Choose either sigma_uv or sigma_sfr_10_explicit.")
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "a_sig_SHMR"]:
+        # Extension: mass-dependent SHMR scatter (piecewise, anchored at M_knee).
+        # Requires --mass_dependent_sigma_shmr and (for the clustering-side
+        # constraint) an ACF likelihood alongside the UVLF one.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,1.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_sigma_shmr_z"]:
+        # Extension: linear redshift-dependent SHMR scatter. Requires
+        # --sigma_shmr_z_dependent.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,2.0)]
     elif params ==["Muv_shift", "sigma_UV_a", "sigma_UV_b"]:
         priors = [(-1.5,2.0), (-1.0, 1.5), (0.0, 3.0)]
 
@@ -2206,6 +2331,20 @@ if __name__ == "__main__":
     if inputs.mass_dependent_sigma_uv:
         if "sigma_UV" not in params or not inputs.sigma_uv:
             raise ValueError("You need to include 'sigma_UV' in the params list to use mass-dependent sigma_UV.")
+
+    if inputs.mass_dependent_sigma_shmr:
+        if "a_sig_SHMR" not in params:
+            raise ValueError("You need to include 'a_sig_SHMR' in the params list to use mass-dependent sigma_SHMR.")
+        if not any("Ang_" in l for l in likelihoods):
+            raise ValueError(
+                "Mass-dependent sigma_SHMR is only meaningfully constrained with an "
+                "angular correlation function likelihood alongside the UVLF one; "
+                "include at least one 'Ang_*' entry in --names-list."
+            )
+
+    if inputs.sigma_shmr_z_dependent:
+        if "alpha_sigma_shmr_z" not in params:
+            raise ValueError("You need to include 'alpha_sigma_shmr_z' in the params list to use sigma_shmr_z_dependent.")
 
     #, "M_knee"]
     #params = ["fstar_norm", "sigma_SHMR", "alpha_star_low",]
@@ -2237,4 +2376,6 @@ if __name__ == "__main__":
         sigma_sfr_10_explicit = inputs.sigma_sfr_10_explicit,
         model_choice = inputs.model,
         fixed_Mknee = inputs.fixed_Mknee,
+        mass_dependent_sigma_shmr = inputs.mass_dependent_sigma_shmr,
+        sigma_shmr_z_dependent = inputs.sigma_shmr_z_dependent,
     )

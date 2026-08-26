@@ -94,6 +94,66 @@ def sigma_SFR_variable(Mstar, norm=0.18740570999999995, a_sig_SFR=-0.11654893):
     return sigma
 
 
+def sigma_SHMR_variable(Mh, norm=0.3, a_sig_SHMR=0.0, M_char=2e12):
+    """
+        Variable (mass-dependent) scatter of the SHMR (M*|Mh relation).
+
+        Mirrors `sigma_SFR_variable`: linear in log10(Mh/M_char) below the
+        characteristic mass M_char, constant above it. a_sig_SHMR=0.0
+        recovers the fiducial constant-scatter model exactly (sigma=norm
+        everywhere), so this is a backward-compatible drop-in.
+
+        M_char defaults to M_knee, the same characteristic halo mass at
+        which the *mean* SHMR bends (Sec. 2.2) -- physically motivated by
+        the same feedback-transition argument (SNe feedback dominates the
+        scatter below M_knee, AGN feedback regulates it above).
+
+    Parameters
+    ----------
+    Mh: halo mass (linear, Msun) at which the relation is evaluated
+    norm: scatter at/above M_char
+    a_sig_SHMR: slope of the scatter below M_char (dex per dex in Mh/M_char)
+    M_char: characteristic (knee) mass anchoring the break; pass M_knee
+
+    Returns
+    -------
+    sigma: array, scatter of the SHMR at each Mh
+    """
+    Mh = np.asarray(Mh, dtype=np.float64)
+
+    sigma = a_sig_SHMR * np.log10(Mh / M_char) + norm
+    sigma[Mh > M_char] = norm
+
+    return sigma
+
+
+def sigma_linear_z(sigma_0, alpha_z, z, z_ref=11.0):
+    """
+        Linear-in-redshift rescaling of a scatter parameter.
+
+        Uses the same (1+z)/(1+z_ref) convention already adopted for the
+        SHMR normalization/slope redshift extensions (Sec. "Extensions to
+        the model"): sigma(z) = sigma_0 * [1 + alpha_z * ((1+z)/(1+z_ref) - 1)].
+        alpha_z = 0 recovers the fiducial, redshift-independent sigma_0
+        exactly, at every z (not only at z=z_ref), so this is a
+        backward-compatible drop-in.
+
+    Parameters
+    ----------
+    sigma_0: fiducial (z-independent) scatter value; scalar or array
+    alpha_z: fractional-per-pivot-interval slope of the redshift evolution
+    z: redshift at which to evaluate
+    z_ref: pivot redshift at which sigma(z_ref) = sigma_0 (default 11,
+        matching the pivot already used for the SHMR normalization/slope
+        redshift extensions)
+
+    Returns
+    -------
+    sigma: sigma_0 rescaled to redshift z (same shape as sigma_0)
+    """
+    return sigma_0 * (1.0 + alpha_z * ((1.0 + z) / (1.0 + z_ref) - 1.0))
+
+
 #     if Mstar > 10**10:
 #         return 0.18740570999999995 - norm
 #     else:
@@ -874,14 +934,19 @@ def _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr):
 
 @njit(parallel=True, fastmath=True)
 def _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR):
+    """
+    sigma_SHMR: array, shape (Nmh,) -- one scatter value per halo-mass
+    sample (pass e.g. np.full(Nmh, sigma_value) to recover the constant-
+    scatter behaviour; see _sigma_shmr_on_samples()).
+    """
     Nmstar = mstar_samples.size
     Nmh    = mstar_tgt_of_mh.size
-    invs = 1.0 / sigma_SHMR
-    norm = INV_SQRT2PI * invs
-    c    = -0.5 * invs * invs
     out  = np.empty((Nmh, Nmstar), dtype=np.float64)
     for i in prange(Nmh):
         mu = mstar_tgt_of_mh[i]
+        invs = 1.0 / sigma_SHMR[i]
+        norm = INV_SQRT2PI * invs
+        c    = -0.5 * invs * invs
         for j in range(Nmstar):
             dx = mstar_samples[j] - mu
             out[i, j] = norm * math.exp(c * dx * dx)
@@ -892,17 +957,21 @@ def _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, s
     """
     Same as _gauss_mstar_mh but truncated above at mstar_max_of_mh (log10 M*_max per halo).
     Enforces M* <= (Ob0/Om0)*Mh. Renormalises so each row integrates to 1.
+
+    sigma_SHMR: array, shape (Nmh,) -- one scatter value per halo-mass
+    sample (pass e.g. np.full(Nmh, sigma_value) to recover the constant-
+    scatter behaviour; see _sigma_shmr_on_samples()).
     """
     Nmstar   = mstar_samples.size
     Nmh      = mstar_tgt_of_mh.size
-    invs     = 1.0 / sigma_SHMR
-    norm     = INV_SQRT2PI * invs
-    c        = -0.5 * invs * invs
     invsqrt2 = 1.0 / math.sqrt(2.0)
     out = np.empty((Nmh, Nmstar), dtype=np.float64)
     for i in prange(Nmh):
         mu  = mstar_tgt_of_mh[i]
         b   = mstar_max_of_mh[i]
+        invs = 1.0 / sigma_SHMR[i]
+        norm = INV_SQRT2PI * invs
+        c    = -0.5 * invs * invs
         # CDF of N(mu,sigma) evaluated at the upper truncation point b
         alpha = (b - mu) * invs * invsqrt2   # (b-mu) / (sigma*sqrt(2))
         cdf_b = 0.5 * (1.0 + math.erf(alpha))
@@ -914,6 +983,24 @@ def _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, s
             dx = x - mu
             out[i, j] = norm * math.exp(c * dx * dx) * inv_cdf_b * (x <= b)
     return out  # (Nmh, Nmstar)
+
+def _sigma_shmr_on_samples(sigma_SHMR, mh_grid, mh_samples):
+    """
+    Broadcast/interpolate sigma_SHMR onto Monte-Carlo halo-mass samples.
+
+    sigma_SHMR: scalar (constant scatter, fiducial model) or array defined
+    on mh_grid (mass-dependent scatter, e.g. from sigma_SHMR_variable
+    evaluated on the same log10(Mh) grid as mh_grid).
+    mh_grid: log10(Mh) grid sigma_SHMR (if an array) is tabulated on.
+    mh_samples: log10(Mh) Monte-Carlo samples to evaluate sigma_SHMR at.
+
+    Returns
+    -------
+    array, shape matching mh_samples
+    """
+    if np.ndim(sigma_SHMR) == 0:
+        return np.full(mh_samples.shape, float(sigma_SHMR), dtype=np.float64)
+    return np.interp(mh_samples, mh_grid, sigma_SHMR).astype(np.float64)
 
 # ---------- your setup(), but leaner & faster ----------
 def setup_sample_probabilities_fast(
@@ -951,11 +1038,13 @@ def setup_sample_probabilities_fast(
     # Build Gaussian tables with Numba
     p_muv_sfr   = _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr)      # (Nsfr,   Nmuv)
     p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
+    sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, mh_samples)
     if truncate_shmr:
         mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + mh_samples
-        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_shmr_of_mh)
     else:
-        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)  # (Nmh, Nmstar)
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_shmr_of_mh)  # (Nmh, Nmstar)
 
     if use_float32:
         p_muv_sfr   = np.ascontiguousarray(p_muv_sfr,   dtype=np.float32)
@@ -1007,6 +1096,10 @@ def UV_calc_numba(
         mass_dependent_sigma_uv=False,
         seed=0,
         truncate_shmr=True,
+        mass_dependent_sigma_shmr=False,
+        a_sig_SHMR=0.0,
+        sigma_shmr_z_dependent=False,
+        alpha_sigma_shmr_z=0.0,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
@@ -1024,6 +1117,23 @@ def UV_calc_numba(
         sigma_kuv_var = linear_model_kuv((msss, z), sigma_kuv)
     else:
         sigma_kuv_var = sigma_kuv * np.ones(np.shape(msss))
+
+    # Optional redshift-dependent (linear) rescaling of the scatter
+    # normalizations, applied before any mass-dependence -- see
+    # sigma_linear_z(). Both default to a no-op (alpha=0).
+    sigma_SHMR_eff = sigma_SHMR
+    if sigma_shmr_z_dependent:
+        sigma_SHMR_eff = sigma_linear_z(sigma_SHMR_eff, alpha_sigma_shmr_z, z)
+
+    # Optional mass-dependent SHMR scatter (piecewise, anchored at M_knee
+    # by default -- see sigma_SHMR_variable()). Otherwise sigma_SHMR stays
+    # a scalar, exactly as in the fiducial model.
+    if mass_dependent_sigma_shmr:
+        sigma_SHMR_arr = sigma_SHMR_variable(10 ** masses_hmf, norm=sigma_SHMR_eff,
+                                             a_sig_SHMR=a_sig_SHMR, M_char=M_knee)
+    else:
+        sigma_SHMR_arr = sigma_SHMR_eff
+
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = uvlf_fast_einsum(
@@ -1034,7 +1144,7 @@ def UV_calc_numba(
         np.log10(msss),            # M* grid (log10) for interpolation of mu_SFR(M*)
         sigma_SFMS_var,        # sigma_SFR(SFR) tabulated on sfr_grid
         masses_hmf,               # Mh grid (log10)
-        sigma_SHMR,            # scalar (dispersion of log10 M* | Mh)
+        sigma_SHMR_arr,            # scalar or array (dispersion of log10 M* | Mh)
         dndm,           # d n / d ln M on mh_grid
         Nsfr=10_000,
         Nmstar=10_000,
@@ -1237,11 +1347,13 @@ def setup_sample_probabilities_fast_with_sfr10(
 
     # Build p_sfr_mstar and p_mstar_mh the same way you already do
     p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
+    sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, mh_samples)
     if truncate_shmr:
         mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + mh_samples
-        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_shmr_of_mh)
     else:
-        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)     # (Nmh, Nmstar)
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_shmr_of_mh)     # (Nmh, Nmstar)
 
     # --- NEW: build p_muv_sfr by integrating over x ---
     gh_t, gh_w = hermgauss(gh_n)
@@ -1333,6 +1445,10 @@ def UV_calc_numba_sfr10(
         mass_dependent_sfr10=False,
         seed=0,
         truncate_shmr=True,
+        mass_dependent_sigma_shmr=False,
+        a_sig_SHMR=0.0,
+        sigma_shmr_z_dependent=False,
+        alpha_sigma_shmr_z=0.0,
         **kw,
 ):
     msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
@@ -1365,6 +1481,23 @@ def UV_calc_numba_sfr10(
         sigma_sfr10_var = linear_model_sfr10((msss, z), sigma_sfr10)
     else:
         sigma_sfr10_var = sigma_sfr10 * np.ones(np.shape(msss))
+
+    # Optional redshift-dependent (linear) rescaling of the scatter
+    # normalizations, applied before any mass-dependence -- see
+    # sigma_linear_z(). Both default to a no-op (alpha=0).
+    sigma_SHMR_eff = sigma_SHMR
+    if sigma_shmr_z_dependent:
+        sigma_SHMR_eff = sigma_linear_z(sigma_SHMR_eff, alpha_sigma_shmr_z, z)
+
+    # Optional mass-dependent SHMR scatter (piecewise, anchored at M_knee
+    # by default -- see sigma_SHMR_variable()). Otherwise sigma_SHMR stays
+    # a scalar, exactly as in the fiducial model.
+    if mass_dependent_sigma_shmr:
+        sigma_SHMR_arr = sigma_SHMR_variable(10 ** masses_hmf, norm=sigma_SHMR_eff,
+                                             a_sig_SHMR=a_sig_SHMR, M_char=M_knee)
+    else:
+        sigma_SHMR_arr = sigma_SHMR_eff
+
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
     uvlf = uvlf_fast_einsum_sfr10version(
@@ -1373,7 +1506,7 @@ def UV_calc_numba_sfr10(
         np.log10(msss),  # M* grid (log10) for interpolation of mu_SFR(M*)
         masses_hmf,  # Mh grid (log10)
         sigma_SFMS_var,  # sigma_SFR(SFR) tabulated on sfr_grid
-        sigma_SHMR,  # scalar (dispersion of log10 M* | Mh)
+        sigma_SHMR_arr,  # scalar or array (dispersion of log10 M* | Mh)
         dndm,  # d n / d ln M on mh_grid
         sfr_map_grid,
         x_map_grid,
@@ -1407,6 +1540,10 @@ def p_muv_given_mh_sfr10(
         truncate_shmr=True,
         Nsfr=10_000,
         Nmstar=10_000,
+        mass_dependent_sigma_shmr=False,
+        a_sig_SHMR=0.0,
+        sigma_shmr_z_dependent=False,
+        alpha_sigma_shmr_z=0.0,
         **kw,
 ):
     """
@@ -1441,6 +1578,23 @@ def p_muv_given_mh_sfr10(
         sigma_sfr10_var = linear_model_sfr10((msss, z), sigma_sfr10)
     else:
         sigma_sfr10_var = sigma_sfr10 * np.ones(np.shape(msss))
+
+    # Optional redshift-dependent (linear) rescaling of the scatter
+    # normalizations, applied before any mass-dependence -- see
+    # sigma_linear_z(). Both default to a no-op (alpha=0).
+    sigma_SHMR_eff = sigma_SHMR
+    if sigma_shmr_z_dependent:
+        sigma_SHMR_eff = sigma_linear_z(sigma_SHMR_eff, alpha_sigma_shmr_z, z)
+
+    # Optional mass-dependent SHMR scatter (piecewise, anchored at M_knee
+    # by default -- see sigma_SHMR_variable()). Otherwise sigma_SHMR stays
+    # a scalar, exactly as in the fiducial model.
+    if mass_dependent_sigma_shmr:
+        sigma_SHMR = sigma_SHMR_variable(10 ** masses_hmf, norm=sigma_SHMR_eff,
+                                         a_sig_SHMR=a_sig_SHMR, M_char=M_knee)
+    else:
+        sigma_SHMR = sigma_SHMR_eff
+
     sigma_SFMS_var = sigma_SFR_variable(msss, norm=sigma_SFMS_norm,
                                         a_sig_SFR=a_sig_SFR)
 
@@ -1463,11 +1617,13 @@ def p_muv_given_mh_sfr10(
     mstar_tgt_of_mh  = np.interp(np.asarray(mh_eval, dtype=np.float64), mh_grid, mstar_grid).astype(np.float64)
 
     p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)
+    # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
+    sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, np.asarray(mh_eval, dtype=np.float64))
     if truncate_shmr:
         mstar_max_of_mh = np.log10(cosmo.Ob0 / cosmo.Om0) + np.asarray(mh_eval, dtype=np.float64)
-        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_SHMR)
+        p_mstar_mh = _gauss_mstar_mh_truncated(mstar_samples, mstar_tgt_of_mh, mstar_max_of_mh, sigma_shmr_of_mh)
     else:
-        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_SHMR)
+        p_mstar_mh = _gauss_mstar_mh(mstar_samples, mstar_tgt_of_mh, sigma_shmr_of_mh)
 
     gh_n = 24
     gh_t, gh_w = hermgauss(gh_n)
