@@ -2149,6 +2149,25 @@ def run_mcmc(
                 mu = np.loadtxt(
                     os.path.join(script_dir, 'priors', 'means_sigma_star_z.txt')
                 )
+            elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and mass_dependent_sigma_shmr and fixed_Mknee:
+                # Extension: mass-dependent SHMR scatter (a_sig_SHMR),
+                # simulation-derived prior. Same 9th-dimension prior
+                # (sigma_UV/sigma_sfr_10) reused as in the z-dependent
+                # case above. M_knee pinned to a tight spike around 2e12.
+                cov_mat = np.loadtxt(
+                    os.path.join(script_dir, 'cov_matr_sigma_star_Mh_fixedMknee.txt')
+                ) / 5
+                mu = np.loadtxt(
+                    os.path.join(script_dir, 'means_sigma_star_Mh_fixedMknee.txt')
+                )
+            elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and mass_dependent_sigma_shmr:
+                # Same extension as above, but with M_knee left free.
+                cov_mat = np.loadtxt(
+                    os.path.join(script_dir, 'cov_matr_sigma_star_Mh.txt')
+                ) / 5
+                mu = np.loadtxt(
+                    os.path.join(script_dir, 'means_sigma_star_Mh.txt')
+                )
             elif M_knee and (sigma_uv or sigma_sfr_10_explicit) and fixed_Mknee:
                 # M_knee is kept as a sampled dimension (so ndim/limits still
                 # line up with the params list), but its prior is pinned to a
@@ -2336,6 +2355,25 @@ if __name__ == "__main__":
         # constraint) an ACF likelihood alongside the UVLF one.
         priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,1.0)]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "a_sig_SHMR", "sigma_UV"]:
+        # Extension: mass-dependent SHMR scatter, run jointly with sigma_UV
+        # free. Requires --mass_dependent_sigma_shmr, --sigma_uv, and (for
+        # the clustering-side constraint) an ACF likelihood alongside the
+        # UVLF one. Uses the simulation-derived cov/means_sigma_star_Mh*
+        # files (see prior()); the 9th-dimension prior was fit assuming
+        # this role, but is reused as-is for sigma_sfr_10 below.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,1.0), (0.001,0.5)]
+        if not inputs.sigma_uv:
+            raise ValueError("You need to set --sigma_uv to use sigma_UV parameter.")
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "a_sig_SHMR", "sigma_sfr_10"]:
+        # Same extension as above, but for the sigma_sfr_10_explicit model
+        # instead of sigma_uv. Requires --mass_dependent_sigma_shmr,
+        # --sigma_sfr_10_explicit, and an ACF likelihood.
+        priors = [(-6.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
+                  (0.001, 1.5), (-1.0, 0.5), (11.5,16.0), (-1.0,1.0), (0.001,0.5)]
+        if inputs.sigma_uv or not inputs.sigma_sfr_10_explicit:
+            raise ValueError("Choose either sigma_uv or sigma_sfr_10_explicit.")
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee", "alpha_sigma_shmr_z"]:
         # Extension: linear redshift-dependent SHMR scatter. Requires
         # --sigma_shmr_z_dependent.
