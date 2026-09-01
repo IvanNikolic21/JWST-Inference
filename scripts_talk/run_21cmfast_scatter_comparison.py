@@ -151,9 +151,9 @@ OUT_REDSHIFTS = (7.0, 9.0)   # near reionization midpoint, per the paper's own
 # ── paper's MAP values (see gal_inf.tex, Results: "Posterior stellar-to-halo-
 #    mass relation" and "Posterior star formation main sequence") ──────────
 F_0_MAP = 0.03                     # SHMR MAP normalization (linear)
-ALPHA_STAR_LOW_MAP = -0.57         # SHMR MAP low-mass slope
+ALPHA_STAR_LOW_MAP = 0.57         # SHMR MAP low-mass slope
 M_KNEE = 2e12                      # Msun, fixed in the paper
-HIGH_MASS_SLOPE = 0.61             # paper's fixed high-mass SHMR slope
+HIGH_MASS_SLOPE = -0.61             # paper's fixed high-mass SHMR slope
 SIGMA_SHMR_MAP = 0.32              # dex
 
 T_STAR_MAP = 0.16                  # SFMS MAP timescale (fraction of H^-1(z))
