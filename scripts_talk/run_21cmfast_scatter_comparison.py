@@ -233,7 +233,14 @@ def compute_power_spectrum(brightness_temp, box_len):
 
     result = get_power(brightness_temp, boxlength=box_len, bins_upto_boxlen=True)
     power, k = result[0], result[1]
-    return k, power
+
+    # Drop modes below the box's fundamental mode k_f = 2*pi/L -- these scales
+    # aren't actually probed by a box this size (the lowest bin is at best a
+    # single/few-mode estimate and is sample-variance-dominated, not a real
+    # measurement of the power on that scale).
+    k_f = 2 * np.pi / box_len
+    keep = k >= k_f
+    return k[keep], power[keep]
 
 
 def _by_redshift(coevals):
