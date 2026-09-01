@@ -236,20 +236,54 @@ def compute_power_spectrum(brightness_temp, box_len):
     return k, power
 
 
+def _by_redshift(coevals):
+    """Index coeval boxes by their actual .redshift, not by list position.
+
+    run_coeval's docstring does not guarantee the returned list preserves the
+    order of out_redshifts as given -- it likely reflects internal (probably
+    high-z-to-low-z) processing order instead. Matching by list position
+    against OUT_REDSHIFTS (as an earlier version of this script did) risks
+    silently plotting the wrong box under the wrong title. Matching by the
+    box's own .redshift attribute sidesteps that regardless of return order.
+    """
+    return {round(cv.redshift, 5): cv for cv in coevals}
+
+
+def _report_ionization_state(label, cv):
+    """Quick diagnostic: volume-averaged neutral fraction + brightness_temp
+    stats, to distinguish 'genuinely near-zero/degenerate signal at this z'
+    from 'something is actually NaN/broken'. Uses only what's already in the
+    cached coeval box -- no new simulation needed."""
+    xHI = np.asarray(cv.neutral_fraction)
+    dTb = np.asarray(cv.brightness_temp)
+    print(
+        f"  [{label}] z={cv.redshift:.2f}  <x_HI>={np.nanmean(xHI):.4f}  "
+        f"dTb: min={np.nanmin(dTb):.4g} max={np.nanmax(dTb):.4g} "
+        f"mean={np.nanmean(dTb):.4g}  nan_frac={np.mean(np.isnan(dTb)):.3f}"
+    )
+
+
 def main():
     print("Running scatter ON (Run A)...")
     inputs_on = build_inputs(scatter_on=True)
-    coevals_on = p21c.run_coeval(inputs=inputs_on, out_redshifts=OUT_REDSHIFTS)
+    coevals_on = _by_redshift(p21c.run_coeval(inputs=inputs_on, out_redshifts=OUT_REDSHIFTS))
 
     print("Running scatter OFF (Run B)...")
     inputs_off = build_inputs(scatter_on=False)
-    coevals_off = p21c.run_coeval(inputs=inputs_off, out_redshifts=OUT_REDSHIFTS)
+    coevals_off = _by_redshift(p21c.run_coeval(inputs=inputs_off, out_redshifts=OUT_REDSHIFTS))
+
+    print("Ionization state check (neutral fraction should DECREASE as z decreases;")
+    print("compare scatter ON vs OFF at the same z to see which has reionized further):")
+    for z in OUT_REDSHIFTS:
+        _report_ionization_state("ON ", coevals_on[round(z, 5)])
+        _report_ionization_state("OFF", coevals_off[round(z, 5)])
 
     fig, axes = plt.subplots(1, len(OUT_REDSHIFTS), figsize=(6 * len(OUT_REDSHIFTS), 5),
                               squeeze=False)
     axes = axes[0]
 
-    for ax, z, cv_on, cv_off in zip(axes, OUT_REDSHIFTS, coevals_on, coevals_off):
+    for ax, z in zip(axes, OUT_REDSHIFTS):
+        cv_on, cv_off = coevals_on[round(z, 5)], coevals_off[round(z, 5)]
         k_on, p_on = compute_power_spectrum(cv_on.brightness_temp, BOX_LEN)
         k_off, p_off = compute_power_spectrum(cv_off.brightness_temp, BOX_LEN)
 
