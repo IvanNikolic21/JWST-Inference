@@ -219,10 +219,20 @@ def build_inputs(scatter_on: bool) -> InputParameters:
 
 
 def compute_power_spectrum(brightness_temp, box_len):
-    """Isotropic 21-cm power spectrum via powerbox. `pip install powerbox`."""
+    """Isotropic 21-cm power spectrum via powerbox. `pip install powerbox`.
+
+    NOTE: get_power()'s return signature has changed across powerbox versions
+    (it can return (power, k), (power, k, var), or more depending on version
+    and kwargs like get_variance). Unpack defensively -- take the first two
+    elements (power, k) rather than assuming an exact tuple length, and pass
+    bins_upto_boxlen explicitly to silence/pin the binning-convention
+    FutureWarning rather than silently riding whatever the installed
+    version's new default becomes.
+    """
     from powerbox import get_power
 
-    power, k = get_power(brightness_temp, boxlength=box_len)
+    result = get_power(brightness_temp, boxlength=box_len, bins_upto_boxlen=True)
+    power, k = result[0], result[1]
     return k, power
 
 
