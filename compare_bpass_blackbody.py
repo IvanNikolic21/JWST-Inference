@@ -153,7 +153,13 @@ def main():
         label = f"age = {age_yr/1e6:.2f} Myr (best-fit T = {T_fit:,.0f} K)"
         print(f"  age idx {age_idx}: age={age_yr:.3e} yr, best-fit T={T_fit:.0f} K")
 
-        plot_mask = (wave_A >= 0) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
+        # NOTE: lower bound matters here, not just cosmetically -- BPASS flux
+        # at lambda->0 is numerically negligible but nonzero (think 1e-300),
+        # and letting that into a log-scaled y-axis blows the autoscale out
+        # to ~300 decades, squashing all the real structure flat. Same
+        # FIT_LAMBDA_MIN_A cutoff used for the fit, not a wider one, so we
+        # still see everything down to the Lyman limit.
+        plot_mask = (wave_A >= FIT_LAMBDA_MIN_A) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
         ax.plot(wave_A[plot_mask], flux[plot_mask], color=color, lw=2, label=label)
         ax.plot(
             wave_A[plot_mask],
@@ -169,6 +175,12 @@ def main():
             ha="center", transform=ax.get_xaxis_transform())
 
     ax.set_yscale("log")
+    ax.set_ylim(1e-6, 3)  # explicit, not autoscaled -- each curve is
+                          # normalized to its own peak (~1), so this is a
+                          # fixed ~6-decade window below peak for every
+                          # curve regardless of age; don't let matplotlib
+                          # autoscale to whatever numerically-negligible
+                          # near-zero values happen to survive the mask
     ax.set_xlim(0, PLOT_LAMBDA_MAX_A)
     ax.set_xlabel(r"Rest-frame wavelength [$\mathrm{\AA}$]", fontsize=13)
     ax.set_ylabel(r"$L_\lambda$ (normalized to peak of fit window)", fontsize=13)
