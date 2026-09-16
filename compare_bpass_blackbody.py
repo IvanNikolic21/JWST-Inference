@@ -18,6 +18,16 @@ both. This is meant as a qualitative/diagnostic check of how blackbody-like
 features (line blanketing, the Balmer/Lyman jumps, nebular-free stellar
 photosphere effects) a pure blackbody can't capture.
 
+STYLED TO MATCH THE ORIGINAL "eff_temp.pdf" REFERENCE PLOT: linear (not
+log) wavelength axis over 0-3500 A, single ages (not SFH-integrated -- see
+compare_bpass_blackbody_galaxies.py for the SFH-integrated version). The
+recovered original showed a much sharper Lyman-limit (912A) discontinuity
+and stronger blackbody departure than the SFH-integrated version did; a
+linear x-axis stretches the 200-1000A region where that structure lives,
+and single-age bursts don't blend a young population's sharp opacity break
+with older, redder stars the way SFH-integration does -- both contribute to
+why the SFH-integrated plot looked "washed out" by comparison.
+
 PROVENANCE / ASSUMPTIONS (verified against uvlf.py source, NOT run against
 real data -- the actual BPASS spectra files live only on the cluster,
 /home/inikolic/... or /groups/astro/ivannik/..., not on this machine):
@@ -64,14 +74,17 @@ from uvlf import bpass_loader
 # ── which (metallicity, ages) to show ───────────────────────────────────────
 METALLICITY = 1e-5          # lowest available in bpass_loader.metal_avail;
                              # representative of the faint high-z population
-AGE_INDICES = [0, 5, 15]    # SED column indices -> ages ~10^6.15, ~10^6.65,
-                             # ~10^7.65 yr (see bpass_loader.ag); a young,
-                             # intermediate, and more evolved burst
+AGE_INDICES = [0, 5, 10, 20]  # SED column indices -> ages ~1.4, ~4.5, ~14,
+                               # ~141 Myr (see bpass_loader.ag) -- log-spaced
+                               # to show a clear age -> temperature trend
 
 # Wavelength range used for the fit -- avoid lambda->0 (numerical blow-up)
 # and the very far-IR tail (irrelevant for a hot-star blackbody check).
 FIT_LAMBDA_MIN_A = 100.0
 FIT_LAMBDA_MAX_A = 3000.0
+
+# Plot range matches the recovered eff_temp.pdf reference (linear, 0-3500A).
+PLOT_LAMBDA_MAX_A = 3500.0
 
 LYMAN_LIMIT_A = 912.0
 REST_1500_A = 1500.0
@@ -140,7 +153,7 @@ def main():
         label = f"age = {age_yr/1e6:.2f} Myr (best-fit T = {T_fit:,.0f} K)"
         print(f"  age idx {age_idx}: age={age_yr:.3e} yr, best-fit T={T_fit:.0f} K")
 
-        plot_mask = (wave_A >= FIT_LAMBDA_MIN_A) & (wave_A <= 1e4) & (flux_raw > 0)
+        plot_mask = (wave_A >= 0) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
         ax.plot(wave_A[plot_mask], flux[plot_mask], color=color, lw=2, label=label)
         ax.plot(
             wave_A[plot_mask],
@@ -155,8 +168,8 @@ def main():
     ax.text(REST_1500_A, 1.02, "1500Å", color="gray", fontsize=9,
             ha="center", transform=ax.get_xaxis_transform())
 
-    ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_xlim(0, PLOT_LAMBDA_MAX_A)
     ax.set_xlabel(r"Rest-frame wavelength [$\mathrm{\AA}$]", fontsize=13)
     ax.set_ylabel(r"$L_\lambda$ (normalized to peak of fit window)", fontsize=13)
     ax.set_title(f"BPASS (solid) vs. best-fit blackbody (dashed), Z={bp.metal_avail[metal_idx]:.0e}",
