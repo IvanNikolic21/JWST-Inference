@@ -43,10 +43,10 @@ data -- see compare_bpass_blackbody.py's docstring for the same caveat):
     once per metallicity bin then splining every wavelength -- more
     complexity than this diagnostic plot needs. Instead we just pick the
     NEAREST tabulated BPASS metallicity bin (bp.metal_avail) to the
-    Strom+18-corrected FMR value. For the galaxies above this lands well
-    within the tabulated range (not at an edge), so it should be a fine
-    approximation for a qualitative shape comparison; flag this
-    simplification if the actual normalization/shape needs to be precise.
+    Strom+18-corrected FMR value.
+  - Fit range: now 912-3000A (Lyman limit excluded), via
+    bpass_blackbody_utils -- was 100-3000A before, which let the
+    unphysical-for-a-blackbody photoionization edge bias the fit.
 
 CANNOT BE RUN LOCALLY (bpass_loader needs the real spectra files, cluster
 only). The M*/SFR/Z numbers above WERE verified locally (no BPASS data
@@ -62,14 +62,14 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from astropy import constants as const
-from astropy import units as u
 from astropy.cosmology import Planck18 as cosmo
 
 from uvlf import (
     bpass_loader, SFH_sampler, ms_mh_flattening, SFMS,
     metalicity_from_FMR, DeltaZ_z, OH_to_mass_fraction,
+)
+from bpass_blackbody_utils import (
+    planck_lambda, fit_blackbody, LYMAN_LIMIT_A, REST_1500_A,
 )
 
 # ── fiducial MAP parameters (same as compute_kappa_uv_scatter.py) ──────────
@@ -81,22 +81,8 @@ T_STAR_MAP = 0.16
 REDSHIFT = 10.0                              # matches fig:sfms_prior
 HALO_MASSES = [3e9, 3e10, 3e11, 2e12]        # Msun; dwarf -> M_knee scale
 
-FIT_LAMBDA_MIN_A = 100.0
-FIT_LAMBDA_MAX_A = 3000.0
-LYMAN_LIMIT_A = 912.0
-REST_1500_A = 1500.0
-
-
-def planck_lambda(wave_A, T, amplitude):
-    """Planck function B_lambda(T), free overall amplitude -- see
-    compare_bpass_blackbody.py for why the amplitude is left free
-    (unit mismatch between BPASS's native flux units and cgs/SI B_lambda)."""
-    wave = (wave_A * u.AA).to(u.m).value
-    h, c, k = const.h.value, const.c.value, const.k_B.value
-    with np.errstate(over="ignore", divide="ignore"):
-        x = h * c / (wave * k * T)
-        bb = (2 * h * c**2 / wave**5) / np.expm1(x)
-    return amplitude * bb
+PLOT_LAMBDA_MIN_A = 100.0
+PLOT_LAMBDA_MAX_A = 1e4
 
 
 def build_galaxy(Mh, z):
@@ -147,22 +133,8 @@ def main():
         Mstar, sfr, oh = build_galaxy(Mh, REDSHIFT)
         flux_raw, metal_used = galaxy_spectrum(bp, Mstar, sfr, oh, REDSHIFT, sfh_sampler)
 
-        fit_mask = (
-            (wave_A >= FIT_LAMBDA_MIN_A)
-            & (wave_A <= FIT_LAMBDA_MAX_A)
-            & (flux_raw > 0)
-        )
-        norm = flux_raw[fit_mask].max()
-        flux = flux_raw / norm
-
-        p0 = [4e4, flux[fit_mask].max() / planck_lambda(REST_1500_A, 4e4, 1.0)]
-        try:
-            popt, _ = curve_fit(
-                planck_lambda, wave_A[fit_mask], flux[fit_mask],
-                p0=p0, bounds=([1e3, 0], [3e5, np.inf]), maxfev=10000,
-            )
-            T_fit, amp_fit = popt
-        except RuntimeError:
+        T_fit, amp_fit, flux, _ = fit_blackbody(wave_A, flux_raw)
+        if T_fit is None:
             print(f"  [Mh={Mh:.1e}] fit failed, skipping")
             continue
 
@@ -171,7 +143,7 @@ def main():
         print(f"  Mh={Mh:.1e}  M*={Mstar:.3e}  SFR={sfr:.3f}  "
               f"12+log(O/H)={oh:.3f} (bin Z={metal_used:.1e})  best-fit T={T_fit:.0f} K")
 
-        plot_mask = (wave_A >= FIT_LAMBDA_MIN_A) & (wave_A <= 1e4) & (flux_raw > 0)
+        plot_mask = (wave_A >= PLOT_LAMBDA_MIN_A) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
         ax.plot(wave_A[plot_mask], flux[plot_mask], color=color, lw=2, label=label)
         ax.plot(
             wave_A[plot_mask],
@@ -188,10 +160,11 @@ def main():
 
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_ylim(1e-6, 10)  # explicit, not autoscaled; see compare_bpass_blackbody.py
     ax.set_xlabel(r"Rest-frame wavelength [$\mathrm{\AA}$]", fontsize=13)
     ax.set_ylabel(r"$L_\lambda$ (normalized to peak of fit window)", fontsize=13)
     ax.set_title(f"SFH-integrated BPASS spectra (solid) vs. best-fit blackbody "
-                 f"(dashed), z={REDSHIFT:.0f}", fontsize=11)
+                 f"(dashed, fit to 912-3000Å only), z={REDSHIFT:.0f}", fontsize=11)
     ax.legend(fontsize=8.5, frameon=False, loc="lower left")
     plt.tight_layout()
 

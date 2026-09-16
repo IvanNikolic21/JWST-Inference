@@ -1,5 +1,6 @@
 """
-Sanity-check plot: BPASS spectra vs. best-fit blackbody curves.
+Sanity-check plot: BPASS spectra vs. best-fit blackbody curves, varying
+stellar-population AGE at fixed metallicity and IMF.
 
 WHY: recreating a plot the user made previously and can no longer find (it's
 on another laptop). Rather than search further, this recomputes it from the
@@ -12,21 +13,24 @@ galaxies this paper targets) and a few stellar-population ages, pulls the
 raw single-burst SED L_lambda(lambda) directly out of `bpass_loader.SEDS`
 (bypassing get_UV()'s SFH-weighted integration -- we want the intrinsic
 spectral shape here, not an integrated UV luminosity), fits a Planck
-blackbody curve (free amplitude + temperature) to each one, and overlays
-both. This is meant as a qualitative/diagnostic check of how blackbody-like
-(or not) the BPASS continuum is at each age -- departures indicate spectral
-features (line blanketing, the Balmer/Lyman jumps, nebular-free stellar
-photosphere effects) a pure blackbody can't capture.
+blackbody curve (free amplitude + temperature) to each one over the
+912-3000A window (see bpass_blackbody_utils.py -- the fit deliberately
+excludes lambda<912A, the Lyman limit, since a blackbody cannot represent
+the photoionization opacity edge there and including those points would
+just bias the fitted temperature), and overlays both. This is meant as a
+qualitative/diagnostic check of how blackbody-like (or not) the BPASS
+continuum is at each age.
+
+Companion scripts (share fitting code via bpass_blackbody_utils.py):
+  - compare_bpass_blackbody_galaxies.py -- SFH-integrated, varies (M*, SFR, Z)
+  - compare_bpass_blackbody_metallicity.py -- fixed age, varies metallicity
+  - compare_bpass_blackbody_imf.py -- fixed age+metallicity, varies IMF
 
 STYLED TO MATCH THE ORIGINAL "eff_temp.pdf" REFERENCE PLOT: linear (not
-log) wavelength axis over 0-3500 A, single ages (not SFH-integrated -- see
-compare_bpass_blackbody_galaxies.py for the SFH-integrated version). The
-recovered original showed a much sharper Lyman-limit (912A) discontinuity
-and stronger blackbody departure than the SFH-integrated version did; a
-linear x-axis stretches the 200-1000A region where that structure lives,
-and single-age bursts don't blend a young population's sharp opacity break
-with older, redder stars the way SFH-integration does -- both contribute to
-why the SFH-integrated plot looked "washed out" by comparison.
+log) wavelength axis over 0-3500 A. The PLOT still shows lambda down to
+~10A (so the Lyman-limit jump and absorption forest are visible), but the
+FIT only uses 912-3000A -- plot range and fit range are intentionally
+different windows now, see bpass_blackbody_utils.FIT_LAMBDA_MIN_A.
 
 PROVENANCE / ASSUMPTIONS (verified against uvlf.py source, NOT run against
 real data -- the actual BPASS spectra files live only on the cluster,
@@ -36,24 +40,13 @@ real data -- the actual BPASS spectra files live only on the cluster,
     [1,52) is the age bin. So SEDS[metal_idx, age_idx, :] is L_lambda(lambda)
     for one (Z, age) pair, NOT yet SFH-weighted.
   - Wavelength grid: `self.wv = np.linspace(1, 1e5+1, wv_b+1)` (Angstrom).
-    Row i of the data corresponds to wavelength self.wv[i] -- i.e. the
-    standard BPASS 1-Angstrom-spaced grid from 1 to 1e5 A. This is the one
-    assumption I could NOT directly verify without the real data files
-    (there's a plausible off-by-one between self.wv[i] and self.wv[i+1]);
-    if the resulting plot looks shifted by ~1 Angstrom, that's the place to
-    check first -- it won't matter for the qualitative blackbody comparison
-    either way.
-  - `self.ag[k+1]` is the age (yr) for SED column index k (0-indexed) --
-    see bpass_loader.__init__: self.ag = [0] + [10**(6.05+0.1*i) for i in
-    range(1,52)], and SEDS' 51 columns correspond to i=1..51.
-  - SED units are BPASS's native L_lambda per unit starburst mass (Lsun/A
-    per 1e6 Msun formed, standard BPASS convention) -- since we fit a
-    free amplitude, the exact absolute units don't matter for the shape
-    comparison, only the *relative* spectral shape.
+    Row i of the data corresponds to wavelength self.wv[i]. This is the one
+    assumption I could NOT directly verify without the real data files; if
+    the resulting plot looks shifted by ~1 Angstrom, check this first.
+  - `self.ag[k+1]` is the age (yr) for SED column index k (0-indexed).
 
-CANNOT BE RUN LOCALLY -- same reason as compute_kappa_uv_scatter.py and
-run_21cmfast_scatter_comparison.py: bpass_loader() needs the real spectra
-files. Run this on the cluster.
+CANNOT BE RUN LOCALLY -- bpass_loader() needs the real spectra files. Run
+this on the cluster.
 
 Usage:
     python3 compare_bpass_blackbody.py
@@ -65,11 +58,11 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from astropy import constants as const
-from astropy import units as u
 
 from uvlf import bpass_loader
+from bpass_blackbody_utils import (
+    planck_lambda, fit_blackbody, LYMAN_LIMIT_A, REST_1500_A,
+)
 
 # ── which (metallicity, ages) to show ───────────────────────────────────────
 METALLICITY = 1e-5          # lowest available in bpass_loader.metal_avail;
@@ -78,30 +71,11 @@ AGE_INDICES = [0, 5, 10, 20]  # SED column indices -> ages ~1.4, ~4.5, ~14,
                                # ~141 Myr (see bpass_loader.ag) -- log-spaced
                                # to show a clear age -> temperature trend
 
-# Wavelength range used for the fit -- avoid lambda->0 (numerical blow-up)
-# and the very far-IR tail (irrelevant for a hot-star blackbody check).
-FIT_LAMBDA_MIN_A = 100.0
-FIT_LAMBDA_MAX_A = 3000.0
-
 # Plot range matches the recovered eff_temp.pdf reference (linear, 0-3500A).
+# Note this is WIDER than the fit range (912-3000A, see bpass_blackbody_utils)
+# -- we want to see the Lyman-limit jump even though the fit doesn't use it.
+PLOT_LAMBDA_MIN_A = 10.0
 PLOT_LAMBDA_MAX_A = 3500.0
-
-LYMAN_LIMIT_A = 912.0
-REST_1500_A = 1500.0
-
-
-def planck_lambda(wave_A, T, amplitude):
-    """Planck function B_lambda(T), free overall amplitude (arbitrary units
-    -- BPASS's native units don't match B_lambda's cgs units, so we only
-    fit the shape via T and let `amplitude` absorb the normalization)."""
-    wave = (wave_A * u.AA).to(u.m).value
-    h = const.h.value
-    c = const.c.value
-    k = const.k_B.value
-    with np.errstate(over="ignore", divide="ignore"):
-        x = h * c / (wave * k * T)
-        bb = (2 * h * c**2 / wave**5) / (np.expm1(x))
-    return amplitude * bb
 
 
 def main():
@@ -124,42 +98,15 @@ def main():
         age_yr = bp.ag[age_idx + 1]
         flux_raw = bp.SEDS[metal_idx, age_idx, :]
 
-        fit_mask = (
-            (wave_A >= FIT_LAMBDA_MIN_A)
-            & (wave_A <= FIT_LAMBDA_MAX_A)
-            & (flux_raw > 0)
-        )
-        # Fit in flux-normalized units (peak of the fit window -> 1). Fitting
-        # directly in BPASS's native units against Planck_lambda's SI-scale
-        # output badly scales the two free parameters (amplitude ends up
-        # ~1e50-ish to compensate) and the least-squares solver never
-        # converges away from the initial guess -- caught by smoke-testing
-        # with a mock SED before handing this off, since the real BPASS
-        # files aren't available locally to test against directly.
-        norm = flux_raw[fit_mask].max()
-        flux = flux_raw / norm
-
-        p0 = [4e4, flux[fit_mask].max() / planck_lambda(REST_1500_A, 4e4, 1.0)]
-        try:
-            popt, _ = curve_fit(
-                planck_lambda, wave_A[fit_mask], flux[fit_mask],
-                p0=p0, bounds=([1e3, 0], [3e5, np.inf]), maxfev=10000,
-            )
-            T_fit, amp_fit = popt
-        except RuntimeError:
+        T_fit, amp_fit, flux, _ = fit_blackbody(wave_A, flux_raw)
+        if T_fit is None:
             print(f"  [age idx {age_idx}, age={age_yr:.2e} yr] fit failed, skipping")
             continue
 
         label = f"age = {age_yr/1e6:.2f} Myr (best-fit T = {T_fit:,.0f} K)"
         print(f"  age idx {age_idx}: age={age_yr:.3e} yr, best-fit T={T_fit:.0f} K")
 
-        # NOTE: lower bound matters here, not just cosmetically -- BPASS flux
-        # at lambda->0 is numerically negligible but nonzero (think 1e-300),
-        # and letting that into a log-scaled y-axis blows the autoscale out
-        # to ~300 decades, squashing all the real structure flat. Same
-        # FIT_LAMBDA_MIN_A cutoff used for the fit, not a wider one, so we
-        # still see everything down to the Lyman limit.
-        plot_mask = (wave_A >= FIT_LAMBDA_MIN_A) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
+        plot_mask = (wave_A >= PLOT_LAMBDA_MIN_A) & (wave_A <= PLOT_LAMBDA_MAX_A) & (flux_raw > 0)
         ax.plot(wave_A[plot_mask], flux[plot_mask], color=color, lw=2, label=label)
         ax.plot(
             wave_A[plot_mask],
@@ -175,17 +122,20 @@ def main():
             ha="center", transform=ax.get_xaxis_transform())
 
     ax.set_yscale("log")
-    ax.set_ylim(1e-6, 3)  # explicit, not autoscaled -- each curve is
-                          # normalized to its own peak (~1), so this is a
-                          # fixed ~6-decade window below peak for every
-                          # curve regardless of age; don't let matplotlib
-                          # autoscale to whatever numerically-negligible
-                          # near-zero values happen to survive the mask
+    ax.set_ylim(1e-6, 10)  # explicit, not autoscaled (see git history for
+                           # why that matters). Upper bound raised to 10,
+                           # not 1-ish, because flux is now normalized to
+                           # the 912-3000A FIT window's peak, not the
+                           # global peak -- for a hot (~40,000 K) blackbody
+                           # Wien's law puts the true peak below 912A
+                           # (~725A), so the plotted sub-Lyman-limit region
+                           # can legitimately exceed 1 on this scale.
     ax.set_xlim(0, PLOT_LAMBDA_MAX_A)
     ax.set_xlabel(r"Rest-frame wavelength [$\mathrm{\AA}$]", fontsize=13)
     ax.set_ylabel(r"$L_\lambda$ (normalized to peak of fit window)", fontsize=13)
-    ax.set_title(f"BPASS (solid) vs. best-fit blackbody (dashed), Z={bp.metal_avail[metal_idx]:.0e}",
-                 fontsize=12)
+    ax.set_title(f"BPASS (solid) vs. best-fit blackbody (dashed, fit to "
+                 f"912-3000Å only), Z={bp.metal_avail[metal_idx]:.0e}",
+                 fontsize=11)
     ax.legend(fontsize=10, frameon=False)
     plt.tight_layout()
 
