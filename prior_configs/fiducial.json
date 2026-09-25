@@ -1,0 +1,403 @@
+{
+ "_description": "Fiducial prior (Sec. 4): reproduces cov_matr_uv.txt / means_uv.txt from basic_prior_setup.ipynb.",
+ "tag": "uv",
+ "model": "fiducial",
+ "seed": 0,
+ "fits_dir": "/home/inikolic/projects/UVLF_FMs/prior_fits",
+ "output_dir": "priors_generated",
+ "simulations": {
+  "FirstLight": {
+   "loader": "firstlight",
+   "database": "/home/inikolic/projects/stochasticity/literature/FirstLight_database_DR3.1.dat",
+   "target_z": [
+    5.0,
+    10.0,
+    15.0
+   ],
+   "fit_bounds": {
+    "fstar_norm": [
+     -3.0,
+     1.0
+    ],
+    "sigma_SHMR": [
+     0.001,
+     1.0
+    ],
+    "t_star": [
+     0.001,
+     1.0
+    ],
+    "alpha_star_low": [
+     0.0,
+     1.0
+    ],
+    "sigma_SFMS_norm": [
+     0.001,
+     1.2
+    ],
+    "a_sig_SFR": [
+     -1.0,
+     0.5
+    ],
+    "M_knee": [
+     10.0,
+     16.0
+    ]
+   },
+   "legacy_posterior": {
+    "path": "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/prior_Mknee/FL_multinest/post_equal_weights.dat",
+    "params": [
+     "fstar_norm",
+     "sigma_SHMR",
+     "t_star",
+     "alpha_star_low",
+     "sigma_SFMS_norm",
+     "a_sig_SFR",
+     "M_knee"
+    ],
+    "bounds": [
+     [
+      -3.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.2
+     ],
+     [
+      -1.0,
+      0.5
+     ],
+     [
+      10.0,
+      16.0
+     ]
+    ]
+   }
+  },
+  "ASTRID": {
+   "loader": "astrid",
+   "seed": 0,
+   "snapshots": [
+    {
+     "path": "/projects/cosmo_database/jdavies/PIG_035_z5-5/FOFGroups/",
+     "z": 5.0,
+     "n_rows": 103355621,
+     "log10_mh_max": 12.7
+    },
+    {
+     "path": "/projects/cosmo_database/jdavies/PIG_012_z10/FOFGroups/",
+     "z": 10.0
+    },
+    {
+     "path": "/projects/cosmo_database/jdavies/PIG_008_z15/FOFGroups/",
+     "z": 15.0
+    }
+   ],
+   "fit_bounds": {
+    "fstar_norm": [
+     -4.0,
+     1.0
+    ],
+    "sigma_SHMR": [
+     0.001,
+     1.0
+    ],
+    "t_star": [
+     0.001,
+     1.0
+    ],
+    "alpha_star_low": [
+     0.0,
+     1.0
+    ],
+    "sigma_SFMS_norm": [
+     0.001,
+     1.2
+    ],
+    "a_sig_SFR": [
+     -1.0,
+     0.5
+    ],
+    "M_knee": [
+     10.0,
+     16.0
+    ]
+   },
+   "legacy_posterior": {
+    "path": "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/prior_Mknee/ASTRID_multinest/post_equal_weights.dat",
+    "params": [
+     "fstar_norm",
+     "sigma_SHMR",
+     "t_star",
+     "alpha_star_low",
+     "sigma_SFMS_norm",
+     "a_sig_SFR",
+     "M_knee"
+    ],
+    "bounds": [
+     [
+      -4.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.2
+     ],
+     [
+      -1.0,
+      0.5
+     ],
+     [
+      10.0,
+      16.0
+     ]
+    ]
+   }
+  },
+  "SERRA": {
+   "loader": "catalog_file",
+   "path": "serra_catalog.json",
+   "fit_bounds": {
+    "fstar_norm": [
+     -4.0,
+     1.0
+    ],
+    "sigma_SHMR": [
+     0.001,
+     1.0
+    ],
+    "t_star": [
+     0.001,
+     1.0
+    ],
+    "alpha_star_low": [
+     0.0,
+     1.0
+    ],
+    "sigma_SFMS_norm": [
+     0.001,
+     1.2
+    ],
+    "a_sig_SFR": [
+     -1.0,
+     0.5
+    ],
+    "M_knee": [
+     10.0,
+     16.0
+    ]
+   },
+   "legacy_posterior": {
+    "path": "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/prior_Mknee/SERRA_multinest/post_equal_weights.dat",
+    "params": [
+     "fstar_norm",
+     "sigma_SHMR",
+     "t_star",
+     "alpha_star_low",
+     "sigma_SFMS_norm",
+     "a_sig_SFR",
+     "M_knee"
+    ],
+    "bounds": [
+     [
+      -4.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      0.001,
+      1.2
+     ],
+     [
+      -1.0,
+      0.5
+     ],
+     [
+      10.0,
+      16.0
+     ]
+    ]
+   }
+  },
+  "FIRE": {
+   "loader": "catalog_file",
+   "path": "fire_catalog.json",
+   "_note": "TODO: the FIRE data loading is not in basic_prior_setup.ipynb. Export it to prior_pipeline/data/fire_catalog.json (same format as serra_catalog.json) to refit; --use-legacy works without it.",
+   "fit_bounds": {
+    "fstar_norm": [
+     -6.0,
+     1.0
+    ],
+    "sigma_SHMR": [
+     0.001,
+     2.0
+    ],
+    "t_star": [
+     0.001,
+     1.0
+    ],
+    "alpha_star_low": [
+     0.0,
+     2.0
+    ],
+    "sigma_SFMS_norm": [
+     0.001,
+     1.5
+    ],
+    "a_sig_SFR": [
+     -1.0,
+     0.5
+    ],
+    "M_knee": [
+     11.5,
+     16.0
+    ]
+   },
+   "legacy_posterior": {
+    "path": "/home/inikolic/projects/UVLF_FMs/run_speed/runs_may/prior_Mknee/FIRE_multinest/post_equal_weights.da",
+    "params": [
+     "fstar_norm",
+     "sigma_SHMR",
+     "t_star",
+     "alpha_star_low",
+     "sigma_SFMS_norm",
+     "a_sig_SFR",
+     "M_knee"
+    ],
+    "bounds": [
+     [
+      -6.0,
+      1.0
+     ],
+     [
+      0.001,
+      2.0
+     ],
+     [
+      0.001,
+      1.0
+     ],
+     [
+      0.0,
+      2.0
+     ],
+     [
+      0.001,
+      1.5
+     ],
+     [
+      -1.0,
+      0.5
+     ],
+     [
+      11.5,
+      16.0
+     ]
+    ]
+   }
+  },
+  "FLARES": {
+   "loader": "flares",
+   "halo_masses": false,
+   "path": "/home/inikolic/projects/stochasticity/literature/flares.hdf5?download=1",
+   "snapshots": {
+    "5": "010_z005p000",
+    "10": "005_z010p000"
+   },
+   "fit_bounds": {
+    "t_star": [
+     0.001,
+     1.0
+    ],
+    "sigma_SFMS_norm": [
+     0.001,
+     2.0
+    ],
+    "a_sig_SFR": [
+     -1.0,
+     0.5
+    ]
+   },
+   "legacy_posterior": {
+    "path": "/home/inikolic/projects/UVLF_FMs/priors/mult_FLARES_goodSMHM/post_equal_weights.dat",
+    "params": [
+     "t_star",
+     "sigma_SFMS_norm",
+     "a_sig_SFR"
+    ],
+    "bounds": [
+     [
+      0.0,
+      1.0
+     ],
+     [
+      0.001,
+      2.0
+     ],
+     [
+      -1.0,
+      0.5
+     ]
+    ]
+   }
+  }
+ },
+ "combine": {
+  "_note": "Variances are before variance_scale. The cov file is written x mcmc_cov_divisor because mcmc.py divides by 5, so the sampled prior is variance x variance_scale.",
+  "partial_sims_in_mean": true,
+  "partial_sims_in_variance": false,
+  "equal_weight_sims": false,
+  "diagonalize": true,
+  "variance_overrides": {
+   "fstar_norm": 2.0,
+   "sigma_SHMR": 0.3,
+   "t_star": 0.038,
+   "sigma_SFMS_norm": 0.02
+  },
+  "extra_params": {
+   "sigma_sfr_10": {
+    "mean": 0.2,
+    "variance": 0.0016666666666666668
+   }
+  },
+  "fixed_params": {},
+  "variance_scale": 1.2,
+  "mcmc_cov_divisor": 5.0
+ }
+}

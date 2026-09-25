@@ -1,0 +1,6 @@
+{
+ "_description": "Extension: redshift-dependent SHMR scatter (alpha_sigma_shmr_z).",
+ "base": "fiducial.json",
+ "model": "sigma_shmr_z",
+ "tag": "sigma_star_z"
+}

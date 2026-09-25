@@ -1,0 +1,13 @@
+{
+ "_description": "Fiducial prior with M_knee pinned to 2e12 Msun (cov_matr_uv_fixedMknee.txt).",
+ "base": "fiducial.json",
+ "tag": "uv_fixedMknee",
+ "combine": {
+  "fixed_params": {
+   "M_knee": {
+    "mean": 12.301029995663981,
+    "variance": 1.6666666666666665e-07
+   }
+  }
+ }
+}

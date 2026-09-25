@@ -1,0 +1,6 @@
+{
+ "_description": "Extension: mass-dependent SHMR scatter anchored at M_knee (a_sig_SHMR).",
+ "base": "fiducial.json",
+ "model": "sigma_shmr_mh",
+ "tag": "sigma_star_Mh"
+}

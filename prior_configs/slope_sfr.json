@@ -1,0 +1,6 @@
+{
+ "_description": "Extension: free SFMS slope (slope_SFR). Needs FLARES refit, since slope_SFR is an SFMS parameter.",
+ "base": "fiducial.json",
+ "model": "slope_sfr",
+ "tag": "slope_SFR"
+}
