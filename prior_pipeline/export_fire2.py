@@ -167,6 +167,9 @@ def export_snapshot(sim, snap, cache_dir, sfr_timescale_myr, min_mh,
         keep = np.flatnonzero((mh > min_mh) & (lowres < max_lowres) & (ms > 0))
         indices = [s["star.indices"][i] for i in keep]
 
+    if len(keep) == 0:
+        print(f"  {sim} snap {snap} (z={z:.2f}): 0 galaxies", flush=True)
+        return z, np.array([]), np.array([]), np.array([])
     a_form, mass, fetched = read_star_particles(snapshot_urls(sim, snap))
     t_now = cosmo.age(z).to("Myr").value
     a_grid = np.linspace(a_form.min(), 1.0 / (1.0 + z), 2000)
@@ -174,10 +177,21 @@ def export_snapshot(sim, snap, cache_dir, sfr_timescale_myr, min_mh,
                        cosmo.age(1.0 / a_grid - 1.0).to("Myr").value)
     young = (t_now - t_form) < sfr_timescale_myr
     msun = mass * MASS_UNIT / hubble
+
+    # Some public catalogs were built from a different version of the
+    # snapshot (e.g. z5m10c snapshot 41 indexes star particles beyond the
+    # snapshot's count), so check that each galaxy's particles add up to
+    # its catalog stellar mass and skip the snapshot if they don't.
+    if any(len(idx) and idx.max() >= len(msun) for idx in indices) or any(
+            abs(msun[idx].sum() / m - 1) > 0.01 for idx, m in zip(indices, ms[keep])):
+        print(f"  {sim} snap {snap}: SKIPPED, catalog does not match the "
+              f"snapshot's star particles", flush=True)
+        return z, np.array([]), np.array([]), np.array([])
+
     sfr = np.array([msun[idx][young[idx]].sum() for idx in indices])
     sfr /= sfr_timescale_myr * 1e6
     print(f"  {sim} snap {snap} (z={z:.2f}): {len(keep)} galaxies, "
-          f"{fetched / 1e6:.1f} MB streamed")
+          f"{fetched / 1e6:.1f} MB streamed", flush=True)
     return z, mh[keep], ms[keep], sfr
 
 
@@ -195,7 +209,7 @@ def main():
 
     per_snap = {}
     for snap in args.snapshots:
-        print(f"snapshot {snap}")
+        print(f"snapshot {snap}", flush=True)
         for sim in args.sims:
             z, mh, ms, sfr = export_snapshot(sim, snap, args.cache_dir,
                                              args.sfr_timescale, args.min_mh,
