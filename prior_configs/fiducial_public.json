@@ -1,0 +1,18 @@
+{
+ "_description": "Fiducial prior built from public data downloaded to prior_pipeline/data/external/ (see prior_pipeline/README.md, 'Running from public data').",
+ "base": "fiducial.json",
+ "fits_dir": "prior_fits",
+ "simulations": {
+  "FirstLight": {"database": "external/FirstLight_SED_database.dat",
+                 "legacy_posterior": {"path": "external/legacy/FL_post.dat"}},
+  "ASTRID": {"snapshots": [
+      {"path": "external/astrid/PIG_062_z5.5/FOFGroups/", "z": 5.5},
+      {"path": "external/astrid/PIG_017_z10/FOFGroups/", "z": 10.0},
+      {"path": "external/astrid/PIG_013_z12/FOFGroups/", "z": 12.0}],
+             "legacy_posterior": {"path": "external/legacy/ASTRID_post.dat"}},
+  "SERRA": {"legacy_posterior": {"path": "external/legacy/SERRA_post.dat"}},
+  "FIRE": {"legacy_posterior": {"path": "external/legacy/FIRE_post.dat"}},
+  "FLARES": {"path": "external/flares.hdf5",
+             "legacy_posterior": {"path": "external/legacy/FLARES_post.dat"}}
+ }
+}

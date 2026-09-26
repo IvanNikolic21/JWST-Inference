@@ -103,7 +103,7 @@ def load_astrid(name, snapshots, n_per_bin=10, n_bins=10, log10_mh_min=8.3,
     rng = np.random.default_rng(seed)
     snaps = []
     for spec in snapshots:
-        f = bigfile.File(spec["path"])
+        f = bigfile.File(_resolve(spec["path"]))
         n = spec.get("n_rows", f["MassByType"].size)
         mbt = np.array(f["MassByType"][:n])
         hm = 1e10 * mbt[:, 1]

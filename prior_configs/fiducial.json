@@ -258,7 +258,7 @@
   "FIRE": {
    "loader": "catalog_file",
    "path": "fire_catalog.json",
-   "_note": "TODO: the FIRE data loading is not in basic_prior_setup.ipynb. Export it to prior_pipeline/data/fire_catalog.json (same format as serra_catalog.json) to refit; --use-legacy works without it.",
+   "_note": "FIRE-2 High Redshift suite (z5* runs, z=5,7,9), exported by `python -m prior_pipeline.export_fire2 --out prior_pipeline/data/fire_catalog.json`. The legacy posterior came from the notebook's (unrecorded) FIRE selection.",
    "fit_bounds": {
     "fstar_norm": [
      -6.0,

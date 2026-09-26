@@ -141,7 +141,10 @@ def load_samples(outdir):
 def load_legacy_posterior(path, params, bounds):
     """Posterior written by basic_prior_setup.ipynb. Its prior function did
     not modify the cube in place, so post_equal_weights.dat holds unit-cube
-    values that must be mapped back through the fit bounds."""
-    post = np.loadtxt(path)[:, :len(params)]
+    values that must be mapped back through the fit bounds. Relative paths
+    are looked up in prior_pipeline/data."""
+    from .simulations import _resolve
+
+    post = np.loadtxt(_resolve(path))[:, :len(params)]
     bounds = np.asarray(bounds, dtype=np.float64)
     return list(params), bounds[:, 0] + post * (bounds[:, 1] - bounds[:, 0])

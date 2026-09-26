@@ -1,0 +1,5 @@
+__pycache__/
+prior_pipeline/data/external/
+prior_fits/
+priors_generated/
+fire2_catalog_cache/

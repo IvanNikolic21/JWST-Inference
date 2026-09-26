@@ -28,6 +28,7 @@ variances, the sample counts and the config used.
 | `simulations.py` | loaders: First Light, ASTRID, SERRA/generic JSON, FLARES |
 | `fitting.py` | likelihood and per-simulation fits |
 | `combine.py` | pooling, diagonalization, overrides, output files |
+| `export_fire2.py` | builds `data/fire_catalog.json` from public FIRE-2 data |
 | `../prior_configs/*.json` | one config per prior; extensions inherit via `"base"` |
 
 ## Adding a model
@@ -50,10 +51,26 @@ N(mean, variance x 1.2), truncated to the limits in `mcmc.py`.
 
 - First Light and ASTRID are evaluated at the target z (5, 10, 15), not the
   snapshot's actual z (ASTRID PIG_035 is z=5.5).
-- ASTRID halo mass is the DM-only `MassByType[:, 1]`.
+- ASTRID halo mass is the DM-only `MassByType[:, 1]`, and ASTRID masses are
+  in 1e10 Msun/h but are multiplied by 1e10 only (0.17 dex too high).
+- ASTRID and FLARES SFRs are instantaneous; the model's SFMS is SFR_100.
 - Pooling weights simulations by their sample count (`equal_weight_sims`).
 - FLARES enters the SFMS means but not the variances.
 - FLARES `Mstar_30` is assumed to be in 1e10 Msun; the FLARES fit was not in
   the notebook.
-- FIRE's data loading was not in the notebook: export it to
-  `data/fire_catalog.json` (format of `serra_catalog.json`) to refit.
+- FIRE's data loading was not in the notebook; see below.
+
+## FIRE-2
+
+`data/fire_catalog.json` is built from the public FIRE-2 High Redshift suite
+(22 z5* runs; z = 5, 7, 9; M_vir > 1e9 Msun; low-res fraction < 1%):
+
+```bash
+python -m prior_pipeline.export_fire2 --out prior_pipeline/data/fire_catalog.json
+```
+
+The Rockstar catalogs (~3 MB/snapshot) give M_vir and M*, but no SFR, so the
+SFR over the last 100 Myr is computed from star-particle formation times.
+Only those two particle datasets are streamed from the snapshots via HTTP
+range requests (~25-35 MB per 2-9 GB snapshot). Particle masses are current,
+not initial, masses, so SFRs are slightly low; subhalos are kept.
