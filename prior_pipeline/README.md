@@ -10,6 +10,9 @@ python build_priors.py combine --config prior_configs/fiducial.json \
     --compare means_uv.txt cov_matr_uv.txt
 # or reuse the notebook's existing per-simulation posteriors
 python build_priors.py combine --config prior_configs/fiducial.json --use-legacy
+# mix: the notebook's posterior for some simulations, new fits for the rest
+python build_priors.py combine --config prior_configs/fiducial_public.json \
+    --legacy-sims FIRE --tag uv_fireLegacy
 # an extension: fit + combine in one go
 python build_priors.py all --config prior_configs/sigma_shmr_z.json
 ```

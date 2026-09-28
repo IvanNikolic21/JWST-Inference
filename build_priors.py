@@ -69,13 +69,20 @@ def run_fits(cfg, model, sims, sampler, force):
         print(f"[{name}] {len(samples)} posterior samples -> {outdir}")
 
 
-def gather_posteriors(cfg, model, sims, use_legacy):
+def gather_posteriors(cfg, model, sims, use_legacy, legacy_sims=()):
+    """Posterior samples per simulation: the notebook's legacy posterior for
+    simulations in `legacy_sims` (or for all, with `use_legacy`, where one
+    exists for this model), otherwise the fit from `fit`."""
     posteriors = {}
     for name in sims:
         spec = cfg["simulations"][name]
         legacy = spec.get("legacy_posterior")
         needed = _needed_params(model, spec)
-        if use_legacy and legacy and set(legacy["params"]) == set(needed):
+        usable = bool(legacy) and set(legacy["params"]) == set(needed)
+        if name in legacy_sims and not usable:
+            raise ValueError(f"--legacy-sims {name}: no legacy posterior for "
+                             f"model '{model.name}' in the config.")
+        if usable and (use_legacy or name in legacy_sims):
             posteriors[name] = load_legacy_posterior(**legacy)
             source = legacy["path"]
         else:
@@ -107,6 +114,10 @@ def main():
     ap.add_argument("--force", action="store_true", help="redo existing fits")
     ap.add_argument("--use-legacy", action="store_true",
                     help="use the notebook's posteriors where available")
+    ap.add_argument("--legacy-sims", nargs="+", default=[], metavar="SIM",
+                    help="use the notebook's posterior for these simulations "
+                         "only, and the new fits for the rest")
+    ap.add_argument("--tag", help="output name, overriding the config's tag")
     ap.add_argument("--compare", nargs=2, metavar=("MEANS", "COV"),
                     help="reference prior files to compare against")
     args = ap.parse_args()
@@ -118,10 +129,12 @@ def main():
     if args.stage in ("fit", "all"):
         run_fits(cfg, model, sims, args.sampler, args.force)
     if args.stage in ("combine", "all"):
-        posteriors = gather_posteriors(cfg, model, sims, args.use_legacy)
+        posteriors = gather_posteriors(cfg, model, sims, args.use_legacy,
+                                       args.legacy_sims)
         names, mean, cov, info = combine(model.param_names, posteriors,
                                          cfg["combine"])
-        means_path, cov_path = write_prior(cfg["output_dir"], cfg["tag"],
+        means_path, cov_path = write_prior(cfg["output_dir"],
+                                           args.tag or cfg["tag"],
                                            names, mean, cov, info,
                                            cfg["combine"])
         print(f"\nWrote {means_path}\n      {cov_path}\n")
