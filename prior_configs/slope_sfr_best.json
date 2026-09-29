@@ -1,0 +1,6 @@
+{
+ "_description": "Extension prior built with exactly the conventions of fiducial_best.json (model: slope_sfr).",
+ "base": "fiducial_best.json",
+ "model": "slope_sfr",
+ "tag": "best_slope_SFR"
+}

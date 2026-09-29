@@ -379,7 +379,7 @@
   }
  },
  "sampling_limits": {
-  "_note": "Truncation box used by mcmc.py's prior() for the fiducial run (priors list for the sigma_sfr_10 model).",
+  "_note": "Truncation box used by mcmc.py's prior() (limits from its params branches); written into prior_<tag>.json for mcmc.py --prior_file.",
   "fstar_norm": [
    -6.0,
    1.0
@@ -411,6 +411,18 @@
   "sigma_sfr_10": [
    0.001,
    0.5
+  ],
+  "alpha_sigma_shmr_z": [
+   -1.0,
+   2.0
+  ],
+  "a_sig_SHMR": [
+   -1.0,
+   1.0
+  ],
+  "slope_SFR": [
+   0.5,
+   1.5
   ]
  },
  "combine": {

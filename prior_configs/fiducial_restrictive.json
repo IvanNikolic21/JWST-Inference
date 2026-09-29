@@ -1,0 +1,6 @@
+{
+ "_description": "Restrictive prior for the prior-sensitivity appendix: the best prior without any widening, i.e. the pooled simulation posteriors exactly as described in Sec. 4.",
+ "base": "fiducial_best.json",
+ "tag": "restrictive",
+ "combine": {"variance_overrides": null}
+}

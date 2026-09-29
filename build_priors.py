@@ -136,7 +136,8 @@ def main():
         means_path, cov_path = write_prior(cfg["output_dir"],
                                            args.tag or cfg["tag"],
                                            names, mean, cov, info,
-                                           cfg["combine"])
+                                           cfg["combine"],
+                                           cfg.get("sampling_limits"))
         print(f"\nWrote {means_path}\n      {cov_path}\n")
         for p, m, v in zip(names, mean, np.diag(cov)):
             print(f"  {p:22s} mean={m:9.4f}  effective sd={np.sqrt(v):.4f}")

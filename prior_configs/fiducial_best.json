@@ -1,0 +1,12 @@
+{
+ "_description": "Prior for the analysis (Sec. 4). Public-data fits of all five simulations (FIRE: SFR over 100 Myr from star particles), pooled; widths widened only where justified: sigma_SHMR (simulations agree more tightly than their shared physics warrants), f_*,0 (degenerate with sigma_SHMR in the UV LF), t_* (simulations report SFRs on different timescales). sigma_SFMS,0 and the rest keep the pooled simulation spread; no global inflation. M_knee fixed at 2e12 Msun.",
+ "base": "fiducial_public.json",
+ "tag": "best",
+ "combine": {
+  "_note": "variance_scale = 1, so the variances below are the effective prior variances (sd 1.549, 0.600, 0.2135: the widths used so far).",
+  "variance_overrides": {"fstar_norm": 2.4, "sigma_SHMR": 0.36, "t_star": 0.0456, "sigma_SFMS_norm": null},
+  "extra_params": {"sigma_sfr_10": {"mean": 0.2, "variance": 0.002}},
+  "fixed_params": {"M_knee": {"mean": 12.301029995663981, "variance": 2e-7}},
+  "variance_scale": 1.0
+ }
+}

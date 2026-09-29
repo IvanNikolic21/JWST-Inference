@@ -88,6 +88,8 @@ def main():
                     help="prior in use, as read by mcmc.py")
     ap.add_argument("--out", default="prior_mixing_vs_used.pdf")
     ap.add_argument("--n-draws", type=int, default=400000)
+    ap.add_argument("--skip", nargs="+", default=[], metavar="PARAM",
+                    help="parameters to leave out of the plot (e.g. a fixed M_knee)")
     args = ap.parse_args()
 
     cfg = load_config(args.config)
@@ -117,6 +119,12 @@ def main():
     for j, p in enumerate(names):
         print(f"{p:16s} {mix_mean[j]:8.3f} ± {mix_sd[j]:<7.3f} "
               f"{used_mean[j]:8.3f} ± {used_sd[j]:<7.3f} {used_sd[j] / mix_sd[j]:10.2f}")
+
+    keep = [j for j, p in enumerate(names) if p not in args.skip]
+    names = [names[j] for j in keep]
+    limits = [limits[j] for j in keep]
+    mix, used = mix[:, keep], used[:, keep]
+    k = len(names)
 
     # Axis ranges: cover the simulations and the prior in use (to ~99%),
     # clipped to the sampling limits.

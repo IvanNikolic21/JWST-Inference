@@ -1,0 +1,6 @@
+{
+ "_description": "Extension prior built with exactly the conventions of fiducial_best.json (model: sigma_shmr_z).",
+ "base": "fiducial_best.json",
+ "model": "sigma_shmr_z",
+ "tag": "best_sigma_star_z"
+}

@@ -711,6 +711,7 @@ def run_mcmc(
         fixed_Mknee=False,
         mass_dependent_sigma_shmr=False,
         sigma_shmr_z_dependent=False,
+        prior_file=None,
 ):
 
     if priors is None:
@@ -764,6 +765,7 @@ def run_mcmc(
         "fixed_Mknee": bool(fixed_Mknee),
         "mass_dependent_sigma_shmr": bool(mass_dependent_sigma_shmr),
         "sigma_shmr_z_dependent": bool(sigma_shmr_z_dependent),
+        "prior_file": prior_file,
     }
     with open(output_filename + 'run_config.json', 'w') as f:
         json.dump(run_config, f, indent=2)
@@ -2107,7 +2109,14 @@ def run_mcmc(
     def prior(cube, ndim, nparams):
         if covariance:
 
-            if M_knee and not sigma_uv and not sigma_sfr_10_explicit:
+            if prior_file is not None:
+                # Prior built by build_priors.py: mean and *effective*
+                # covariance, in the order of `params` (checked in main).
+                with open(prior_file) as f:
+                    prior_spec = json.load(f)
+                mu = np.array(prior_spec["mean"])
+                cov_mat = np.array(prior_spec["cov_effective"])
+            elif M_knee and not sigma_uv and not sigma_sfr_10_explicit:
                 # cov_mat = np.loadtxt(
                 #     '/home/inikolic/projects/UVLF_FMs/priors/cov_matr_Mknee.txt'
                 # ) * 4.0
@@ -2288,6 +2297,11 @@ if __name__ == "__main__":
     parser.add_argument("--fixed_Mknee", action="store_true")
     parser.add_argument("--mass_dependent_sigma_shmr", action="store_true")
     parser.add_argument("--sigma_shmr_z_dependent", action="store_true")
+    parser.add_argument(
+        "--prior_file", type=str, default=None,
+        help="prior_<tag>.json from build_priors.py: sets the prior mean, "
+             "covariance and sampling limits (params must match its order)",
+    )
     inputs = parser.parse_args()
     likelihoods = inputs.names_list
 
@@ -2325,7 +2339,15 @@ if __name__ == "__main__":
 
     if not os.path.exists(inputs.output_directory):
         os.makedirs(inputs.output_directory, exist_ok=True)
-    if params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR",]:
+    if inputs.prior_file:
+        with open(inputs.prior_file) as f:
+            prior_spec = json.load(f)
+        if params != prior_spec["params"]:
+            raise ValueError(
+                f"--params-list {params} does not match the order in "
+                f"{inputs.prior_file}: {prior_spec['params']}")
+        priors = [tuple(l) for l in prior_spec["sampling_limits"]]
+    elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR",]:
         priors = [(-3.0, 1.0), (0.001, 2.0), (0.001, 1.0), (0.0, 2.0),
                   (0.001, 1.2), (-1.0, 0.5)]
     elif params == ["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "M_knee"]:
@@ -2455,4 +2477,5 @@ if __name__ == "__main__":
         fixed_Mknee = inputs.fixed_Mknee,
         mass_dependent_sigma_shmr = inputs.mass_dependent_sigma_shmr,
         sigma_shmr_z_dependent = inputs.sigma_shmr_z_dependent,
+        prior_file = inputs.prior_file,
     )

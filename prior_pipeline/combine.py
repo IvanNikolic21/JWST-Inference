@@ -60,6 +60,8 @@ def combine(model_params, posteriors, cfg):
         cov = np.diag(np.diag(cov))
 
     for p, var in (cfg.get("variance_overrides") or {}).items():
+        if var is None:  # a derived config can switch off an inherited override
+            continue
         j = names.index(p)
         cov[j, j] = var
 
@@ -86,9 +88,10 @@ def combine(model_params, posteriors, cfg):
     return names, mean, cov, info
 
 
-def write_prior(outdir, tag, names, mean, cov, info, cfg):
-    """Write means_<tag>.txt / cov_matr_<tag>.txt in mcmc.py's format, plus
-    prior_<tag>.json describing what was done."""
+def write_prior(outdir, tag, names, mean, cov, info, cfg, sampling_limits=None):
+    """Write means_<tag>.txt / cov_matr_<tag>.txt in mcmc.py's legacy format,
+    plus prior_<tag>.json, which mcmc.py --prior_file reads directly (mean,
+    effective covariance and sampling limits, in the order of `params`)."""
     os.makedirs(outdir, exist_ok=True)
     divisor = cfg.get("mcmc_cov_divisor", 5.0)
     means_path = os.path.join(outdir, f"means_{tag}.txt")
@@ -99,6 +102,9 @@ def write_prior(outdir, tag, names, mean, cov, info, cfg):
         "params": names,
         "mean": mean.tolist(),
         "effective_sd": np.sqrt(np.diag(cov)).tolist(),
+        "cov_effective": cov.tolist(),
+        "sampling_limits": ([list(sampling_limits[p]) for p in names]
+                            if sampling_limits else None),
         "cov_file_multiplier": divisor,
         "git_commit": _git_commit(),
         "config": cfg,
