@@ -59,17 +59,17 @@ def combine(model_params, posteriors, cfg):
     if cfg.get("diagonalize", True):
         cov = np.diag(np.diag(cov))
 
-    for p, var in cfg.get("variance_overrides", {}).items():
+    for p, var in (cfg.get("variance_overrides") or {}).items():
         j = names.index(p)
         cov[j, j] = var
 
-    for p, spec in cfg.get("fixed_params", {}).items():
+    for p, spec in (cfg.get("fixed_params") or {}).items():
         j = names.index(p)
         mean[j] = spec["mean"]
         cov[j, :] = cov[:, j] = 0.0
         cov[j, j] = spec["variance"]
 
-    extra = cfg.get("extra_params", {})
+    extra = (cfg.get("extra_params") or {})
     if extra:
         k = len(names)
         names += list(extra)

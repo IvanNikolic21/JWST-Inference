@@ -1,0 +1,6 @@
+{
+ "_description": "Prior exactly as described in Sec. 4: pooled simulation mean and variance, diagonal, no hand-set widths, no x1.2 inflation. sigma_sfr_10 (not fit to simulations) keeps its fiducial mean and variance, without the x1.2.",
+ "base": "fiducial_public.json",
+ "tag": "uv_unmodified",
+ "combine": {"variance_overrides": null, "variance_scale": 1.0}
+}
