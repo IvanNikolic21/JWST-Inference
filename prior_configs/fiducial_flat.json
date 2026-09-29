@@ -1,0 +1,6 @@
+{
+ "_description": "No simulation prior (appendix): the six simulation-informed parameters get variances so large that the truncated Gaussian is uniform within the sampling limits to <1e-4. M_knee stays fixed and sigma_sfr_10 keeps its prior, exactly as in fiducial_best.json, so only the simulation information differs.",
+ "base": "fiducial_best.json",
+ "tag": "flat",
+ "combine": {"variance_overrides": {"fstar_norm": 1e6, "sigma_SHMR": 1e6, "t_star": 1e6, "alpha_star_low": 1e6, "sigma_SFMS_norm": 1e6, "a_sig_SFR": 1e6}}
+}
