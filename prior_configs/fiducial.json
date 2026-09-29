@@ -378,6 +378,41 @@
    }
   }
  },
+ "sampling_limits": {
+  "_note": "Truncation box used by mcmc.py's prior() for the fiducial run (priors list for the sigma_sfr_10 model).",
+  "fstar_norm": [
+   -6.0,
+   1.0
+  ],
+  "sigma_SHMR": [
+   0.001,
+   2.0
+  ],
+  "t_star": [
+   0.001,
+   1.0
+  ],
+  "alpha_star_low": [
+   0.0,
+   2.0
+  ],
+  "sigma_SFMS_norm": [
+   0.001,
+   1.5
+  ],
+  "a_sig_SFR": [
+   -1.0,
+   0.5
+  ],
+  "M_knee": [
+   11.5,
+   16.0
+  ],
+  "sigma_sfr_10": [
+   0.001,
+   0.5
+  ]
+ },
  "combine": {
   "_note": "Variances are before variance_scale. The cov file is written x mcmc_cov_divisor because mcmc.py divides by 5, so the sampled prior is variance x variance_scale.",
   "partial_sims_in_mean": true,
