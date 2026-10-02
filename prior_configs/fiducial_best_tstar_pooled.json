@@ -1,0 +1,6 @@
+{
+ "_description": "Appendix test of the t_* widening: identical to fiducial_best.json except that t_* keeps the pooled simulation width.",
+ "base": "fiducial_best.json",
+ "tag": "best_tstar_pooled",
+ "combine": {"variance_overrides": {"t_star": null}}
+}
