@@ -38,11 +38,11 @@ def sfms(ms, t_star, z):
 
 
 Z_PIVOT_EXT = 10.0         # uvlf.Z_PIVOT_EXT
-MS_PIVOT_SLOPE = 10 ** 9.5  # uvlf.MS_PIVOT_SLOPE
+MS_PIVOT_SLOPE = 10 ** 9.0  # uvlf.MS_PIVOT_SLOPE
 
 
 def sfms_slope(ms, t_star, z, slope_SFR=1.0):
-    """SFMS with a free slope pivoting at 10^9.5 Msun; equals sfms() for
+    """SFMS with a free slope pivoting at 10^9 Msun; equals sfms() for
     slope_SFR = 1 (uvlf.SFMS_slope)."""
     return sfms(ms, t_star, z) * (np.asarray(ms) / MS_PIVOT_SLOPE) ** (slope_SFR - 1.0)
 

@@ -63,8 +63,8 @@ def test_alpha_star_z_pivot():
     assert f == FSTAR and np.isclose(alpha, ALPHA + a * ((1 + z) / 11 - 1))
 
 
-def test_sfms_slope_pivots_at_10_9p5():
-    ms = np.array([10 ** 8.5, 10 ** 9.5, 10 ** 10.5])
+def test_sfms_slope_pivots_at_10_9():
+    ms = np.array([10 ** 8.0, 10 ** 9.0, 10 ** 10.0])
     base = uvlf.SFMS(ms, SFR_norm=TSTAR, z=8)
     sl = uvlf.SFMS_slope(ms, SFR_norm=TSTAR, z=8, slope_SFR=0.8)
     np.testing.assert_allclose(sl / base, [10 ** 0.2, 1.0, 10 ** -0.2])

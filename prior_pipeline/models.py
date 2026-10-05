@@ -97,7 +97,7 @@ class SigmaSHMRmass(FiducialModel):
 
 
 class SlopeSFMS(FiducialModel):
-    """SFMS with a free slope pivoting at 10^9.5 Msun (uvlf.SFMS_slope);
+    """SFMS with a free slope pivoting at 10^9 Msun (uvlf.SFMS_slope);
     slope_SFR = 1 is the fiducial model."""
 
     name = "slope_sfr"

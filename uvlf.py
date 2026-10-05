@@ -699,7 +699,7 @@ def SFMS_new(Mstar, SFR_norm = 1., z=9.25, slope_SFR=1.0):
 
 
 Z_PIVOT_EXT = 10.0      # redshift at which the extension parameters are anchored
-MS_PIVOT_SLOPE = 10**9.5  # stellar mass at which a non-unity SFMS slope pivots
+MS_PIVOT_SLOPE = 10**9.0  # stellar mass at which a non-unity SFMS slope pivots
 
 
 def shmr_params_at_z(f_star_norm, alpha_star, z, alpha_fstar_z=0.0, alpha_star_z=0.0):
@@ -716,8 +716,8 @@ def shmr_params_at_z(f_star_norm, alpha_star, z, alpha_fstar_z=0.0, alpha_star_z
 
 def SFMS_slope(Mstar, SFR_norm=1., z=9.25, slope_SFR=1.0):
     """
-        SFMS with a free slope, pivoting at 10^9.5 Msun:
-            SFR = SFMS(M*) * (M* / 10^9.5)^(slope_SFR - 1),
+        SFMS with a free slope, pivoting at 10^9 Msun:
+            SFR = SFMS(M*) * (M* / 10^9)^(slope_SFR - 1),
         identical to SFMS() for slope_SFR = 1 (unlike SFMS_new, which is
         10^0.5 times SFMS there).
     """
