@@ -1,6 +1,40 @@
 {
- "_description": "Extension prior built with exactly the conventions of fiducial_best.json (model: sigma_shmr_mh).",
+ "_description": "Extension prior built with exactly the conventions of fiducial_best.json (model: sigma_shmr_mh). The SHMR scatter is anchored at M_knee in this model, so the simulations are fitted with M_knee fixed at 2e12 Msun (as in the inference); with M_knee free, each simulation would anchor sigma_SHMR at its own M_knee.",
  "base": "fiducial_best.json",
  "model": "sigma_shmr_mh",
- "tag": "best_sigma_star_Mh"
+ "tag": "best_sigma_star_Mh",
+ "simulations": {
+  "FirstLight": {
+   "fit_bounds": {
+    "M_knee": [
+     12.3005,
+     12.3015
+    ]
+   }
+  },
+  "ASTRID": {
+   "fit_bounds": {
+    "M_knee": [
+     12.3005,
+     12.3015
+    ]
+   }
+  },
+  "SERRA": {
+   "fit_bounds": {
+    "M_knee": [
+     12.3005,
+     12.3015
+    ]
+   }
+  },
+  "FIRE": {
+   "fit_bounds": {
+    "M_knee": [
+     12.3005,
+     12.3015
+    ]
+   }
+  }
+ }
 }
