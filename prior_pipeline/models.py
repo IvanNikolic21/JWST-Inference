@@ -97,12 +97,8 @@ class SigmaSHMRmass(FiducialModel):
 
 
 class SlopeSFMS(FiducialModel):
-    """SFMS with a free slope (uvlf.SFMS_new).
-
-    Mirrors uvlf.py exactly, including its normalization: at slope_SFR=1,
-    SFMS_new is 10^0.5 times SFMS, so t_star is not directly comparable
-    between this model and the fiducial one.
-    """
+    """SFMS with a free slope pivoting at 10^9.5 Msun (uvlf.SFMS_slope);
+    slope_SFR = 1 is the fiducial model."""
 
     name = "slope_sfr"
     PARAMETERS = FIDUCIAL_PARAMETERS + (
@@ -112,8 +108,39 @@ class SlopeSFMS(FiducialModel):
         return np.log10(rel.sfms_slope(ms, p["t_star"], z, p["slope_SFR"]))
 
 
+class _SHMRz(FiducialModel):
+    """Base for the redshift-dependent SHMR normalization/slope
+    (uvlf.shmr_params_at_z, anchored at z = 10)."""
+
+    def log_ms_mean(self, mh, z, p):
+        fstar, alpha = rel.shmr_params_at_z(
+            10 ** p["fstar_norm"], p["alpha_star_low"], z,
+            alpha_fstar_z=p.get("alpha_fstar_z", 0.0),
+            alpha_star_z=p.get("alpha_star_z", 0.0))
+        return np.log10(rel.ms_mh_flattening(mh, fstar_norm=fstar,
+                                             alpha_star_low=alpha,
+                                             M_knee=10 ** p["M_knee"]))
+
+
+class FstarZ(_SHMRz):
+    """Redshift-dependent SHMR normalization: f_*(z) = f_*,0 [(1+z)/11]^a."""
+
+    name = "fstar_z"
+    PARAMETERS = FIDUCIAL_PARAMETERS + (
+        Parameter("alpha_fstar_z", "shmr", (-3.0, 3.0)),)
+
+
+class AlphaStarZ(_SHMRz):
+    """Redshift-dependent SHMR low-mass slope:
+    alpha_*(z) = alpha_*,0 + a [(1+z)/11 - 1]."""
+
+    name = "alpha_star_z"
+    PARAMETERS = FIDUCIAL_PARAMETERS + (
+        Parameter("alpha_star_z", "shmr", (-2.0, 2.0)),)
+
+
 MODELS = {cls.name: cls for cls in (FiducialModel, SigmaSHMRz, SigmaSHMRmass,
-                                    SlopeSFMS)}
+                                    SlopeSFMS, FstarZ, AlphaStarZ)}
 
 
 def get_model(name):

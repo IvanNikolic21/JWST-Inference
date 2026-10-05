@@ -1,0 +1,6 @@
+{
+ "_description": "Extension prior (redshift-dependent SHMR normalization, alpha_fstar_z) built with exactly the conventions of fiducial_best.json.",
+ "base": "fiducial_best.json",
+ "model": "fstar_z",
+ "tag": "best_fstar_z"
+}

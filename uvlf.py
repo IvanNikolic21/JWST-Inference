@@ -697,6 +697,32 @@ def SFMS_new(Mstar, SFR_norm = 1., z=9.25, slope_SFR=1.0):
 
     return (Mstar/1e9)**(slope_SFR) * 10 ** b_SFR #* SFR_norm
 
+
+Z_PIVOT_EXT = 10.0      # redshift at which the extension parameters are anchored
+MS_PIVOT_SLOPE = 10**9.5  # stellar mass at which a non-unity SFMS slope pivots
+
+
+def shmr_params_at_z(f_star_norm, alpha_star, z, alpha_fstar_z=0.0, alpha_star_z=0.0):
+    """
+        Redshift-dependent SHMR normalization and low-mass slope (Sec. 5.1):
+            f_*(z)     = f_*,0  * [(1+z)/(1+z_p)]^alpha_fstar_z
+            alpha_*(z) = alpha_*,0 + alpha_star_z * [(1+z)/(1+z_p) - 1]
+        with z_p = 10, so f_*,0 and alpha_*,0 are the values at z = 10 and
+        alpha_fstar_z = alpha_star_z = 0 returns the inputs unchanged.
+    """
+    x = (1.0 + z) / (1.0 + Z_PIVOT_EXT)
+    return f_star_norm * x ** alpha_fstar_z, alpha_star + alpha_star_z * (x - 1.0)
+
+
+def SFMS_slope(Mstar, SFR_norm=1., z=9.25, slope_SFR=1.0):
+    """
+        SFMS with a free slope, pivoting at 10^9.5 Msun:
+            SFR = SFMS(M*) * (M* / 10^9.5)^(slope_SFR - 1),
+        identical to SFMS() for slope_SFR = 1 (unlike SFMS_new, which is
+        10^0.5 times SFMS there).
+    """
+    return SFMS(Mstar, SFR_norm=SFR_norm, z=z) * (Mstar / MS_PIVOT_SLOPE) ** (slope_SFR - 1.0)
+
 def UV_calc_BPASS_op(
         Muv,
         masses_hmf,
@@ -1100,11 +1126,16 @@ def UV_calc_numba(
         a_sig_SHMR=0.0,
         sigma_shmr_z_dependent=False,
         alpha_sigma_shmr_z=0.0,
+        alpha_fstar_z=0.0,
+        alpha_star_z=0.0,
+        slope_SFR=1.0,
         **kw,
 ):
-    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
-                            fstar_norm=f_star_norm, M_knee=M_knee)
-    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+    f_star_norm_z, alpha_star_z_eff = shmr_params_at_z(
+        f_star_norm, alpha_star, z, alpha_fstar_z=alpha_fstar_z, alpha_star_z=alpha_star_z)
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star_z_eff,
+                            fstar_norm=f_star_norm_z, M_knee=M_knee)
+    sfrs = SFMS_slope(msss, SFR_norm=t_star, z=z, slope_SFR=slope_SFR)
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
@@ -1449,11 +1480,16 @@ def UV_calc_numba_sfr10(
         a_sig_SHMR=0.0,
         sigma_shmr_z_dependent=False,
         alpha_sigma_shmr_z=0.0,
+        alpha_fstar_z=0.0,
+        alpha_star_z=0.0,
+        slope_SFR=1.0,
         **kw,
 ):
-    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
-                            fstar_norm=f_star_norm, M_knee=M_knee)
-    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+    f_star_norm_z, alpha_star_z_eff = shmr_params_at_z(
+        f_star_norm, alpha_star, z, alpha_fstar_z=alpha_fstar_z, alpha_star_z=alpha_star_z)
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star_z_eff,
+                            fstar_norm=f_star_norm_z, M_knee=M_knee)
+    sfrs = SFMS_slope(msss, SFR_norm=t_star, z=z, slope_SFR=slope_SFR)
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)
@@ -1544,6 +1580,9 @@ def p_muv_given_mh_sfr10(
         a_sig_SHMR=0.0,
         sigma_shmr_z_dependent=False,
         alpha_sigma_shmr_z=0.0,
+        alpha_fstar_z=0.0,
+        alpha_star_z=0.0,
+        slope_SFR=1.0,
         **kw,
 ):
     """
@@ -1551,9 +1590,11 @@ def p_muv_given_mh_sfr10(
     of integrated over the halo mass function. Returns p(Muv | Mh) evaluated
     at mh_eval, shape (len(mh_eval), len(Muv)).
     """
-    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star,
-                            fstar_norm=f_star_norm, M_knee=M_knee)
-    sfrs = SFMS(msss, SFR_norm=t_star, z=z)
+    f_star_norm_z, alpha_star_z_eff = shmr_params_at_z(
+        f_star_norm, alpha_star, z, alpha_fstar_z=alpha_fstar_z, alpha_star_z=alpha_star_z)
+    msss = ms_mh_flattening(10 ** masses_hmf, cosmo, alpha_star_low=alpha_star_z_eff,
+                            fstar_norm=f_star_norm_z, M_knee=M_knee)
+    sfrs = SFMS_slope(msss, SFR_norm=t_star, z=z, slope_SFR=slope_SFR)
 
     Zs = metalicity_from_FMR(msss, sfrs)
     Zs += DeltaZ_z(z)

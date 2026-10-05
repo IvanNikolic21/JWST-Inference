@@ -423,6 +423,14 @@
   "slope_SFR": [
    0.5,
    1.5
+  ],
+  "alpha_fstar_z": [
+   -3.0,
+   3.0
+  ],
+  "alpha_star_z": [
+   -2.0,
+   2.0
   ]
  },
  "combine": {

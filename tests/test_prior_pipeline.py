@@ -76,7 +76,11 @@ def test_relations_match_uvlf():
         uvlf.ms_mh_flattening(mh, cosmo, 10 ** -2.5, 0.5, 2e12))
     np.testing.assert_allclose(rel.sfms(ms, 0.15, 10), uvlf.SFMS(ms, 0.15, 10))
     np.testing.assert_allclose(rel.sfms_slope(ms, 0.15, 10, 0.8),
-                               uvlf.SFMS_new(ms, 0.15, 10, 0.8))
+                               uvlf.SFMS_slope(ms, 0.15, 10, 0.8))
+    for z in (6.0, 12.0):
+        np.testing.assert_allclose(
+            rel.shmr_params_at_z(10 ** -2.5, 0.5, z, alpha_fstar_z=1.1, alpha_star_z=-0.3),
+            uvlf.shmr_params_at_z(10 ** -2.5, 0.5, z, alpha_fstar_z=1.1, alpha_star_z=-0.3))
     np.testing.assert_allclose(rel.sigma_sfms(ms, 0.25, -0.06),
                                uvlf.sigma_SFR_variable(ms, 0.25, -0.06))
     np.testing.assert_allclose(rel.sigma_shmr_mass(mh, 0.3, -0.1, 2e12),
@@ -100,10 +104,13 @@ def test_extensions_reduce_to_fiducial():
     sim = load_catalog_file("SERRA", "serra_catalog.json")
     ref = log_likelihood(THETA, get_model("fiducial"), sim)
     null = {"sigma_shmr_z": {"alpha_sigma_shmr_z": 0.0},
-            "sigma_shmr_mh": {"a_sig_SHMR": 0.0}}
+            "sigma_shmr_mh": {"a_sig_SHMR": 0.0},
+            "fstar_z": {"alpha_fstar_z": 0.0},
+            "alpha_star_z": {"alpha_star_z": 0.0},
+            "slope_sfr": {"slope_SFR": 1.0}}
     for name, extra in null.items():
         assert np.isclose(log_likelihood({**THETA, **extra}, get_model(name), sim), ref)
-    assert set(MODELS) >= {"fiducial", *null, "slope_sfr"}
+    assert set(MODELS) >= {"fiducial", *null}
 
 
 def test_negative_scatter_rejected():

@@ -17,7 +17,7 @@ from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
-from uvlf import sigma_linear_z
+from uvlf import sigma_linear_z, shmr_params_at_z
 import argparse
 
 base_dir = os.path.dirname(__file__)
@@ -205,6 +205,14 @@ class LikelihoodAngBase():
         # mass_dependent_sigma_shmr=True was passed to run_mcmc().
         a_sig_SHMR_eff = a_sig_SHMR if self.mass_dependent_sigma_shmr else 0.0
 
+        # Redshift-dependent SHMR normalization/slope, evaluated at this
+        # ACF bin's redshift exactly as in the UV LF (uvlf.shmr_params_at_z).
+        fstar_z_lin, alpha_star_low = shmr_params_at_z(
+            10 ** fstar_norm, alpha_star_low, self.z,
+            alpha_fstar_z=dic_params.get("alpha_fstar_z", 0.0),
+            alpha_star_z=dic_params.get("alpha_star_z", 0.0),
+        )
+
         if obs == "Ang_z9_m87":
             M_thresh = 8.75
         elif obs == "Ang_z7_m87":
@@ -229,7 +237,7 @@ class LikelihoodAngBase():
         self.angular_gal.hod_params = {
             'stellar_mass_min': M_thresh,
             'stellar_mass_sigma': sigma_SHMR,
-            'fstar_norm': 10 ** fstar_norm,
+            'fstar_norm': fstar_z_lin,
             'alpha': alpha,
             'alpha_star_low': alpha_star_low,
             'M1': M_1,
@@ -406,6 +414,11 @@ class LikelihoodUVLFBase:
         else:
             slope_SFR = dic_params["slope_SFR"]
 
+        # Redshift-dependent SHMR normalization/slope (Sec. 5.1); zero
+        # (the default) is the fiducial model -- see uvlf.shmr_params_at_z().
+        alpha_fstar_z = dic_params.get("alpha_fstar_z", 0.0)
+        alpha_star_z = dic_params.get("alpha_star_z", 0.0)
+
         # Accept both the new parameter name `sigma_sfr_10` and the legacy
         # name `sigma_SFR_10`, preferring the new one if both are present.
         if "sigma_sfr_10" in dic_params:
@@ -442,6 +455,8 @@ class LikelihoodUVLFBase:
                     a_sig_SHMR=a_sig_SHMR,
                     sigma_shmr_z_dependent=self.sigma_shmr_z_dependent,
                     alpha_sigma_shmr_z=alpha_sigma_shmr_z,
+                    alpha_fstar_z=alpha_fstar_z,
+                    alpha_star_z=alpha_star_z,
                 )
 
                 # preds = UV_calc_BPASS_op(
@@ -486,6 +501,9 @@ class LikelihoodUVLFBase:
                     a_sig_SHMR=a_sig_SHMR,
                     sigma_shmr_z_dependent=self.sigma_shmr_z_dependent,
                     alpha_sigma_shmr_z=alpha_sigma_shmr_z,
+                    alpha_fstar_z=alpha_fstar_z,
+                    alpha_star_z=alpha_star_z,
+                    slope_SFR=slope_SFR,
                 )
             else:
                 preds = UV_calc_BPASS(

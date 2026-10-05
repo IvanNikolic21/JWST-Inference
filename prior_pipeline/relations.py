@@ -37,10 +37,21 @@ def sfms(ms, t_star, z):
     return np.asarray(ms) * hubble_rate_per_yr(z) / t_star
 
 
+Z_PIVOT_EXT = 10.0         # uvlf.Z_PIVOT_EXT
+MS_PIVOT_SLOPE = 10 ** 9.5  # uvlf.MS_PIVOT_SLOPE
+
+
 def sfms_slope(ms, t_star, z, slope_SFR=1.0):
-    """SFMS with a free slope, normalized at 10^9.5 Msun (uvlf.SFMS_new)."""
-    b_sfr = -np.log10(t_star) + np.log10(hubble_rate_per_yr(z)) + 9.5
-    return (np.asarray(ms) / 1e9) ** slope_SFR * 10 ** b_sfr
+    """SFMS with a free slope pivoting at 10^9.5 Msun; equals sfms() for
+    slope_SFR = 1 (uvlf.SFMS_slope)."""
+    return sfms(ms, t_star, z) * (np.asarray(ms) / MS_PIVOT_SLOPE) ** (slope_SFR - 1.0)
+
+
+def shmr_params_at_z(fstar_norm, alpha_star, z, alpha_fstar_z=0.0, alpha_star_z=0.0):
+    """Redshift-dependent SHMR normalization and low-mass slope, anchored at
+    z = 10 (uvlf.shmr_params_at_z)."""
+    x = (1.0 + z) / (1.0 + Z_PIVOT_EXT)
+    return fstar_norm * x ** alpha_fstar_z, alpha_star + alpha_star_z * (x - 1.0)
 
 
 def sigma_sfms(ms, norm, a_sig_SFR):
