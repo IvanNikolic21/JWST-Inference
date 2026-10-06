@@ -18,6 +18,7 @@ from observations import Observations
 from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
 from uvlf import sigma_linear_z, shmr_params_at_z
+from likelihood_terms import asymmetric_gaussian_lnl
 import argparse
 
 base_dir = os.path.dirname(__file__)
@@ -565,30 +566,9 @@ class LikelihoodUVLFBase:
                         )
                     )
                 else:
-                    pred_x = np.linspace(-13, -1.0, 100000)
-
-                    sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
-                    sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
-                    sig_this = sig_a + sig_b * (preds[index] - uvlf_o[index])
-                    # L = intg.trapezoid(
-                    #     y=np.exp(
-                    #         -0.5 * ((10 ** pred_x - uvlf_o[index]) ** 2 / (
-                    #                     sig_this ** 2))
-                    #     ) / 2 / np.pi / sig_this / 0.5 * np.exp(
-                    #         -0.5 * ((np.log10(
-                    #             preds[index]) - pred_x) ** 2 / 0.5 ** 2)
-                    #     ),
-                    #     x=pred_x
-                    # )
-                    # lnL += np.log(L)
-                    sigma_eff = abs(sig_a + sig_b * (preds[index] - uvlf_o[index]))
-                    sigma_eff = max(float(sigma_eff), 1e-12)
-
-                    lnL += -0.5 * (
-                            (preds[index] - uvlf_o[index])**2 / (
-                            (sig_a + sig_b * (preds[index] - uvlf_o[index])
-                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
-                    )
+                    # Asymmetric errors: Barlow (2004) variable Gaussian.
+                    lnL += asymmetric_gaussian_lnl(
+                        preds[index], uvlf_o[index], sig_o[0][index], sig_o[1][index])
             else:
                 pred_x = np.linspace(-13,-1.0, 100000)
                 # L = intg.trapezoid(
@@ -689,17 +669,9 @@ class LikelihoodUVLF_Mason15:
                         )
                     )
                 else:
-                    sig_a = 2 * (sig_o[0][index] * sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
-                    sig_b = (sig_o[0][index] - sig_o[1][index])/(sig_o[0][index] + sig_o[1][index])
-
-                    sigma_eff = abs(sig_a + sig_b * (preds[index] - uvlf_o[index]))
-                    sigma_eff = max(float(sigma_eff), 1e-12)
-
-                    lnL += -0.5 * (
-                            (preds[index] - uvlf_o[index])**2 / (
-                            (sig_a + sig_b * (preds[index] - uvlf_o[index])
-                             ) ** 2) - 0.5*np.log(2*np.pi) - np.log(sigma_eff)
-                    )
+                    # Asymmetric errors: Barlow (2004) variable Gaussian.
+                    lnL += asymmetric_gaussian_lnl(
+                        preds[index], uvlf_o[index], sig_o[0][index], sig_o[1][index])
             else:
                 lnL += -0.5 * ((preds[index] - uvlf_o[index])**2 / (sig_o[
                    index] ** 2)) - 0.5*np.log(2*np.pi) - np.log(float(sig_o[index]))
