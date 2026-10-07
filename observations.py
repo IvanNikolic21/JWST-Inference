@@ -60,111 +60,138 @@ class Observations():
         if uvlf:
             pass
 
-    def get_obs_z9_m87(self):
+    def get_obs_z9_m87(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats87_pos = [
-            float(i) for i,j in zip(self.cons_theta[1],self.cons_wtheta[1]) if float(j)>0
+            float(i) for i,j in zip(self.cons_theta[1],self.cons_wtheta[1]) if (float(j) > 0 or not positive_only)
         ]
         wthethats87_pos = [
-            float(i) for i,j in zip(self.cons_wtheta[1],self.cons_wtheta[1]) if float(j)>0
+            float(i) for i,j in zip(self.cons_wtheta[1],self.cons_wtheta[1]) if (float(j) > 0 or not positive_only)
         ]
         wsig87_pos = [
-            float(i) for i,j in zip(self.cons_wsig[1],self.cons_wtheta[1]) if float(j)>0
+            float(i) for i,j in zip(self.cons_wsig[1],self.cons_wtheta[1]) if (float(j) > 0 or not positive_only)
         ]
         return thethats87_pos, wthethats87_pos, wsig87_pos
 
-    def get_obs_z9_m90(self):
+    def get_obs_z9_m90(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats90_pos = [
-            float(i) for i,j in zip(self.cons_theta[2],self.cons_wtheta[2]) if float(j)>0
+            float(i) for i,j in zip(self.cons_theta[2],self.cons_wtheta[2]) if (float(j) > 0 or not positive_only)
         ]
         wthethats90_pos = [
-            float(i) for i,j in zip(self.cons_wtheta[2],self.cons_wtheta[2]) if float(j)>0
+            float(i) for i,j in zip(self.cons_wtheta[2],self.cons_wtheta[2]) if (float(j) > 0 or not positive_only)
         ]
         wsig90_pos = [
-            float(i) for i,j in zip(self.cons_wsig[2],self.cons_wtheta[2]) if float(j)>0
+            float(i) for i,j in zip(self.cons_wsig[2],self.cons_wtheta[2]) if (float(j) > 0 or not positive_only)
         ]
         return thethats90_pos, wthethats90_pos, wsig90_pos
 
-    def get_obs_z7_m87(self):
+    def get_obs_z7_m87(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats87_pos_z7 = [
-            float(i) for i,j in zip(self.theta_z7[1],self.wtheta_z7[1]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z7[1],self.wtheta_z7[1]) if (float(j) > 0 or not positive_only)
         ]
         wthethats87_pos_z7 = [
-            float(i) for i,j in zip(self.wtheta_z7[1],self.wtheta_z7[1]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z7[1],self.wtheta_z7[1]) if (float(j) > 0 or not positive_only)
         ]
         wsig87_pos_z7 = [
-            float(i) for i,j in zip(self.wsig_z7[1],self.wtheta_z7[1]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z7[1],self.wtheta_z7[1]) if (float(j) > 0 or not positive_only)
         ]
         return thethats87_pos_z7, wthethats87_pos_z7, wsig87_pos_z7
 
-    def get_obs_z7_m90(self):
+    def get_obs_z7_m90(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats90_pos_z7 = [
-            float(i) for i,j in zip(self.theta_z7[2],self.wtheta_z7[2]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z7[2],self.wtheta_z7[2]) if (float(j) > 0 or not positive_only)
         ]
         wthethats90_pos_z7 = [
-            float(i) for i,j in zip(self.wtheta_z7[2],self.wtheta_z7[2]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z7[2],self.wtheta_z7[2]) if (float(j) > 0 or not positive_only)
         ]
         wsig90_pos_z7 = [
-            float(i) for i,j in zip(self.wsig_z7[2],self.wtheta_z7[2]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z7[2],self.wtheta_z7[2]) if (float(j) > 0 or not positive_only)
         ]
         return thethats90_pos_z7, wthethats90_pos_z7, wsig90_pos_z7
 
-    def get_obs_z7_m93(self):
+    def get_obs_z7_m93(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats93_pos_z7 = [
-            float(i) for i,j in zip(self.theta_z7[3],self.wtheta_z7[3]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z7[3],self.wtheta_z7[3]) if (float(j) > 0 or not positive_only)
         ]
         wthethats93_pos_z7 = [
-            float(i) for i,j in zip(self.wtheta_z7[3],self.wtheta_z7[3]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z7[3],self.wtheta_z7[3]) if (float(j) > 0 or not positive_only)
         ]
         wsig93_pos_z7 = [
-            float(i) for i,j in zip(self.wsig_z7[3],self.wtheta_z7[3]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z7[3],self.wtheta_z7[3]) if (float(j) > 0 or not positive_only)
         ]
         return thethats93_pos_z7, wthethats93_pos_z7, wsig93_pos_z7
 
-    def get_obs_z5_5_m85(self):
+    def get_obs_z5_5_m85(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats85_pos_z5_5 = [
-            float(i) for i,j in zip(self.theta_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z5_5[1],self.wtheta_z5_5[1]) if (float(j) > 0 or not positive_only)
         ]
         wthethats85_pos_z5_5 = [
-            float(i) for i,j in zip(self.wtheta_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z5_5[1],self.wtheta_z5_5[1]) if (float(j) > 0 or not positive_only)
         ]
         wsig85_pos_z5_5 = [
-            float(i) for i,j in zip(self.wsig_z5_5[1],self.wtheta_z5_5[1]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z5_5[1],self.wtheta_z5_5[1]) if (float(j) > 0 or not positive_only)
         ]
         return thethats85_pos_z5_5, wthethats85_pos_z5_5, wsig85_pos_z5_5
 
-    def get_obs_z5_5_m90(self):
+    def get_obs_z5_5_m90(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats90_pos_z5_5 = [
-            float(i) for i,j in zip(self.theta_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z5_5[2],self.wtheta_z5_5[2]) if (float(j) > 0 or not positive_only)
         ]
         wthethats90_pos_z5_5 = [
-            float(i) for i,j in zip(self.wtheta_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z5_5[2],self.wtheta_z5_5[2]) if (float(j) > 0 or not positive_only)
         ]
         wsig90_pos_z5_5 = [
-            float(i) for i,j in zip(self.wsig_z5_5[2],self.wtheta_z5_5[2]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z5_5[2],self.wtheta_z5_5[2]) if (float(j) > 0 or not positive_only)
         ]
         return thethats90_pos_z5_5, wthethats90_pos_z5_5, wsig90_pos_z5_5
 
-    def get_obs_z5_5_m92_5(self):
+    def get_obs_z5_5_m92_5(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats92_5_pos_z5_5 = [
-            float(i) for i,j in zip(self.theta_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z5_5[3],self.wtheta_z5_5[3]) if (float(j) > 0 or not positive_only)
         ]
         wthethats92_5_pos_z5_5 = [
-            float(i) for i,j in zip(self.wtheta_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z5_5[3],self.wtheta_z5_5[3]) if (float(j) > 0 or not positive_only)
         ]
         wsig92_5_pos_z5_5 = [
-            float(i) for i,j in zip(self.wsig_z5_5[3],self.wtheta_z5_5[3]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z5_5[3],self.wtheta_z5_5[3]) if (float(j) > 0 or not positive_only)
         ]
         return thethats92_5_pos_z5_5, wthethats92_5_pos_z5_5, wsig92_5_pos_z5_5
 
-    def get_obs_z5_5_m95(self):
+    def get_obs_z5_5_m95(self, positive_only=False):
+        # All points by default: the likelihood selects scales (theta > 0.005 deg) and a
+        # Gaussian in w handles negative values. Dropping w <= 0 points would keep only
+        # upward noise fluctuations on large scales. positive_only=True is for log plots.
         thethats95_pos_z5_5 = [
-            float(i) for i,j in zip(self.theta_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+            float(i) for i,j in zip(self.theta_z5_5[4],self.wtheta_z5_5[4]) if (float(j) > 0 or not positive_only)
         ]
         wthethats95_pos_z5_5 = [
-            float(i) for i,j in zip(self.wtheta_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+            float(i) for i,j in zip(self.wtheta_z5_5[4],self.wtheta_z5_5[4]) if (float(j) > 0 or not positive_only)
         ]
         wsig95_pos_z5_5 = [
-            float(i) for i,j in zip(self.wsig_z5_5[4],self.wtheta_z5_5[4]) if float(j)>0
+            float(i) for i,j in zip(self.wsig_z5_5[4],self.wtheta_z5_5[4]) if (float(j) > 0 or not positive_only)
         ]
         return thethats95_pos_z5_5, wthethats95_pos_z5_5, wsig95_pos_z5_5
 
