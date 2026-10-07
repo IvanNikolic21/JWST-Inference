@@ -91,6 +91,8 @@ if __name__ == "__main__":
              "already exist for a posterior sample. Default is to skip samples "
              "that already have output (e.g. from a previous run).",
     )
+    parser.add_argument("--z_list", type=str, default="6.0,8.0,10.0,12.0",
+                        help="redshifts at which p(Muv|Mh) and sigma_UV are computed")
     args = parser.parse_args()
     directory = args.directory_of_posteriors
     recompute = args.recompute
@@ -108,7 +110,7 @@ if __name__ == "__main__":
             "p_muv_given_mh_sfr10 only supports runs with sigma_sfr_10_explicit=True."
         )
 
-    z_s      = [6.0, 8.0, 10.0, 12.0]
+    z_s      = [float(z) for z in args.z_list.split(",")]
     mh_eval  = np.arange(8.5, 12.0 + 1e-9, 0.1)   # log10 Mh grid
     # Wide enough to bound p(Muv|Mh) across the full mh_eval range: faint
     # halos can have most of their probability fainter than -16, and the
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     print(f"[rank {rank}/{size}] processing {len(my_posteriors)} of {len(posteriors)} samples", flush=True)
 
     hmf_locs = [
-        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08")
+        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
         for z in z_s
     ]
     masses_hmf_per_z = [np.log10(h.m / cosmo.h) for h in hmf_locs]

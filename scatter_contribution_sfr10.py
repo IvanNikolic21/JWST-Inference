@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # ── per-rank setup ─────────────────────────────────────────────────────────
     hmf_loc    = hmf.MassFunction(z=TARGET_Z, Mmin=5, Mmax=19, dlog10m=0.05,
-                                  hmf_model="Tinker08")
+                                  hmf_model="Tinker08", cosmo_model=cosmo)
     masses_hmf = np.log10(hmf_loc.m / cosmo.h)
 
     script_dir = os.path.dirname(os.path.abspath(__file__))

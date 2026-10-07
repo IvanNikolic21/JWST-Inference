@@ -85,7 +85,7 @@ if __name__ == "__main__":
               f"{len(my_posteriors)} per rank (rank 0), z={z_s}, Muv={muv_targets}", flush=True)
 
     hmf_locs = [
-        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08")
+        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
         for z in z_s
     ]
     SFR_samps = [SFH_sampler(z=z) for z in z_s]

@@ -19,6 +19,7 @@ from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
 from uvlf import sigma_linear_z, shmr_params_at_z
 from likelihood_terms import asymmetric_gaussian_lnl
+from effective_redshift import uvlf_redshift, acf_redshift
 import argparse
 
 base_dir = os.path.dirname(__file__)
@@ -113,6 +114,7 @@ class LikelihoodAngBase():
             'tracer_profile_model': hm.profiles.NFW,
             'hmf_model': hmf_model,
             'hmf_params': hmf_params,
+            'cosmo_model': cosmo,    # Planck18 (halomod default: Planck15)
             'bias_model': "Tinker10",
             'transfer_model': "EH",
             'exclusion_model': "Sphere",
@@ -335,7 +337,8 @@ class LikelihoodUVLFBase:
                 Mmin=5,
                 Mmax=19,
                 dlog10m=0.05,
-                hmf_model=hmf_choice
+                hmf_model=hmf_choice,
+                cosmo_model=cosmo,    # Planck18, as everywhere else (hmf default: Planck15)
             )
         self.params = params
         self.sigma_sfr_10_explicit = sigma_sfr_10_explicit
@@ -756,6 +759,9 @@ def run_mcmc(
         "mass_dependent_sigma_shmr": bool(mass_dependent_sigma_shmr),
         "sigma_shmr_z_dependent": bool(sigma_shmr_z_dependent),
         "prior_file": prior_file,
+        "uvlf_redshifts": {li: uvlf_redshift(li, None) for li in likelihoods if li.startswith("UVLF_")},
+        "acf_redshifts": ({"z7": acf_redshift("z7", 7.0), "z9": acf_redshift("z9", 9.25)}
+                          if realistic_Nz else {"z7": 7.0, "z9": 9.25}),
     }
     with open(output_filename + 'run_config.json', 'w') as f:
         json.dump(run_config, f, indent=2)
@@ -770,14 +776,15 @@ def run_mcmc(
     if any({"Ang_z9_m87", "Ang_z9_m9"}.intersection(set(likelihoods))
            ):
         ang = True
-        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice, z=9.25, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
+        AngBase_z9 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz, hmf_choice=hmf_choice,
+                                       z=acf_redshift("z9", 9.25) if realistic_Nz else 9.25, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
                                        mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,)
     if any({"Ang_z7_m87",
             "Ang_z7_m93", "Ang_z7_m9"}.intersection(set(likelihoods))
            ):
         ang = True
         AngBase_z7 = LikelihoodAngBase(params, realistic_Nz=realistic_Nz,
-                                       hmf_choice=hmf_choice, z=7, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
+                                       hmf_choice=hmf_choice, z=acf_redshift("z7", 7.0) if realistic_Nz else 7.0, exact_specs=exact_specs, fixed_Mknee=fixed_Mknee,
                                        mass_dependent_sigma_shmr=mass_dependent_sigma_shmr, sigma_shmr_z_dependent=sigma_shmr_z_dependent,
 )
     if any({"Ang_z5_5_m85", "Ang_z5_5_m9", "Ang_z5_5_m92_5",
@@ -972,7 +979,7 @@ def run_mcmc(
         uvlf = True
         UVLFBase_Wil23_8 = LikelihoodUVLFBase(
             params,
-            z=8,
+            z=uvlf_redshift("UVLF_z8_Willot23", 8),
             hmf_choice=hmf_choice,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
@@ -981,12 +988,12 @@ def run_mcmc(
             sigma_shmr_z_dependent=sigma_shmr_z_dependent,
             slope_SFR=slope_SFR
         )
-        SFR_samp_8 = SFH_sampler(z=8)
+        SFR_samp_W8 = SFH_sampler(z=uvlf_redshift("UVLF_z8_Willot23", 8))
     if "UVLF_z9_Willot23" in likelihoods:
         uvlf = True
         UVLFBase_Wil23_9 = LikelihoodUVLFBase(
             params,
-            z=9,
+            z=uvlf_redshift("UVLF_z9_Willot23", 9),
             hmf_choice=hmf_choice,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
@@ -996,12 +1003,12 @@ def run_mcmc(
             slope_SFR=slope_SFR,
             fixed_Mknee=fixed_Mknee,
         )
-        SFR_samp_9 = SFH_sampler(z=9)
+        SFR_samp_W9 = SFH_sampler(z=uvlf_redshift("UVLF_z9_Willot23", 9))
     if "UVLF_z10_Willot23" in likelihoods:
         uvlf = True
         UVLFBase_Wil23_10 = LikelihoodUVLFBase(
             params,
-            z=10,
+            z=uvlf_redshift("UVLF_z10_Willot23", 10),
             hmf_choice=hmf_choice,
             sigma_uv=sigma_uv,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
@@ -1011,12 +1018,12 @@ def run_mcmc(
             slope_SFR=slope_SFR,
             fixed_Mknee=fixed_Mknee,
         )
-        SFR_samp_10 = SFH_sampler(z=10)
+        SFR_samp_W10 = SFH_sampler(z=uvlf_redshift("UVLF_z10_Willot23", 10))
     if "UVLF_z12_Willot23" in likelihoods:
         uvlf = True
         UVLFBase_Wil23_12 = LikelihoodUVLFBase(
             params,
-            z=12,
+            z=uvlf_redshift("UVLF_z12_Willot23", 12),
             hmf_choice=hmf_choice,
             sigma_sfr_10_explicit= sigma_sfr_10_explicit,
             sigma_uv=sigma_uv,
@@ -1026,7 +1033,7 @@ def run_mcmc(
             slope_SFR=slope_SFR,
             fixed_Mknee = fixed_Mknee,
         )
-        SFR_samp_12 = SFH_sampler(z=12)
+        SFR_samp_W12 = SFH_sampler(z=uvlf_redshift("UVLF_z12_Willot23", 12))
 
     if "UVLF_z9_8_Whitler25" in likelihoods:
         uvlf = True
@@ -1674,7 +1681,7 @@ def run_mcmc(
                     uvlf_o=uvlf_c,
                     sig_o=sig_c,
                     use_BPASS=use_BPASS,
-                    sfr_samp_inst=SFR_samp_8,
+                    sfr_samp_inst=SFR_samp_W8,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
@@ -1695,7 +1702,7 @@ def run_mcmc(
                     uvlf_o=uvlf_c,
                     sig_o=sig_c,
                     use_BPASS=use_BPASS,
-                    sfr_samp_inst=SFR_samp_9,
+                    sfr_samp_inst=SFR_samp_W9,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
@@ -1743,7 +1750,7 @@ def run_mcmc(
                     uvlf_o=uvlf_c,
                     sig_o=sig_c,
                     use_BPASS=use_BPASS,
-                    sfr_samp_inst=SFR_samp_10,
+                    sfr_samp_inst=SFR_samp_W10,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )
@@ -1764,7 +1771,7 @@ def run_mcmc(
                     uvlf_o=uvlf_c,
                     sig_o=sig_c,
                     use_BPASS=use_BPASS,
-                    sfr_samp_inst=SFR_samp_12,
+                    sfr_samp_inst=SFR_samp_W12,
                     bpass_read=bpass_read,
                     vect_func=vect_func,
                 )

@@ -8,15 +8,17 @@ from astropy.cosmology import Planck18 as cosmo
 
 from numba import njit, prange
 import ultranest
-hmf_loc_9 = hmf.MassFunction(z=9.25,             Mmin=1,
-            Mmax=18,
-            dlog10m=0.02,)
-hmf_loc_7 = hmf.MassFunction(z=7.0,             Mmin=1,
-            Mmax=18,
-            dlog10m=0.02,)
-hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=1,
-            Mmax=18,
-            dlog10m=0.02,)
+_HMF_CACHE = {}
+
+
+def _hmf_at(z):
+    """Halo mass function at redshift z (Planck18), cached; used by Bias_nonlin."""
+    if z not in _HMF_CACHE:
+        _HMF_CACHE[z] = hmf.MassFunction(z=z, Mmin=1, Mmax=18, dlog10m=0.02,
+                                         cosmo_model=cosmo)
+    return _HMF_CACHE[z]
+
+
 from uvlf import ms_mh, ms_mh_flattening, sigma_SHMR_variable
 from likelihood_terms import integral_constraint_rectangle
 
@@ -26,14 +28,7 @@ class Bias_nonlin(hm.bias.ScaleDepBias):
         self.xi_dm = xi_dm
         self.nu = nu
         self.z = z
-        if z == 9.25:
-            self.hmf_loc = hmf_loc_9
-        elif z == 7.0:
-            self.hmf_loc = hmf_loc_7
-        elif z == 5.5:
-            self.hmf_loc = hmf_loc_5
-        else:
-            self.hmf_loc = hmf_loc_9
+        self.hmf_loc = _hmf_at(z)
         #self.hmf_loc = hmf.MassFunction(self.z)
         super().__init__(self.xi_dm)
 

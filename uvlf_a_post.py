@@ -18,7 +18,14 @@ if __name__ == "__main__":
         type=str,
         required=True,
     )
-    directory = parser.parse_args().directory_of_posteriors
+    parser.add_argument(
+        "--z_list", type=str, default="6.0,7.99,10.23,11.0,11.73,12.5,14.0",
+        help="redshifts of the predictive UV LFs; the defaults include the effective "
+             "redshifts of the Willott+2024 bins (7.99, 10.23, 11.73; see "
+             "effective_redshift.py) so model and data are compared at the same z",
+    )
+    args = parser.parse_args()
+    directory = args.directory_of_posteriors
 
     with open(os.path.join(directory, "run_config.json")) as f:
         run_config = json.load(f)
@@ -38,14 +45,14 @@ if __name__ == "__main__":
     else:
         from uvlf import UV_calc_BPASS as uvlf_func
 
-    z_s    = [6.0, 8.0, 10.0, 11.0, 12.5, 14.0]
+    z_s    = [float(z) for z in args.z_list.split(",")]
     muvs_o = np.linspace(-25, -16, 20)
 
     posteriors = np.genfromtxt(os.path.join(directory, "post_equal_weights.dat"))
     my_posteriors = posteriors[rank::size]
     print(f"[rank {rank}/{size}] processing {len(my_posteriors)} of {len(posteriors)} samples", flush=True)
     hmf_locs = [
-        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08")
+        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
         for z in z_s
     ]
     SFR_samps = [SFH_sampler(z=z) for z in z_s]

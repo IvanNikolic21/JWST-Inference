@@ -96,7 +96,7 @@ def main():
     all_kappa_cut, all_weight_cut = [], []
 
     for z in REDSHIFTS:
-        hmf_loc = hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08")
+        hmf_loc = hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
         masses_hmf = np.log10(hmf_loc.m / cosmo.h)
         dndm = hmf_loc.dndlog10m * cosmo.h ** 3 * np.exp(-5e8 / (hmf_loc.m / cosmo.h))
 
