@@ -18,6 +18,7 @@ hmf_loc_5 = hmf.MassFunction(z=5.5,             Mmin=1,
             Mmax=18,
             dlog10m=0.02,)
 from uvlf import ms_mh, ms_mh_flattening, sigma_SHMR_variable
+from likelihood_terms import integral_constraint_rectangle
 
 
 class Bias_nonlin(hm.bias.ScaleDepBias):
@@ -149,8 +150,19 @@ class AngularCF_NL(hm.AngularCF):
 
 
 
+def w_IC(ang_theta, ang_func, x_deg, y_deg, angular_distance=None):
+    """Integral constraint for a rectangular x_deg x y_deg field: the average
+    of the model w(theta) over all pairs of points in the field. Computed
+    deterministically from the exact pair-separation distribution of the
+    rectangle (likelihood_terms.integral_constraint_rectangle); the previous
+    1e5-pair Monte Carlo estimate is kept as w_IC_mc. angular_distance is
+    unused (it cancelled in the Monte Carlo version) and kept for the call
+    signature."""
+    return integral_constraint_rectangle(ang_theta, ang_func, x_deg, y_deg)
+
+
 @njit(parallel=True)
-def w_IC(ang_theta, ang_func,x_deg, y_deg, angular_distance):
+def w_IC_mc(ang_theta, ang_func,x_deg, y_deg, angular_distance):
     #print(x_deg, y_deg)
     N_samples = int(1e5)
     x1 = np.random.uniform(

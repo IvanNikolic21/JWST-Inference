@@ -38,3 +38,30 @@ def test_no_preference_for_larger_error_side():
     """The bug this replaces rewarded predictions on the larger-error side."""
     obs, sp, sm = 4.8, 11.1, 4.1
     assert np.isclose(lnl(obs + sp, obs, sp, sm), lnl(obs - sm, obs, sp, sm))
+
+
+# --- integral constraint ------------------------------------------------------
+from likelihood_terms import integral_constraint_rectangle, integral_constraint_rr
+
+THETA_RAD = np.logspace(-6.3, -0.8, 50)          # halomod grid in LikelihoodAngBase
+FIELD = (41.5 / 60, 46.6 / 60)                   # COSMOS-Web, deg
+
+
+def test_ic_of_constant_is_constant():
+    w = np.full_like(THETA_RAD, 0.37)
+    assert np.isclose(integral_constraint_rectangle(THETA_RAD, w, *FIELD), 0.37)
+    assert np.isclose(integral_constraint_rr(np.array([0.01, 0.1]), np.array([1.0, 5.0]),
+                                             THETA_RAD, w), 0.37)
+
+
+@pytest.mark.parametrize("slope", [0.6, 0.8, 1.0])
+def test_ic_rectangle_matches_monte_carlo(slope):
+    rng = np.random.default_rng(3)
+    n = 2_000_000
+    x = rng.uniform(0, FIELD[0], (2, n))
+    y = rng.uniform(0, FIELD[1], (2, n))
+    sep = np.deg2rad(np.hypot(x[0] - x[1], y[0] - y[1]))
+    w = 0.01 * np.rad2deg(THETA_RAD) ** -slope
+    mc = np.interp(sep, THETA_RAD, w)
+    det = integral_constraint_rectangle(THETA_RAD, w, *FIELD)
+    assert abs(det - mc.mean()) < 4 * mc.std() / np.sqrt(n) + 2e-3 * det
