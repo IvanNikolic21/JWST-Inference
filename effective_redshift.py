@@ -20,12 +20,33 @@ from astropy.cosmology import Planck18 as cosmo
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Redshift-bin edges of the binned UV LFs (Willott et al. 2024, Table 3)
+# Redshift-bin edges of the binned UV LFs. Dropout-selected samples without
+# top-hat bins (Bouwens et al. 2021; Whitler et al. 2025, quoted at their median
+# redshifts) are not listed and keep their nominal redshift.
 UVLF_BINS = {
+    # Willott et al. (2024), Table 3
     "UVLF_z8_Willot23": (7.5, 8.5),
     "UVLF_z9_Willot23": (8.5, 9.5),
     "UVLF_z10_Willot23": (9.5, 11.0),
     "UVLF_z12_Willot23": (11.0, 12.5),
+    # McLeod et al. (2024), z ~ 11 bin
+    "UVLF_z11_McLeod23": (9.5, 12.5),
+    # Donnan et al. (2024), Sec. 5 / Table 3
+    "UVLF_z9_Donnan24": (8.5, 9.5),
+    "UVLF_z10_Donnan24": (9.5, 10.5),
+    "UVLF_z11_Donnan24": (10.5, 11.5),
+    "UVLF_z12_5_Donnan24": (11.5, 13.5),
+    # Harikane et al. (2024a, 2024b), spectroscopic LFs, Table 6 of 2024b
+    "UVLF_z7_Harikane24": (6.5, 7.5),
+    "UVLF_z8_Harikane24": (7.5, 8.5),
+    "UVLF_z9_Harikane24": (8.5, 9.5),
+    "UVLF_z10_Harikane24": (9.5, 11.0),
+    "UVLF_z12_Harikane24": (11.0, 13.5),
+    "UVLF_z14_Harikane24": (13.5, 15.0),
+    # Finkelstein et al. (2024), photometric-redshift samples (Sec. 3.4)
+    "UVLF_z9_Finkelstein24": (8.5, 9.7),
+    "UVLF_z11_Finkelstein24": (9.7, 13.0),
+    "UVLF_z14_Finkelstein24": (13.0, 15.0),
 }
 
 # Redshift distributions of the ACF samples (as read by LikelihoodAngBase)

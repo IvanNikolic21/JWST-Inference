@@ -3,6 +3,7 @@ import json
 import numpy as np
 import hmf as hmf
 from astropy.cosmology import Planck18 as cosmo
+from cosmology_settings import HMF_COSMO_KW
 from scipy.optimize import curve_fit
 from uvlf import bpass_loader, SFH_sampler, p_muv_given_mh_sfr10
 from mpi4py import MPI
@@ -124,7 +125,7 @@ if __name__ == "__main__":
     print(f"[rank {rank}/{size}] processing {len(my_posteriors)} of {len(posteriors)} samples", flush=True)
 
     hmf_locs = [
-        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
+        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", **HMF_COSMO_KW)
         for z in z_s
     ]
     masses_hmf_per_z = [np.log10(h.m / cosmo.h) for h in hmf_locs]

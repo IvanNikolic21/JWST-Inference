@@ -26,6 +26,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from astropy.cosmology import Planck18 as cosmo
+from cosmology_settings import HMF_COSMO_KW
 from mpi4py import MPI
 from uvlf import bpass_loader, SFH_sampler, p_muv_given_mh_sfr10
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
 
     # ── per-rank setup ─────────────────────────────────────────────────────────
     hmf_loc    = hmf.MassFunction(z=TARGET_Z, Mmin=5, Mmax=19, dlog10m=0.05,
-                                  hmf_model="Tinker08", cosmo_model=cosmo)
+                                  hmf_model="Tinker08", **HMF_COSMO_KW)
     masses_hmf = np.log10(hmf_loc.m / cosmo.h)
 
     script_dir = os.path.dirname(os.path.abspath(__file__))

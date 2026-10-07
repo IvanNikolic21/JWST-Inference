@@ -49,6 +49,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from astropy.cosmology import Planck18 as cosmo
+from cosmology_settings import HMF_COSMO_KW
 from uvlf import (
     bpass_loader, SFH_sampler, ms_mh_flattening, SFMS, metalicity_from_FMR,
     DeltaZ_z, Muv_Luv, sigma_SFR_variable, uvlf_fast_einsum,
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     muvs_o = np.linspace(-24, -16, 40)
 
     hmf_locs = [
-        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo)
+        hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", **HMF_COSMO_KW)
         for z in z_s
     ]
     SFR_samps = [SFH_sampler(z=z) for z in z_s]

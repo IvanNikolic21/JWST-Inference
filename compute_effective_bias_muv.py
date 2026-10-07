@@ -49,6 +49,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 from astropy.cosmology import Planck18 as cosmo
+from cosmology_settings import HMF_COSMO_KW
 from mpi4py import MPI
 from uvlf import bpass_loader, SFH_sampler, p_muv_given_mh_sfr10
 from mcmc import LikelihoodAngBase
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     # broad tabulation grid for the smooth SHMR/SFMS/SFR10/BPASS relations
     # (same convention as the other scripts), the ACF halo model's own
     # (Mh, dn/dlog10Mh, halo_bias) grid, and an SFH sampler.
-    hmf_locs  = {z: hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", cosmo_model=cosmo) for z in z_list}
+    hmf_locs  = {z: hmf.MassFunction(z=z, Mmin=5, Mmax=19, dlog10m=0.05, hmf_model="Tinker08", **HMF_COSMO_KW) for z in z_list}
     SFR_samps = {z: SFH_sampler(z=z) for z in z_list}
     ang_bases = {z: LikelihoodAngBase(params=param_names, z=z, exact_specs=args.exact_specs,
                                        fixed_Mknee=fixed_Mknee) for z in z_list}

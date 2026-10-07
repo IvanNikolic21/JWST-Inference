@@ -5,6 +5,7 @@ from hmf import cached_quantity, parameter, get_mdl
 from scipy.interpolate import InterpolatedUnivariateSpline as spline
 from scipy.special import erfc
 from astropy.cosmology import Planck18 as cosmo
+from cosmology_settings import HMF_COSMO_KW
 
 from numba import njit, prange
 import ultranest
@@ -15,7 +16,7 @@ def _hmf_at(z):
     """Halo mass function at redshift z (Planck18), cached; used by Bias_nonlin."""
     if z not in _HMF_CACHE:
         _HMF_CACHE[z] = hmf.MassFunction(z=z, Mmin=1, Mmax=18, dlog10m=0.02,
-                                         cosmo_model=cosmo)
+                                         **HMF_COSMO_KW)
     return _HMF_CACHE[z]
 
 
