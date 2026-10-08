@@ -610,6 +610,69 @@ class bpass_loader:
         UV_final = float(BSpline(*s)(metal))
         return UV_final
 
+    def q_ion_per_age(self):
+        """
+        Hydrogen-ionizing photon rate (lambda < 912 A) of each BPASS age bin,
+        in photons s^-1 per 10^6 Msun formed. Shape (n_metal, n_age); cached.
+        """
+        if getattr(self, "_q_ion_age", None) is None:
+            n_ion = int(np.searchsorted(self.wv, LYMAN_LIMIT_ANG))  # wv[i] = i + 1 A
+            lam = self.wv[:n_ion]
+            # L_lambda [Lsun/A] * lambda / (h c), summed over 1 A bins
+            self._q_ion_age = np.sum(
+                self.SEDS[:, :, :n_ion] * lam, axis=2
+            ) * L_SUN_ERG_S / HC_ERG_ANG
+        return self._q_ion_age
+
+    def get_Qion_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=0.0,
+                       burst_window=1e8):
+        """
+        Hydrogen-ionizing photon rate Q_ion (photons s^-1) of the same star
+        formation history as get_UV_sfr10: constant SFR over the last 100 Myr
+        plus sfr_10 added over ages < burst_window (yr), and the sampled
+        history before that. burst_window=1e8 reproduces get_UV_sfr10.
+        Input
+        ----------
+            metal : float,
+                Metallicity 12+log(O/H) of the galaxy.
+            Mstar, SFR : float,
+                Stellar mass (Msun) and SFR (Msun/yr) of the galaxy.
+            z : float,
+                redshift of observation.
+            SFH_samp : SFH_sampler instance (or None for get_SFH_exp).
+            sfr_10 : float or None,
+                additional recent SFR (Msun/yr); None uses get_SFH_exp.
+        Output
+        ----------
+            Q_ion : float,
+                ionizing photon rate in s^-1, before any escape fraction.
+        """
+        metal = OH_to_mass_fraction(metal) / 10 ** 0.42
+
+        if SFH_samp is None:
+            SFH_short, _ = get_SFH_exp(Mstar, SFR, z)
+        elif sfr_10 is not None:
+            SFH_short, _ = SFH_samp.get_SFH_const(Mstar, SFR)
+            SFH_short = np.array(SFH_short, dtype=float)
+            SFH_short[self.ag[:len(SFH_short)] < burst_window] += sfr_10
+        else:
+            SFH_short, _ = SFH_samp.get_SFH_exp(Mstar, SFR)
+        SFH = np.zeros(self.ages - 1)
+        SFH[:len(SFH_short)] = np.array(SFH_short)
+        SFH /= 1e6
+
+        # photons s^-1 for each tabulated metallicity, then log-log interpolation
+        Q_metal = np.sum(self.q_ion_per_age()[0:10] * SFH * (self.ag[1:] - self.ag[:-1]),
+                         axis=1)
+        log_Q = np.interp(np.log10(metal), np.log10(self.metal_avail[:10]),
+                          np.log10(Q_metal))
+        return float(10 ** log_Q)
+
+
+LYMAN_LIMIT_ANG = 911.75                      # hydrogen ionization edge
+L_SUN_ERG_S = 3.846e33                        # BPASS luminosity unit
+HC_ERG_ANG = (const.h * const.c).cgs.value * 1e8   # h c in erg A
+
 
 def UV_calc_BPASS(
         Muv,
