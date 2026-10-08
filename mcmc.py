@@ -16,7 +16,7 @@ import csv
 import os
 from ulty import Bias_nonlin, AngularCF_NL, w_IC, My_HOD
 from observations import Observations
-from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op
+from uvlf import bpass_loader, UV_calc_BPASS, SFH_sampler, get_SFH_exp, UV_calc_BPASS_op, BURST_WINDOW_YR
 from uvlf import uvlf_numba_vectorized, UV_calc_numba, apply_dust_to_uvlf, gimme_dust, UV_calc_numba_sfr10
 from uvlf import sigma_linear_z, shmr_params_at_z
 from likelihood_terms import asymmetric_gaussian_lnl
@@ -760,6 +760,9 @@ def run_mcmc(
         "mass_dependent_sigma_shmr": bool(mass_dependent_sigma_shmr),
         "sigma_shmr_z_dependent": bool(sigma_shmr_z_dependent),
         "prior_file": prior_file,
+        "hmf": hmf_choice,
+        "likelihoods": list(likelihoods),
+        "burst_window_yr": BURST_WINDOW_YR,
         "uvlf_redshifts": {li: uvlf_redshift(li, None) for li in likelihoods if li.startswith("UVLF_")},
         "acf_redshifts": ({"z7": acf_redshift("z7", 7.0), "z9": acf_redshift("z9", 9.25)}
                           if realistic_Nz else {"z7": 7.0, "z9": 9.25}),
