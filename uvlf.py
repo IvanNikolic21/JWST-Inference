@@ -591,7 +591,8 @@ class bpass_loader:
             else:
                 if sfr_10 is not None:
                     SFH_short, self.index_age = SFH_samp.get_SFH_const(Mstar, SFR)
-                    SFH_short[self.ag[:len(SFH_short)] < 1e8] +=  sfr_10
+                    # sfr_10 = SFR * 10^x replaces the SFR over the last ~10 Myr
+                    SFH_short[self.ag[:len(SFH_short)] < BURST_WINDOW_YR] = sfr_10
                 else:
                     SFH_short, self.index_age = SFH_samp.get_SFH_exp(Mstar, SFR)
             self.SFH = np.zeros(self.ages - 1)
@@ -625,12 +626,12 @@ class bpass_loader:
         return self._q_ion_age
 
     def get_Qion_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=0.0,
-                       burst_window=1e8):
+                       burst_window=None):
         """
         Hydrogen-ionizing photon rate Q_ion (photons s^-1) of the same star
-        formation history as get_UV_sfr10: constant SFR over the last 100 Myr
-        plus sfr_10 added over ages < burst_window (yr), and the sampled
-        history before that. burst_window=1e8 reproduces get_UV_sfr10.
+        formation history as get_UV_sfr10: SFR over the last 100 Myr, replaced
+        by sfr_10 at ages < burst_window (yr; default BURST_WINDOW_YR, as in
+        get_UV_sfr10), and the sampled history before that.
         Input
         ----------
             metal : float,
@@ -654,7 +655,8 @@ class bpass_loader:
         elif sfr_10 is not None:
             SFH_short, _ = SFH_samp.get_SFH_const(Mstar, SFR)
             SFH_short = np.array(SFH_short, dtype=float)
-            SFH_short[self.ag[:len(SFH_short)] < burst_window] += sfr_10
+            window = BURST_WINDOW_YR if burst_window is None else burst_window
+            SFH_short[self.ag[:len(SFH_short)] < window] = sfr_10
         else:
             SFH_short, _ = SFH_samp.get_SFH_exp(Mstar, SFR)
         SFH = np.zeros(self.ages - 1)
@@ -669,6 +671,10 @@ class bpass_loader:
         return float(10 ** log_Q)
 
 
+# Ages (yr) over which sfr_10 sets the SFR: BPASS bins with left edge < 1e7 yr,
+# i.e. the last 11.2 Myr. (Before 2026-10-08 this was 1e8 and sfr_10 was added
+# on top of SFR, which scaled the whole last 112 Myr by 1 + 10^x.)
+BURST_WINDOW_YR = 1e7
 LYMAN_LIMIT_ANG = 911.75                      # hydrogen ionization edge
 L_SUN_ERG_S = 3.846e33                        # BPASS luminosity unit
 HC_ERG_ANG = (const.h * const.c).cgs.value * 1e8   # h c in erg A

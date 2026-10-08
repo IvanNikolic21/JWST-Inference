@@ -22,7 +22,7 @@ class FakeSampler:
     """Constant SFR over the last 100 Myr, nothing before."""
 
     def get_SFH_const(self, Mstar, SFR):
-        return [SFR] * 20, 20
+        return np.full(20, float(SFR)), 20
 
 
 def fake_loader(metal_scaling=None):
@@ -54,7 +54,7 @@ def expected_q(sfr, scale=1.0):
 def test_lyman_limit_cut_and_units():
     bp = fake_loader()
     q = bp.get_Qion_sfr10(oh_for_mass_fraction(0.001), 1e8, 1.0, 10.0,
-                          SFH_samp=FakeSampler(), sfr_10=0.0)
+                          SFH_samp=FakeSampler(), sfr_10=1.0)
     assert np.isclose(q, expected_q(1.0), rtol=1e-10)
 
 
@@ -62,29 +62,45 @@ def test_photons_above_lyman_limit_do_not_count():
     bp = fake_loader()
     bp.SEDS[:, :, 911:] = 1e9
     q = bp.get_Qion_sfr10(oh_for_mass_fraction(0.001), 1e8, 1.0, 10.0,
-                          SFH_samp=FakeSampler(), sfr_10=0.0)
+                          SFH_samp=FakeSampler(), sfr_10=1.0)
     assert np.isclose(q, expected_q(1.0), rtol=1e-10)
 
 
-def test_linear_in_sfr_and_burst_adds_in_window():
+def test_linear_in_sfr_and_burst_replaces_recent_sfr():
     bp = fake_loader()
     args = (oh_for_mass_fraction(0.001), 1e8)
-    q1 = bp.get_Qion_sfr10(*args, 1.0, 10.0, SFH_samp=FakeSampler(), sfr_10=0.0)
-    q3 = bp.get_Qion_sfr10(*args, 3.0, 10.0, SFH_samp=FakeSampler(), sfr_10=0.0)
-    qb = bp.get_Qion_sfr10(*args, 1.0, 10.0, SFH_samp=FakeSampler(), sfr_10=2.0)
+    q1 = bp.get_Qion_sfr10(*args, 1.0, 10.0, SFH_samp=FakeSampler(), sfr_10=1.0)
+    q3 = bp.get_Qion_sfr10(*args, 3.0, 10.0, SFH_samp=FakeSampler(), sfr_10=3.0)
+    qb = bp.get_Qion_sfr10(*args, 1.0, 10.0, SFH_samp=FakeSampler(), sfr_10=3.0)
     assert np.isclose(q3, 3 * q1) and np.isclose(qb, 3 * q1)
 
 
-def test_burst_window_default_matches_get_UV_sfr10():
-    """The default window is the one get_UV_sfr10 uses (ages < 1e8 yr)."""
+def test_burst_window_is_last_10_myr():
+    """sfr_10 sets the SFR of the BPASS bins younger than 11.2 Myr only."""
     bp = fake_loader()
     bp.SEDS[:, :, :911] = L_ION                   # all ages ionize
     args = (oh_for_mass_fraction(0.001), 1e8, 1.0, 10.0)
-    q_def = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=1.0)
-    q_100 = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=1.0, burst_window=1e8)
-    q_10 = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=1.0, burst_window=1e7)
-    assert q_def == q_100
-    assert q_10 < q_100
+    base = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=1.0)
+    off = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=0.0)
+    assert uvlf.BURST_WINDOW_YR == 1e7
+    dt = np.diff(bp.ag)
+    young = dt[:10].sum() / dt[:20].sum()         # 0-11.2 Myr share of the 0-112 Myr mass
+    assert np.isclose(off / base, 1 - young)
+    q_100 = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=0.0, burst_window=1e8)
+    assert q_100 == 0.0
+
+
+def test_get_UV_sfr10_uses_the_same_window():
+    bp = fake_loader()
+    bp.SEDS[:, :, 1449:1549] = 1.0                # flat UV at all ages
+    oh = oh_for_mass_fraction(0.001)
+
+    class Sampler(FakeSampler):
+        pass
+    l_base = bp.get_UV_sfr10(oh, 1e8, 1.0, 10.0, SFH_samp=Sampler(), sfr_10=1.0)
+    l_off = bp.get_UV_sfr10(oh, 1e8, 1.0, 10.0, SFH_samp=Sampler(), sfr_10=0.0)
+    dt = np.diff(bp.ag)
+    assert np.isclose(l_off / l_base, 1 - dt[:10].sum() / dt[:20].sum(), rtol=1e-6)
 
 
 def test_metallicity_interpolation_is_exact_at_nodes_and_loglinear_between():
@@ -92,9 +108,9 @@ def test_metallicity_interpolation_is_exact_at_nodes_and_loglinear_between():
     bp = fake_loader(metal_scaling=scale)
     for k in (0, 4, 9):
         q = bp.get_Qion_sfr10(oh_for_mass_fraction(bp.metal_avail[k]), 1e8, 1.0, 10.0,
-                              SFH_samp=FakeSampler(), sfr_10=0.0)
+                              SFH_samp=FakeSampler(), sfr_10=1.0)
         assert np.isclose(q, expected_q(1.0, scale[k]), rtol=1e-8)
     zm = np.sqrt(0.002 * 0.003)
     q = bp.get_Qion_sfr10(oh_for_mass_fraction(zm), 1e8, 1.0, 10.0,
-                          SFH_samp=FakeSampler(), sfr_10=0.0)
+                          SFH_samp=FakeSampler(), sfr_10=1.0)
     assert np.isclose(q, expected_q(1.0, np.sqrt(scale[3] * scale[4])), rtol=1e-8)
