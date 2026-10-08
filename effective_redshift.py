@@ -16,6 +16,9 @@ import os
 from functools import lru_cache
 
 import numpy as np
+
+# numpy < 2.0 (as on the cluster) has trapz but not trapezoid
+trapezoid = getattr(np, "trapezoid", None) or np.trapz
 from astropy.cosmology import Planck18 as cosmo
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -61,7 +64,7 @@ def z_eff_volume(z1, z2, n=2001):
     """Comoving-volume-weighted mean redshift of the bin [z1, z2]."""
     z = np.linspace(z1, z2, n)
     dv = cosmo.differential_comoving_volume(z).value
-    return float(np.trapezoid(z * dv, z) / np.trapezoid(dv, z))
+    return float(trapezoid(z * dv, z) / trapezoid(dv, z))
 
 
 @lru_cache(maxsize=None)
@@ -72,7 +75,7 @@ def z_eff_limber(nz_file, zmax=15.0, n=4000):
     z = np.linspace(1e-2, zmax, n)
     nz = np.interp(z, d[order, 0], d[order, 1], left=0, right=0)
     w = nz ** 2 * cosmo.H(z).value
-    return float(np.trapezoid(z * w, z) / np.trapezoid(w, z))
+    return float(trapezoid(z * w, z) / trapezoid(w, z))
 
 
 def uvlf_redshift(name, nominal):

@@ -8,6 +8,9 @@ The module includes functions that process the input parameters and returns UVLF
 import hmf
 import numpy as np
 
+# numpy < 2.0 (as on the cluster) has trapz but not trapezoid
+trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 
 def pMuv_Mh(Muv, logMh, Muv_Mh_dict, sigmaUV_a=-0.34, sigmaUV_b=0.42, Muv_add=0, return_med_sigma=False):
     """
@@ -66,7 +69,7 @@ def calculate_uvlf(Muv_shift, sigma_UV_a, sigma_UV_b , mf = None, Muv_grid = Non
 
 
     pmuvmh = pMuv_Mh(Muv_grid, np.log10(mf.m), Muv_Mh_dict, sigmaUV_a=sigma_UV_a, sigmaUV_b=sigma_UV_b, Muv_add=Muv_shift)
-    UVLF_stochier = np.trapezoid(pmuvmh.T * mf.dndm, mf.m, axis=1)
+    UVLF_stochier = trapezoid(pmuvmh.T * mf.dndm, mf.m, axis=1)
     return UVLF_stochier
 
 class Mason15(object):
