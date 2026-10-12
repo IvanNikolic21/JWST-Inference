@@ -243,7 +243,13 @@ class My_HOD(hm.hod.Zheng05):
         If self.params['a_sig_SHMR'] != 0, the scatter is made mass-dependent
         (piecewise, anchored at M_knee -- see uvlf.sigma_SHMR_variable()); the
         default a_sig_SHMR=0 recovers the constant-scatter `sigma` exactly.
+
+        m is in halomod's units (Msun/h); the SHMR, its scatter and the
+        baryon ceiling are defined in Msun, as in the UV LF (hmf.m / h).
+        Until 2026-10-12 m was used as Msun, which put clustering galaxies in
+        halos 1/h = 1.48x too massive relative to the UV LF.
         """
+        m = m / cosmo.h
         mu = np.log10(ms_mh_flattening(
             m, cosmo,
             fstar_norm=self.params["fstar_norm"],
@@ -283,14 +289,15 @@ class My_HOD(hm.hod.Zheng05):
 
     @property
     def mmin(self):
-        """Minimum turnover mass for tracer."""
+        """Minimum turnover mass for tracer, log10(Msun/h) as halomod expects."""
         if self.truncate_shmr:
             # N_cen is exactly zero below the halo mass where the baryon-fraction
-            # ceiling first reaches M*_min: Mh = M*_min / (Ob0/Om0).
+            # ceiling first reaches M*_min: Mh = M*_min / (Ob0/Om0) [Msun].
             # Subtract 1 dex as a buffer for the numerical integrator.
             return (
                 self.params["stellar_mass_min"]
                 - np.log10(cosmo.Ob0 / cosmo.Om0)
+                + np.log10(cosmo.h)
                 - 1.0
             )
         else:
@@ -300,7 +307,7 @@ class My_HOD(hm.hod.Zheng05):
                     fstar_norm=self.params["fstar_norm"],
                     alpha_star_low=self.params["alpha_star_low"],
                     M_knee=self.params["M_knee"],
-                ))
+                ) * cosmo.h)
                 - 5 * self.params["stellar_mass_sigma"]
             )
 

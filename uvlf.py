@@ -13,6 +13,13 @@ import math
 from numpy.polynomial.hermite import hermgauss
 
 #hmf_loc = hmf.MassFunction(z=11)
+
+# Edges (yr) of the BPASS age bins: the spectrum at log(age) = 6.0 covers
+# 0 - 10^6.05 yr and the one at log(age) = a covers 10^(a-0.05) - 10^(a+0.05)
+# (BPASS v2 manual; hoki.constants.BPASS_LINEAR_TIME_EDGES). Until 2026-10-12
+# the code used [0, 10^6.15, 10^6.25, ...], which made every bin 10^0.1 = 1.26x
+# too wide (all luminosities 0.25 mag too bright).
+BPASS_AGE_EDGES = np.append([0.0], 10 ** (6.05 + 0.1 * np.arange(51)))
 def ms_mh_flattening(mh, cosmo, fstar_norm = 1.0, alpha_star_low = 0.5, M_knee=2.6e11):
     """
         Get scaling relations for SHMR based on Davies+in prep.
@@ -70,6 +77,9 @@ def Muv_Luv(Luv):
     return -2.5 * np.log10(Luv) + 51.6
 
 
+SIGMA_FLOOR = 0.01   # dex; floor on the mass-dependent scatters
+
+
 def sigma_SFR_variable(Mstar, norm=0.18740570999999995, a_sig_SFR=-0.11654893):
     """
         Variable scatter of SFR-Mstar relation.
@@ -91,7 +101,8 @@ def sigma_SFR_variable(Mstar, norm=0.18740570999999995, a_sig_SFR=-0.11654893):
     sigma = a_sig_SFR * np.log10(Mstar/1e10) + norm
     sigma[Mstar > 10 ** 10] = norm
 
-    return sigma
+    # a_sig_SFR > 0 drives the linear relation negative at low mass
+    return np.maximum(sigma, SIGMA_FLOOR)
 
 
 def sigma_SHMR_variable(Mh, norm=0.3, a_sig_SHMR=0.0, M_char=2e12):
@@ -124,7 +135,8 @@ def sigma_SHMR_variable(Mh, norm=0.3, a_sig_SHMR=0.0, M_char=2e12):
     sigma = a_sig_SHMR * np.log10(Mh / M_char) + norm
     sigma[Mh > M_char] = norm
 
-    return sigma
+    # a_sig_SHMR > 0 drives the linear relation negative at low mass
+    return np.maximum(sigma, SIGMA_FLOOR)
 
 
 def sigma_linear_z(sigma_0, alpha_z, z, z_ref=11.0):
@@ -285,7 +297,7 @@ class SFH_sampler:
     """
     def __init__(self,z):
         self.Hubble_now = cosmo.H(z).to(u.yr**-1).value
-        self.ages_SFH = np.array([0] + [10**(6.05 + 0.1 * i) for i in range(1,52)])
+        self.ages_SFH = BPASS_AGE_EDGES.copy()
         self.maximum_time = cosmo.lookback_time(30).to(u.yr).value - cosmo.lookback_time(z).to(u.yr).value
         self.lookback_time_100 = cosmo.lookback_time(z).value + 1e8
         self.Hubble_100 = cosmo.H(
@@ -343,24 +355,20 @@ class SFH_sampler:
             Generate SFH using Mstar and SFR.
         """
         t_STAR = Mstar / (SFR * self.Hubble_now**-1)
-        SFR_now = SFR
-        SFH = [SFR] * len(self.ages_SFH[self.ages_SFH<1e8]) #all SFH will be below 100Myr
-        #stochasticity below 100Myr will be explicitly accounted for
-        mass_formed = SFR * 1e8
-        mass_remaining = Mstar - mass_formed
-        for index,Hub in enumerate(self.Hubbles):
+        n_young = len(self.ages_SFH[self.ages_SFH < 1e8])   # bins younger than ~100 Myr
+        SFH = [SFR] * n_young   # stochasticity below 100 Myr is accounted for explicitly
+        mass_remaining = Mstar - SFR * self.ages_SFH[n_young]
+        # Older bins: SFR(age) = SFR exp(-int_100Myr^age H dt / t*) H(age) / H(100 Myr),
+        # i.e. M* growing as dM*/dt = M* H / t*. hubb_diffs is cumulative from 100 Myr,
+        # so each bin is scaled from SFR, not from the previous bin (which compounded
+        # the decay until 2026-10-12).
+        for index, Hub in enumerate(self.Hubbles):
             if self.ages_SFH[index] < 1e8:
                 continue
-            #print(index, self.hubb_diffs[index], Hub/self.Hubble_100)
-            #SFH.append(SFR_now * np.exp(-(self.ages_SFH[index]/t_STAR) * Hub))
-            SFH.append(SFR_now * np.exp(-(1 / t_STAR) * self.hubb_diffs[index]) * Hub/self.Hubble_100)
-            SFR_now = SFH[index]
-            mass_remaining -= SFH[-1] * (
-                self.ages_SFH[index] - self.ages_SFH[index-1]
-            )
+            SFH.append(SFR * np.exp(-(1 / t_STAR) * self.hubb_diffs[index]) * Hub / self.Hubble_100)
+            mass_remaining -= SFH[-1] * (self.ages_SFH[index + 1] - self.ages_SFH[index])
             if mass_remaining < 0:
                 break
-            #print(Mstar/(SFH[-1]* Hub**-1))
         return np.array(SFH), self.index_age
 
 def wv_to_freq(wvs):
@@ -401,7 +409,7 @@ def get_SFH_exp(Mstar, SFR, z):
     Hubble_now = cosmo.H(z).to(u.yr ** -1).value
     t_STAR = Mstar / (SFR * Hubble_now ** -1)
     # setting maximum time for BPASS
-    ages = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
+    ages = BPASS_AGE_EDGES.copy()
     maximum_time = cosmo.lookback_time(30).to(
         u.yr).value - cosmo.lookback_time(z).to(u.yr).value
     SFH = []
@@ -439,6 +447,16 @@ def find_bpass_prefix():
             return prefix
     raise FileNotFoundError("BPASS spectra not found; tried " + ", ".join(candidates)
                             + ". Set BPASS_PREFIX to the spectra-bin-...a+00. prefix.")
+
+
+def interp_metallicity(metal_grid, values, metal):
+    """
+    Log-log interpolation of a BPASS quantity tabulated at metal_grid (mass
+    fractions), clamped at the grid ends. Replaces splrep(k=5, s=5), which for
+    luminosities << 1 (Lsun/Hz) reduced to a least-squares degree-5 polynomial
+    in linear Z rather than an interpolation (until 2026-10-12).
+    """
+    return float(10 ** np.interp(np.log10(metal), np.log10(metal_grid), np.log10(values)))
 
 
 class bpass_loader:
@@ -491,7 +509,7 @@ class bpass_loader:
                                     range(self.wv_b)] for j in range(1, 52)] for
                                   fp in self.SEDS_raw])
         self.ages = 52
-        self.ag = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
+        self.ag = BPASS_AGE_EDGES.copy()
 
         self.t_star = 0.36
 
@@ -559,9 +577,7 @@ class bpass_loader:
                          axis=2) / 100 * self.SFH * (
                           self.ag[1:] - self.ag[:-1]) * ang_to_hz
         FUVs = np.sum(UVs_all, axis=1)
-        s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
-        UV_final = float(BSpline(*s)(metal))
-        return UV_final
+        return interp_metallicity(self.metal_avail[:10], FUVs, metal)
 
     def get_UV_sfr10(self, metal, Mstar, SFR, z, SFH_samp=None, sfr_10=0.0):
         """
@@ -629,9 +645,7 @@ class bpass_loader:
                          axis=2) / 100 * self.SFH * (
                           self.ag[1:] - self.ag[:-1]) * ang_to_hz
         FUVs = np.sum(UVs_all, axis=1)
-        s = splrep(self.metal_avail[:10], FUVs, k=5, s=5)
-        UV_final = float(BSpline(*s)(metal))
-        return UV_final
+        return interp_metallicity(self.metal_avail[:10], FUVs, metal)
 
     def q_ion_per_age(self):
         """
@@ -688,9 +702,7 @@ class bpass_loader:
         # photons s^-1 for each tabulated metallicity, then log-log interpolation
         Q_metal = np.sum(self.q_ion_per_age()[0:10] * SFH * (self.ag[1:] - self.ag[:-1]),
                          axis=1)
-        log_Q = np.interp(np.log10(metal), np.log10(self.metal_avail[:10]),
-                          np.log10(Q_metal))
-        return float(10 ** log_Q)
+        return interp_metallicity(self.metal_avail[:10], Q_metal, metal)
 
 
 # Ages (yr) over which sfr_10 sets the SFR: BPASS bins with left edge < 1e7 yr,
@@ -923,7 +935,7 @@ def setup_sample_probabilities(
 
     # --- Interpolations to sampled points ---
     muuv_of_sfr      = np.interp(sfr_samples, sfr_grid,      muuv_of_sfr_grid).astype(np.float64)      # (Nsfr,)
-    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid,      sigma_sfr_grid).astype(np.float64)        # (Nsfr,)
+    sigma_sfr_of_ms  = np.interp(mstar_samples, mstar_grid,  sigma_sfr_grid).astype(np.float64)        # (Nmstar,)
     sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  sfr_grid).astype(np.float64)  # (Nmstar,)
     dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid).astype(np.float64)           # (Nmh,)
     mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid).astype(np.float64) # (Nmh,)
@@ -944,8 +956,8 @@ def setup_sample_probabilities(
     p_sfr_mstar = np.empty((Nmstar, Nsfr), dtype=np.float64)
     for i in prange(Nmstar):
         diff_sfr = sfr_samples - sfr_target_of_ms[i]
-        p_sfr_mstar[i,:] = (inv_sqrt2pi / sigma_sfr_of_sfr) * np.exp(
-            -0.5 * (diff_sfr / sigma_sfr_of_sfr)**2
+        p_sfr_mstar[i,:] = (inv_sqrt2pi / sigma_sfr_of_ms[i]) * np.exp(
+            -0.5 * (diff_sfr / sigma_sfr_of_ms[i])**2
         )
 
     # Shape: (Nmstar, Nmh)
@@ -1034,17 +1046,21 @@ def _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr):
     return outT.T  # (Nsfr, Nmuv)
 
 @njit(parallel=True, fastmath=True)
-def _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr):
+def _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_ms):
+    """
+    p(log SFR | M*): Gaussian around the SFMS with the scatter of the
+    conditioning stellar mass, sigma_SFMS(M*). (Until 2026-10-12 the scatter
+    was looked up at the SFR sample, which skewed the distribution.)
+    """
     Nsfr      = sfr_samples.size
     Nmstar    = sfr_target_of_ms.size
     out = np.empty((Nmstar, Nsfr), dtype=np.float64)
     for i in prange(Nmstar):
         mu = sfr_target_of_ms[i]
+        invs = 1.0 / sigma_sfr_of_ms[i]
+        norm = INV_SQRT2PI * invs
+        c    = -0.5 * invs * invs
         for j in range(Nsfr):
-            sig  = sigma_sfr_of_sfr[j]
-            invs = 1.0 / sig
-            norm = INV_SQRT2PI * invs
-            c    = -0.5 * invs * invs
             dx   = (sfr_samples[j] - mu)
             out[i, j] = norm * math.exp(c * dx * dx)
     return out  # (Nmstar, Nsfr)
@@ -1141,7 +1157,7 @@ def setup_sample_probabilities_fast(
 
     # Interpolations
     muuv_of_sfr      = np.interp(sfr_samples, sfr_grid,      muuv_of_sfr_grid).astype(np.float64)
-    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid,      sigma_sfr_grid   ).astype(np.float64)
+    sigma_sfr_of_ms  = np.interp(mstar_samples, mstar_grid,  sigma_sfr_grid   ).astype(np.float64)
     sfr_target_of_ms = np.interp(mstar_samples, mstar_grid,  sfr_grid         ).astype(np.float64)
     dndlnm_on_mh     = np.interp(mh_samples,   mh_grid,      dndlnm_grid      ).astype(np.float64)
     mstar_tgt_of_mh  = np.interp(mh_samples,   mh_grid,      mstar_grid       ).astype(np.float64)
@@ -1154,7 +1170,7 @@ def setup_sample_probabilities_fast(
 
     # Build Gaussian tables with Numba
     p_muv_sfr   = _gauss_muv_sfr(muv_grid, muuv_of_sfr, sigma_uv_of_sfr)      # (Nsfr,   Nmuv)
-    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_ms)  # (Nmstar, Nsfr)
     # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
     sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, mh_samples)
     if truncate_shmr:
@@ -1462,13 +1478,13 @@ def setup_sample_probabilities_fast_with_sfr10(
     total_scale = scale_sfr * scale_mstar * scale_mh
 
     # Interpolations needed for the other factors
-    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid, sigma_sfr_grid).astype(np.float64)
+    sigma_sfr_of_ms  = np.interp(mstar_samples, mstar_grid, sigma_sfr_grid).astype(np.float64)
     sfr_target_of_ms = np.interp(mstar_samples, mstar_grid, sfr_grid).astype(np.float64)
     dndlnm_on_mh     = np.interp(mh_samples, mh_grid, dndlnm_grid).astype(np.float64)
     mstar_tgt_of_mh  = np.interp(mh_samples, mh_grid, mstar_grid).astype(np.float64)
 
     # Build p_sfr_mstar and p_mstar_mh the same way you already do
-    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)  # (Nmstar, Nsfr)
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_ms)  # (Nmstar, Nsfr)
     # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
     sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, mh_samples)
     if truncate_shmr:
@@ -1744,11 +1760,11 @@ def p_muv_given_mh_sfr10(
     scale_sfr   = (sfr_range[1]   - sfr_range[0])   / float(Nsfr)
     scale_mstar = (mstar_range[1] - mstar_range[0]) / float(Nmstar)
 
-    sigma_sfr_of_sfr = np.interp(sfr_samples, sfr_grid, sigma_SFMS_var).astype(np.float64)
+    sigma_sfr_of_ms  = np.interp(mstar_samples, mstar_grid, sigma_SFMS_var).astype(np.float64)
     sfr_target_of_ms = np.interp(mstar_samples, mstar_grid, sfr_grid).astype(np.float64)
     mstar_tgt_of_mh  = np.interp(np.asarray(mh_eval, dtype=np.float64), mh_grid, mstar_grid).astype(np.float64)
 
-    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_sfr)
+    p_sfr_mstar = _gauss_sfr_mstar(sfr_samples, sfr_target_of_ms, sigma_sfr_of_ms)
     # sigma_SHMR can be scalar (constant scatter) or array on mh_grid (mass-dependent scatter)
     sigma_shmr_of_mh = _sigma_shmr_on_samples(sigma_SHMR, mh_grid, np.asarray(mh_eval, dtype=np.float64))
     if truncate_shmr:

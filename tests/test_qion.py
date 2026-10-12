@@ -22,7 +22,7 @@ class FakeSampler:
     """Constant SFR over the last 100 Myr, nothing before."""
 
     def get_SFH_const(self, Mstar, SFR):
-        return np.full(20, float(SFR)), 20
+        return np.full(21, float(SFR)), 21
 
 
 def fake_loader(metal_scaling=None):
@@ -30,7 +30,7 @@ def fake_loader(metal_scaling=None):
     bp.metal_avail = np.array([1e-5, 1e-4, 1e-3, 0.002, 0.003, 0.004,
                                0.006, 0.008, 0.01, 0.014, 0.02, 0.03, 0.04])
     bp.wv = np.linspace(1, N_WV, N_WV)
-    bp.ag = np.array([0] + [10 ** (6.05 + 0.1 * i) for i in range(1, 52)])
+    bp.ag = uvlf.BPASS_AGE_EDGES.copy()
     bp.ages = 52
     sed = np.zeros((13, 51, N_WV))
     sed[:, 0, :911] = L_ION                       # only the youngest bin ionizes
@@ -48,7 +48,7 @@ def oh_for_mass_fraction(zm):
 def expected_q(sfr, scale=1.0):
     lam = np.arange(1, 912)
     q_per_1e6 = L_ION * scale * np.sum(lam) * uvlf.L_SUN_ERG_S / uvlf.HC_ERG_ANG
-    return q_per_1e6 * sfr * 10 ** 6.15 / 1e6     # mass formed in bin 0, units 1e6 Msun
+    return q_per_1e6 * sfr * 10 ** 6.05 / 1e6     # mass formed in bin 0, units 1e6 Msun
 
 
 def test_lyman_limit_cut_and_units():
@@ -84,7 +84,7 @@ def test_burst_window_is_last_10_myr():
     off = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=0.0)
     assert uvlf.BURST_WINDOW_YR == 1e7
     dt = np.diff(bp.ag)
-    young = dt[:10].sum() / dt[:20].sum()         # 0-11.2 Myr share of the 0-112 Myr mass
+    young = dt[:11].sum() / dt[:21].sum()         # 0-11.2 Myr share of the 0-112 Myr mass
     assert np.isclose(off / base, 1 - young)
     q_100 = bp.get_Qion_sfr10(*args, SFH_samp=FakeSampler(), sfr_10=0.0, burst_window=1e8)
     assert q_100 == 0.0
@@ -100,7 +100,7 @@ def test_get_UV_sfr10_uses_the_same_window():
     l_base = bp.get_UV_sfr10(oh, 1e8, 1.0, 10.0, SFH_samp=Sampler(), sfr_10=1.0)
     l_off = bp.get_UV_sfr10(oh, 1e8, 1.0, 10.0, SFH_samp=Sampler(), sfr_10=0.0)
     dt = np.diff(bp.ag)
-    assert np.isclose(l_off / l_base, 1 - dt[:10].sum() / dt[:20].sum(), rtol=1e-6)
+    assert np.isclose(l_off / l_base, 1 - dt[:11].sum() / dt[:21].sum(), rtol=1e-6)
 
 
 def test_metallicity_interpolation_is_exact_at_nodes_and_loglinear_between():
