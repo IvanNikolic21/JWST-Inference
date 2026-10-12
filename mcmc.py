@@ -1448,7 +1448,6 @@ def run_mcmc(
                         print("ZeroDivisionError in UVLFBase_Don24 for this parameters:", p_new)
             elif li == "UVLF_z10_Donnan24":
                 muvs_o, uvlf_o, sig_o = observations_inst.get_obs_uvlf_z10_Donnan24()
-                print(muvs_o, uvlf_o, sig_o, observations_inst)
                 if use_only_faint_end:
                     muvs_mask = muvs_o >= -20.0
                     muvs_c = muvs_o[muvs_mask]

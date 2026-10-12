@@ -421,22 +421,44 @@ def get_SFH_exp(Mstar, SFR, z):
             break
     return SFH, index_age
 
+# Known locations of the BPASS v2 spectra (binary, imf135_300), as file prefixes
+BPASS_PREFIXES = (
+    "/groups/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.",
+    "/lustre/hpc/astro/ivannik/programs/Stochasticity_sampler/BPASS/spectra-bin-imf135_300.a+00.",
+    "/home/inikolic/projects/stochasticity/stoc_sampler/BPASS/spectra-bin-imf135_300.a+00.",
+)
+
+
+def find_bpass_prefix():
+    """$BPASS_PREFIX if set, else the first entry of BPASS_PREFIXES on disk."""
+    import os
+    candidates = ([os.environ["BPASS_PREFIX"]] if os.environ.get("BPASS_PREFIX") else []) \
+        + list(BPASS_PREFIXES)
+    for prefix in candidates:
+        if os.path.exists(prefix + "zem5.dat"):
+            return prefix
+    raise FileNotFoundError("BPASS spectra not found; tried " + ", ".join(candidates)
+                            + ". Set BPASS_PREFIX to the spectra-bin-...a+00. prefix.")
+
+
 class bpass_loader:
     """
     This Class contains all of the properties calculated using BPASS. Class
     structure is used to improve the speed.
     """
 
-    def __init__(self, parallel=None,
-                 filename='/home/inikolic/projects/stochasticity/stoc_sampler/BPASS/spectra-bin-imf135_300.a+00.'):
+    def __init__(self, parallel=None, filename=None):
         """
         Input
         ----------
         parallel : boolean,
             Whether first processing is parallelized.
         filename : string,
-            Which BPASS file is used.
+            Which BPASS file is used (prefix up to the metallicity tag). None
+            uses $BPASS_PREFIX or the first of BPASS_PREFIXES that exists.
         """
+        if filename is None:
+            filename = find_bpass_prefix()
         self.metal_avail = np.array([1e-5, 1e-4, 1e-3, 0.002, 0.003, 0.004,
                                      0.006, 0.008, 0.01, 0.014, 0.02, 0.03,
                                      0.04])
