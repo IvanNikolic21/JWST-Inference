@@ -5,7 +5,8 @@ at the observed redshift. Here the same SFH (get_SFH_const, no burst) is
 also evaluated with each BPASS age bin at the metallicity the FMR gives at
 the time those stars formed: Z_i = FMR(M*(t_i), SFR100(t_i)) + DeltaZ(z(t_i)),
 with M*(t_i) the mass already formed at the bin midpoint and SFR100(t_i) the
-SFH averaged over the 100 Myr before it. Galaxies sit on the mean SFMS and at
+SFH averaged over the 100 Myr before it. Bins younger than 100 Myr keep the
+present-day Z unless --evolve_young. Galaxies sit on the mean SFMS and at
 +-1 sigma_SFMS around it, at the Willott effective redshifts.
 
 Also prints dM_UV for a +-0.054 / 0.1 / 0.2 dex offset in Z (FMR scatter),
@@ -13,7 +14,7 @@ for the sigma_BPASS = 0.1 mag discussion.
 
 CANNOT BE RUN LOCALLY -- bpass_loader() needs the real spectra files.
 
-  python check_metallicity_evolution.py [--t_star 0.25] [--sigma_sfms 0.36]
+  python check_metallicity_evolution.py [--t_star 0.25] [--sigma_sfms 0.36] [--evolve_young]
 """
 import argparse
 
@@ -53,6 +54,8 @@ def main():
     ap.add_argument("--bpass_prefix", default=None)
     ap.add_argument("--t_star", type=float, default=0.25, help="v4 main_joint median")
     ap.add_argument("--sigma_sfms", type=float, default=0.36, help="v4 main_joint median")
+    ap.add_argument("--evolve_young", action="store_true",
+                    help="also give bins younger than 100 Myr their formation-time Z")
     args = ap.parse_args()
 
     bp = bpass_loader(filename=args.bpass_prefix) if args.bpass_prefix else bpass_loader()
@@ -62,7 +65,7 @@ def main():
     mid = np.sqrt(edges[:-1] * np.maximum(edges[1:], 1.0))
     mid[0] = 0.5 * edges[1]
 
-    print(f"t* = {args.t_star}, sigma_SFMS = {args.sigma_sfms}")
+    print(f"t* = {args.t_star}, sigma_SFMS = {args.sigma_sfms}, evolve_young = {args.evolve_young}")
     print("dM_UV = M_UV(Z per age bin) - M_UV(single Z); > 0 means fainter\n")
     print("   z      log M*  dlogSFR  12+log(O/H)  M_UV(single)  dM_UV   "
           "check   frac L from >100 Myr   min Z_i/Z")
@@ -92,7 +95,8 @@ def main():
                                 z_at_value(cosmo.lookback_time, (t_obs + a) * u.yr).value
                                 for a in mid[:n]])
                 oh_i = metalicity_from_FMR(m_mid, sfr100) + DeltaZ_z(z_i)
-                oh_i[mid[:n] < 1e8] = oh0      # young stars: present-day Z (as the model)
+                if not args.evolve_young:
+                    oh_i[mid[:n] < 1e8] = oh0  # young stars: present-day Z (as the model)
                 oh_i = np.minimum(oh_i, oh0)   # stars never more enriched than today
 
                 l_single = l_uv(lum_bins, metal_grid, sfh, np.full(n, oh_to_bpass(oh0)))
