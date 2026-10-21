@@ -19,7 +19,15 @@ if __name__ == "__main__":
         type=str,
         required=True,
     )
-    directory = parser.parse_args().directory_of_posteriors
+    parser.add_argument("--z_list", type=str, default="17.0,23.0")
+    parser.add_argument("--muv_grid", type=float, nargs=3, default=[-25.0, -16.0, 20],
+                        help="start, stop, number of points (np.linspace)")
+    parser.add_argument("--n_samples", type=int, default=0,
+                        help="random subset of the posterior (0: all samples)")
+    parser.add_argument("--tag", type=str, default="",
+                        help="output files UVLFs_highz<tag>_<f*>.txt and highz<tag>_meta.npz")
+    args = parser.parse_args()
+    directory = args.directory_of_posteriors
 
     with open(os.path.join(directory, "run_config.json")) as f:
         run_config = json.load(f)
@@ -39,10 +47,14 @@ if __name__ == "__main__":
     else:
         from uvlf import UV_calc_BPASS as uvlf_func
 
-    z_s    = [17.0, 23.0]
-    muvs_o = np.linspace(-25, -16, 20)
+    z_s    = [float(z) for z in args.z_list.split(",")]
+    muvs_o = np.linspace(args.muv_grid[0], args.muv_grid[1], int(args.muv_grid[2]))
 
     posteriors = np.genfromtxt(os.path.join(directory, "post_equal_weights.dat"))
+    if args.n_samples and args.n_samples < len(posteriors):
+        posteriors = posteriors[np.random.default_rng(0).choice(len(posteriors), args.n_samples, replace=False)]
+    if rank == 0:
+        np.savez(os.path.join(directory, f"highz{args.tag}_meta.npz"), z_s=np.array(z_s), muv=muvs_o)
     my_posteriors = posteriors[rank::size]
     print(f"[rank {rank}/{size}] processing {len(my_posteriors)} of {len(posteriors)} samples", flush=True)
     hmf_locs = [
@@ -99,6 +111,6 @@ if __name__ == "__main__":
                 **kwargs,
             )
         np.savetxt(
-            os.path.join(directory, f"UVLFs_highz_{post_sample[0]:.8f}.txt"),
+            os.path.join(directory, f"UVLFs_highz{args.tag}_{post_sample[0]:.8f}.txt"),
             preds,
         )
