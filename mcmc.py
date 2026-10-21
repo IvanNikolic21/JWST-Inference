@@ -541,6 +541,8 @@ class LikelihoodUVLFBase:
                 z=self.z,
                 M_knee = M_knee,
             )
+        # model UV LF at muvs_o, kept for diagnostics (fisher_predictions.py); does not enter lnL
+        self.last_preds = np.asarray(preds)
 
         for index, muvi in enumerate(muvs_o):
             if isinstance(sig_o, tuple):
