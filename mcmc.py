@@ -218,7 +218,7 @@ class LikelihoodAngBase():
         )
 
         if obs == "Ang_z9_m87":
-            M_thresh = 8.75
+            M_thresh = 8.7    # Paquereau+25 logSM_bins for z = 8-10.5: [8.7, 9.0]
         elif obs == "Ang_z7_m87":
             M_thresh = 8.7
         elif obs in ["Ang_z9_m9", "Ang_z7_m9", "Ang_z5_5_m9"]:
@@ -232,7 +232,7 @@ class LikelihoodAngBase():
         else:
             M_thresh = 9.3
 
-        if obs=="Ang_z7_m9" or obs=="Ang_z7_m93":
+        if obs in ("Ang_z7_m87", "Ang_z7_m9", "Ang_z7_m93"):
             p1_chosen = self.p1_z7
         elif obs=="Ang_z5_5_m9" or obs=="Ang_z5_5_m9_25" or obs=="Ang_z5_5_m9_5":
             p1_chosen = self.p1_z5_5
