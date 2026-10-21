@@ -74,16 +74,16 @@ def main():
     print(f"{len(files)} posterior samples")
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 5), sharey=True, sharex=True)
-    for iz, (ax, z, ztxt) in enumerate(zip(axes, (17, 23), ("z=14-20", "z=20-30"))):
-        ax.fill_between(MUV, lo[iz], hi[iz], color="#e41a1c", alpha=0.3, label=f"95% C.I. posterior, z={z}")
+    for iz, (ax, z, ztxt) in enumerate(zip(axes, (17, 23), (r"$z=17$", r"$z=23$"))):
+        ax.fill_between(MUV, lo[iz], hi[iz], color="#e41a1c", alpha=0.3, label="posterior, 95% C.I.")
         ax.plot(MUV, lo[iz], color="#e41a1c")
         ax.plot(MUV, hi[iz], color="#e41a1c")
         m1, y1 = ONE_GAL[iz]
         ax.hlines(y1, m1 - 0.375, m1 + 0.375, color="darkslategray", lw=3,
-                  label="one real galaxy (Pérez-González+25 volume)")
+                  label="one galaxy per bin (Pérez-González+25)")
         n_exp = np.sum(np.array([np.interp(m1, MUV, u[iz]) for u in uv]) / y1, axis=1)
         n50, n95 = np.percentile(n_exp, [50, 95])
-        ax.text(-22.8, 1e-4, ztxt, fontsize=18)
+        ax.text(0.96, 0.95, ztxt, transform=ax.transAxes, ha="right", va="top", fontsize=18)
         print(f"z = {z}: expected galaxies in the PG25 bins: median {n50:.2g}, 95% upper {n95:.2g}; "
               f"P(N>=1) < {1 - np.exp(-n95):.2%}")
         ax.set_xlabel(r"$M_{\rm UV}$ [mag]", fontsize=18)
@@ -91,17 +91,20 @@ def main():
         print(f"z = {z}: 95% upper edge / (1 galaxy per effective volume) at M_UV = "
               + ", ".join(f"{m}: {np.interp(m, MUV, hi[iz]) / y:.2g}" for m, y in zip(m1, y1)))
 
-    points(axes[0], CAS_MUV, CAS_15_20, 0.5, "red", "<", "Castellano+25, z=15-20")
-    points(axes[0], PG_16_20_MUV, PG_16_20, 0.3, "brown", ">", "Pérez-González+25, z=16-20")
-    points(axes[1], CAS_MUV, CAS_20_28, 0.5, "red", "<", "Castellano+25, z=20-28")
-    points(axes[1], PG_20_24_MUV, PG_20_24, 0.3, "brown", ">", "Pérez-González+25, z=20-24")
+    points(axes[0], CAS_MUV, CAS_15_20, 0.5, "red", "<", "Castellano+25")
+    points(axes[0], PG_16_20_MUV, PG_16_20, 0.3, "brown", ">", "Pérez-González+25")
+    points(axes[1], CAS_MUV, CAS_20_28, 0.5, "red", "<", None)
+    points(axes[1], PG_20_24_MUV, PG_20_24, 0.3, "brown", ">", None)
 
     axes[0].set_ylabel(YLABEL, fontsize=18)
     axes[0].set_yscale("log")
-    axes[0].set_ylim(1e-10, 1e-3)
+    axes[0].set_ylim(1e-10, 1e-2)
     axes[0].set_xlim(-23, -17)
-    axes[0].legend(fontsize=10, loc="lower right")
-    axes[1].legend(fontsize=10, loc="lower left")
+    handles, labels = axes[0].get_legend_handles_labels()
+    order = [labels.index(l) for l in ("posterior, 95% C.I.", "one galaxy per bin (Pérez-González+25)",
+                                       "Castellano+25", "Pérez-González+25")]
+    fig.legend([handles[i] for i in order], [labels[i] for i in order], loc="upper center",
+               bbox_to_anchor=(0.5, 0.0), ncol=2, fontsize=13, frameon=False)
     fig.subplots_adjust(wspace=0)
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
