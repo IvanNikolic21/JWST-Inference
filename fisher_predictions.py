@@ -9,8 +9,8 @@ realistic N(z), integral constraint, satellites) at
   fid             the posterior median of --run_dir (v4 main_joint)
   <p>+-h, +-h/2   central-difference steps, h = --step_frac * posterior sd
                   (0.1 dex for the fixed M_knee)
-  <p>+-sw         the appendix sweep, --sweep_nsig * posterior sd (clipped to
-                  the sampling limits; M_knee +- --mknee_sweep dex)
+  <p>+-sw         the appendix sweep: the 2.5th / 97.5th posterior percentiles
+                  (--sweep_percentiles; M_knee +- --mknee_sweep dex)
 
 and saves everything fisher_analysis.py needs (predictions, data, prior,
 posterior samples) to --out. Fisher matrices and figures are made locally
@@ -59,15 +59,22 @@ def load_posterior(run_dir, n_par):
     return np.genfromtxt(os.path.join(run_dir, "post_equal_weights.dat"))[:, :n_par]
 
 
-def build_points(params, fid, sd, limits, step_frac, sweep_nsig, mknee_sweep):
-    """name -> parameter vector, and name -> varied parameter (None for fid)."""
+def build_points(params, fid, sd, limits, step_frac, sweep_lo, sweep_hi, mknee_sweep):
+    """name -> parameter vector, and name -> varied parameter (None for fid).
+    Derivative points at fid +- h, +- h/2; sweep points at sweep_lo / sweep_hi
+    (posterior percentiles), M_knee at fid +- mknee_sweep."""
     points, varied = {"fid": fid.copy()}, {"fid": None}
     for i, p in enumerate(params):
         h = 0.1 if p == "M_knee" else step_frac * sd[i]
-        sw = mknee_sweep if p == "M_knee" else sweep_nsig * sd[i]
-        for tag, d in [("+h", h), ("-h", -h), ("+h2", h / 2), ("-h2", -h / 2), ("+sw", sw), ("-sw", -sw)]:
+        if p == "M_knee":
+            lo, hi = fid[i] - mknee_sweep, fid[i] + mknee_sweep
+        else:
+            lo, hi = sweep_lo[i], sweep_hi[i]
+        steps = [("+h", fid[i] + h), ("-h", fid[i] - h), ("+h2", fid[i] + h / 2), ("-h2", fid[i] - h / 2),
+                 ("+sw", hi), ("-sw", lo)]
+        for tag, val in steps:
             v = fid.copy()
-            v[i] = np.clip(fid[i] + d, limits[i][0], limits[i][1])
+            v[i] = np.clip(val, limits[i][0], limits[i][1])
             points[p + tag] = v
             varied[p + tag] = p
     return points, varied
@@ -79,7 +86,8 @@ def main():
     ap.add_argument("--uvlf_run_dir", default=None, help="UV-LF-only run, stored for validation")
     ap.add_argument("--out", default=None)
     ap.add_argument("--step_frac", type=float, default=0.2)
-    ap.add_argument("--sweep_nsig", type=float, default=2.0)
+    ap.add_argument("--sweep_percentiles", type=float, nargs=2, default=[2.5, 97.5],
+                    help="posterior percentiles used as low / high in the appendix sweep")
     ap.add_argument("--mknee_sweep", type=float, default=0.7)
     args = ap.parse_args()
     out = args.out or os.path.join(args.run_dir, "fisher_raw.npz")
@@ -94,7 +102,8 @@ def main():
 
     post = load_posterior(args.run_dir, len(params))
     fid, sd = np.median(post, axis=0), np.std(post, axis=0)
-    points, varied = build_points(params, fid, sd, limits, args.step_frac, args.sweep_nsig, args.mknee_sweep)
+    sweep_lo, sweep_hi = np.percentile(post, args.sweep_percentiles, axis=0)
+    points, varied = build_points(params, fid, sd, limits, args.step_frac, sweep_lo, sweep_hi, args.mknee_sweep)
     names = list(points)
 
     obs = Observations(True, True)
@@ -162,7 +171,7 @@ def main():
         params=np.array(params), fid=fid, sd_post=sd, prior_mean=np.array(prior["mean"]),
         prior_cov=np.array(prior["cov_effective"]), limits=limits,
         names=np.array(names), varied=np.array([varied[n] or "" for n in names]), points=np.array([points[n] for n in names]),
-        step_frac=args.step_frac, sweep_nsig=args.sweep_nsig, mknee_sweep=args.mknee_sweep,
+        step_frac=args.step_frac, sweep_percentiles=np.array(args.sweep_percentiles), mknee_sweep=args.mknee_sweep,
         uvlf_keys=np.array(uvlf_keys), uvlf_z=np.array([uvlf_z[k] for k in uvlf_keys]),
         muv=muv_all, uvlf=uv,
         acf_keys=np.array(acf_keys), acf_z=np.array([cfg["acf_redshifts"][k] for k in acf_keys]),
