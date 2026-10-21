@@ -7,7 +7,10 @@ the sample's SHMR and SFMS (mean and 1 sigma) against First Light at z = 10.
 
 Sample choice (unless --sample): among UV-LF-only samples whose UV LF lnL is
 above the posterior median, the one with the lowest z~7 ACF lnL whose ACF
-lies below the data (the case discussed in the text: low f*, large sigma_SHMR).
+lies below the data. Those misfits are mild (chi2 <= 6.4 for 4 points); the
+large ones are ACFs that are too HIGH (low, tight SHMR compensated by a high
+or broad SFMS, ~1% of the posterior). The paper uses --sample 1304
+(f* -3.44, sigma_SHMR 0.06, t* 0.09, sigma_SFMS 0.57; chi2_z7 = 18.5).
 
 Inputs, all in <main_uvlf>/:
   post_equal_weights.dat   (last column = UV LF lnL)
@@ -110,14 +113,16 @@ def plot(d, out):
 
     # ACF
     th, w = d["theta_deg"], d["w_z7"]
-    m = th > THETA_MIN
+    # IC-subtracted model turns negative at large theta: end the line there
+    neg = np.flatnonzero((th > THETA_MIN) & (w <= 0))
+    m = (th > THETA_MIN) & (th < (th[neg[0]] if len(neg) else np.inf))
     ax_acf.plot(th[m], w[m], color=C_MODEL, ls="--", lw=2.5, label="UVLF-only sample")
     thet, wd, ws = (np.asarray(x) for x in obs.get_obs_z7_m90(positive_only=True))
     ax_acf.errorbar(thet, wd, yerr=ws, fmt=".", color="black", capsize=4, ms=8, label="Paquereau+25")
     ax_acf.set_xscale("log")
     ax_acf.set_yscale("log")
     ax_acf.set_xlim(THETA_MIN, 0.25)
-    ax_acf.set_ylim(1e-4, 0.5)
+    ax_acf.set_ylim(1e-3, 1)
     ax_acf.set_xlabel(r"$\theta$ [deg]", fontsize=fs)
     ax_acf.set_ylabel(r"$\omega(\theta)$", fontsize=fs)
     ax_acf.text(0.96, 0.9, r"$z=6$–$8$", transform=ax_acf.transAxes, fontsize=fs, va="top", ha="right")
