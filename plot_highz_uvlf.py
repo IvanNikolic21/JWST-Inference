@@ -4,8 +4,11 @@ M_UV = linspace(-25, -16, 20)) against the z > 14 photometric estimates of
 Castellano+25 and Perez-Gonzalez+25.
 
 Same figure as the paper version, with the labels following the paper's
-notation (dn/dM_UV, Perez-Gonzalez accents). Also prints the 95% band at the
-magnitudes of the "1 galaxy per effective volume" points, for the text.
+notation (dn/dM_UV, Perez-Gonzalez accents). The "1 galaxy" points are the
+number density of a single galaxy in each Perez-Gonzalez+25 bin, 1/(V_eff dM),
+drawn as bars over the bin. Their ratio to the model gives the expected number
+of z > 16 galaxies in that survey, N = sum_bins phi_model / phi_1gal; printed
+(median, 95% upper) with P(N >= 1) = 1 - exp(-N), and written in each panel.
 
 Only needs numpy and matplotlib, so it can run on the cluster:
 
@@ -41,7 +44,7 @@ PG_20_24 = (_pg2,
             np.r_[-1, (10 ** np.array([-4.82 + 0.31, -4.66 + 0.33]) - _pg2[1:])],
             np.r_[-1, (_pg2[1:] - 10 ** np.array([-4.82 - 0.75, -4.66 - 1.11]))])
 
-# one galaxy per effective volume (Perez-Gonzalez+25)
+# one galaxy per effective volume (Perez-Gonzalez+25), bins of 0.75 mag
 ONE_GAL = {0: (np.array([-19.04, -18.29, -17.54]), np.array([1 / 7.8e4, 1 / 3.1e4, 1 / 1.3e4])),
            1: (np.array([-18.24, -17.49]), np.array([_pg2[1], _pg2[2] / 2]))}
 
@@ -76,8 +79,14 @@ def main():
         ax.plot(MUV, lo[iz], color="#e41a1c")
         ax.plot(MUV, hi[iz], color="#e41a1c")
         m1, y1 = ONE_GAL[iz]
-        ax.scatter(m1, y1, color="darkslategray", marker="*", s=150, label="1 galaxy per effective volume")
+        ax.hlines(y1, m1 - 0.375, m1 + 0.375, color="darkslategray", lw=3,
+                  label="one real galaxy (Pérez-González+25 volume)")
+        n_exp = np.sum(np.array([np.interp(m1, MUV, u[iz]) for u in uv]) / y1, axis=1)
+        n50, n95 = np.percentile(n_exp, [50, 95])
         ax.text(-22.8, 1e-4, ztxt, fontsize=18)
+        ax.text(-22.8, 2e-5, r"$N_{\rm exp}<$" + f"{n95:.2g} (95%)", fontsize=13)
+        print(f"z = {z}: expected galaxies in the PG25 bins: median {n50:.2g}, 95% upper {n95:.2g}; "
+              f"P(N>=1) < {1 - np.exp(-n95):.2%}")
         ax.set_xlabel(r"$M_{\rm UV}$ [mag]", fontsize=18)
         ax.tick_params(labelsize=18)
         print(f"z = {z}: 95% upper edge / (1 galaxy per effective volume) at M_UV = "
