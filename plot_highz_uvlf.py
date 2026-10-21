@@ -8,7 +8,7 @@ notation (dn/dM_UV, Perez-Gonzalez accents). The "1 galaxy" points are the
 number density of a single galaxy in each Perez-Gonzalez+25 bin, 1/(V_eff dM),
 drawn as bars over the bin. Their ratio to the model gives the expected number
 of z > 16 galaxies in that survey, N = sum_bins phi_model / phi_1gal; printed
-(median, 95% upper) with P(N >= 1) = 1 - exp(-N), and written in each panel.
+(median, 95% upper) with P(N >= 1) = 1 - exp(-N), for the caption.
 
 Only needs numpy and matplotlib, so it can run on the cluster:
 
@@ -84,7 +84,6 @@ def main():
         n_exp = np.sum(np.array([np.interp(m1, MUV, u[iz]) for u in uv]) / y1, axis=1)
         n50, n95 = np.percentile(n_exp, [50, 95])
         ax.text(-22.8, 1e-4, ztxt, fontsize=18)
-        ax.text(-22.8, 2e-5, r"$N_{\rm exp}<$" + f"{n95:.2g} (95%)", fontsize=13)
         print(f"z = {z}: expected galaxies in the PG25 bins: median {n50:.2g}, 95% upper {n95:.2g}; "
               f"P(N>=1) < {1 - np.exp(-n95):.2%}")
         ax.set_xlabel(r"$M_{\rm UV}$ [mag]", fontsize=18)
