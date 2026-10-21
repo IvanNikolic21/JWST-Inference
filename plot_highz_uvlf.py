@@ -83,7 +83,7 @@ def main():
                   label="one galaxy per bin (Pérez-González+25)")
         n_exp = np.sum(np.array([np.interp(m1, MUV, u[iz]) for u in uv]) / y1, axis=1)
         n50, n95 = np.percentile(n_exp, [50, 95])
-        ax.text(0.96, 0.95, ztxt, transform=ax.transAxes, ha="right", va="top", fontsize=18)
+        ax.text(-22.8, 1e-5, ztxt, ha="left", va="bottom", fontsize=18)
         print(f"z = {z}: expected galaxies in the PG25 bins: median {n50:.2g}, 95% upper {n95:.2g}; "
               f"P(N>=1) < {1 - np.exp(-n95):.2%}")
         ax.set_xlabel(r"$M_{\rm UV}$ [mag]", fontsize=18)
@@ -98,7 +98,7 @@ def main():
 
     axes[0].set_ylabel(YLABEL, fontsize=18)
     axes[0].set_yscale("log")
-    axes[0].set_ylim(1e-10, 1e-2)
+    axes[0].set_ylim(1e-10, 5e-4)
     axes[0].set_xlim(-23, -17)
     handles, labels = axes[0].get_legend_handles_labels()
     order = [labels.index(l) for l in ("posterior, 95% C.I.", "one galaxy per bin (Pérez-González+25)",
