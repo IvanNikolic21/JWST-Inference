@@ -266,13 +266,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("raw")
     ap.add_argument("--outdir", default=None)
+    ap.add_argument("--drop", nargs="*", default=["M_knee"], help="rows left out of the heatmaps")
     args = ap.parse_args()
     outdir = args.outdir or os.path.dirname(os.path.abspath(args.raw))
     os.makedirs(outdir, exist_ok=True)
 
     raw = Raw(args.raw)
     jac = jacobians(raw)
-    rows = [p for p in ROW_ORDER if p in raw.params]
+    rows = [p for p in ROW_ORDER if p in raw.params and p not in args.drop]
     ridx = [raw.params.index(p) for p in rows]
     sref = raw.sig_ref[ridx]
     lines = [f"fiducial (posterior median): " + ", ".join(f"{p}={v:.3f}" for p, v in zip(raw.params, raw.d['fid'])),
