@@ -10,7 +10,7 @@ samples with SFR10 < 10%, P(SFMS > SHMR), and the variance fractions
 
   python plot_fractional_sigma.py <main_joint>/ [--guides] [--out fractional_sigma_sfr10.pdf]
 
---guides marks each median (CDF = 0.5) at M_UV = -20.
+--guides adds an 'increasing contribution' arrow.
 """
 import argparse
 import os
@@ -56,13 +56,10 @@ def main():
         cdf(ax, data[-20][f"frac_no_{k}"], color=color, lw=3, label=label)
         if k != "sfr10":
             cdf(ax, data[-18][f"frac_no_{k}"], color=color, lw=3, ls="--")
-        if args.guides:
-            med = np.nanmedian(data[-20][f"frac_no_{k}"])
-            ax.plot(med, 0.5, "o", color=color, ms=9, mec="k", zorder=5)
-            ax.annotate(f"{med:.0%}", (med, 0.5), xytext=(6, -16), textcoords="offset points",
-                        fontsize=13, color=color, fontweight="bold")
     if args.guides:
-        ax.axhline(0.5, color="grey", ls=":", lw=1.5, zorder=0)
+        ax.annotate("", xy=(0.97, 0.47), xytext=(0.5, 0.47),
+                    arrowprops=dict(arrowstyle="-|>", color="grey", lw=2, mutation_scale=18))
+        ax.text(0.735, 0.49, "increasing contribution", ha="center", va="bottom", fontsize=13, color="grey")
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1.04)
