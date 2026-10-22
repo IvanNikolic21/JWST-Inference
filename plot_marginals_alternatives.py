@@ -25,10 +25,10 @@ from matplotlib.patches import Patch
 from matplotlib.ticker import MaxNLocator
 
 # run, label, x label, fiducial value, colour, x range (edge ticks are pruned, panels touch)
-EXTENSIONS = [("ext_fstar_z", "redshift-dependent SHMR normalization", r"$\alpha_{f_\ast}$", 0.0, "#66c2a5", (-2.0, 1.5)),
-              ("ext_alpha_star_z", "redshift-dependent SHMR slope", r"$\alpha_{\ast,\rm ind}$", 0.0, "#fc8d62", (-1.0, 1.5)),
+EXTENSIONS = [("ext_fstar_z", "redshift-dependent\nSHMR normalization", r"$\alpha_{f_\ast}$", 0.0, "#66c2a5", (-2.0, 1.5)),
+              ("ext_alpha_star_z", "redshift-dependent\nSHMR slope", r"$\alpha_{\ast,\rm ind}$", 0.0, "#fc8d62", (-1.0, 1.5)),
               ("ext_slope", "SFMS slope", r"$\alpha_{\rm SFR}$", 1.0, "#8da0cb", (0.5, 1.6)),
-              ("ext_sigma_z", "redshift-dependent SHMR scatter", r"$\alpha_{\sigma,\rm SHMR,z}$", 0.0, "#e78ac3", (-1.0, 2.0)),
+              ("ext_sigma_z", "redshift-dependent\nSHMR scatter", r"$\alpha_{\sigma,\rm SHMR,z}$", 0.0, "#e78ac3", (-1.0, 2.0)),
               ("ext_sigma_mh", "mass-dependent SHMR scatter", r"$a_{\sigma,\rm SHMR}$", 0.0, "#a6d854", (-0.2, 0.1))]
 PANELS = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1)]
 I_EXT = 7
@@ -94,7 +94,7 @@ def main():
                 Line2D([], [], color="k", lw=3, alpha=0.8, label="fiducial model")]
     lax = fig.add_subplot(gs[1, 2])
     lax.axis("off")
-    lax.legend(handles=handles, loc="center left", bbox_to_anchor=(0.06, 0.5), frameon=False, fontsize=13)
+    lax.legend(handles=handles, loc="center left", bbox_to_anchor=(0.02, 0.5), frameon=False, fontsize=13)
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
 
