@@ -862,7 +862,7 @@ class Sigm_UV():
         #This is a theoretical work that doesn't attempt inference or simulation prediction so all the values of
         #sigma_uv are qualitative
         #z=9 result is a good fit for Mv<-19, but not for lower
-        #z=10 and 12 are good fits throughout the range.        print("Returning redshifts and sigma_UV of Shen+23")
+        #z=10 and 12 are good fits throughout the range.
         return redshifts, sigma_uvs
 
     def get_Mason_23(self):
