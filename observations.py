@@ -862,4 +862,19 @@ class Sigm_UV():
         #This is a theoretical work that doesn't attempt inference or simulation prediction so all the values of
         #sigma_uv are qualitative
         #z=9 result is a good fit for Mv<-19, but not for lower
-        #z=10 and 12 are good fits throughout the range.
+        #z=10 and 12 are good fits throughout the range.        print("Returning redshifts and sigma_UV of Shen+23")
+        return redshifts, sigma_uvs
+
+    def get_Ciesla24(self):
+        # PROVISIONAL: read off the paper figure (sigma_UV_z_trunc-2.pdf); the
+        # original getter was not in the repo. Replace with the values from the paper.
+        redshift_range = (6.0, 11.1)
+        sigma_uv_range = (1.1, 1.3)
+        return redshift_range, sigma_uv_range
+
+    def get_Mason_23(self):
+        # PROVISIONAL: read off the paper figure (line from z = 9.7 to beyond 12 at 1.5,
+        # drawn from z_min - 0.3); replace with the original getter.
+        redshift_range = (10.0, 13.0)
+        sigma_uv = 1.5
+        return redshift_range, sigma_uv
