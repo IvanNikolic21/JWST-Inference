@@ -47,7 +47,10 @@ def build_sims(config, out):
     cfg = load_config(config)
     save = {}
     for name, z, _ in SHMR_SIMS + SFMS_SIMS:
-        sim = load_simulation(name, cfg["simulations"][name])
+        spec = dict(cfg["simulations"][name])
+        if "snapshots" in spec and isinstance(spec["snapshots"], list):     # ASTRID: read only the snapshot needed
+            spec["snapshots"] = [min(spec["snapshots"], key=lambda s: abs(s["z"] - z))]
+        sim = load_simulation(name, spec)
         snap = min(sim.snapshots, key=lambda s: abs(s.z - z))
         save[f"{name}_z"] = snap.z
         save[f"{name}_ms"], save[f"{name}_sfr"] = snap.ms, snap.sfr
