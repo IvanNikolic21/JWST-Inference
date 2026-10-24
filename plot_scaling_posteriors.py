@@ -33,12 +33,17 @@ M_KNEE_FIXED = 2e12
 FB = cosmo.Ob0 / cosmo.Om0
 Z_SFMS = 10.0
 C_68, C_95 = "#e41a1c", "#f4a6a6"      # UVLF + ACF colour of the other figures
-# simulation, snapshot redshift, colour (FIRE has no z = 10 snapshot: z = 9 is the closest)
-SHMR_SIMS = [("FIRE", 9.0, "plum"), ("FirstLight", 10.0, "lightskyblue")]
-SFMS_SIMS = [("FLARES", 10.0, "seagreen"), ("ASTRID", 10.0, "royalblue")]
-SIM_LABEL = {"FIRE": "FIRE", "FirstLight": "First Light", "FLARES": "FLARES", "ASTRID": "ASTRID"}
+# simulation, snapshot redshift, colour, alpha -- as in the prior figures (Figs. SHMR_prior, sfms_prior).
+# FIRE has no z = 10 snapshot in fire_catalog.json: z = 9 is the closest.
+SHMR_SIMS = [("FIRE", 9.0, "#800080", 0.15), ("SERRA", 12.0, "#1e90ff", 0.4)]
+SFMS_SIMS = [("FLARES", 10.0, "#2e8b57", 0.2), ("ASTRID", 10.0, "#1e90ff", 0.5)]
+SIM_LABEL = {"FIRE": "FIRE", "SERRA": "SERRA", "FirstLight": "First Light", "FLARES": "FLARES", "ASTRID": "ASTRID"}
+CATALOG_FILES = {"FIRE": "fire_catalog.json", "SERRA": "serra_catalog.json"}   # in prior_pipeline/data
 SHMR_COND = [9.5, 10.0, 10.5, 11.0]
 SFMS_COND = [7.5, 8.0, 8.5, 9.0]
+SHMR_COND_COLORS = ["#3b528b", "#23888e", "#3bbb75", "#bddf26"]     # viridis, as in the prior figure
+SFMS_COND_COLORS = ["#51127c", "#a8327d", "#f4675c", "#fecf92"]     # magma, as in the prior figure
+FS_LABEL, FS_TICK = 20, 18
 
 
 def build_sims(config, out):
@@ -46,7 +51,7 @@ def build_sims(config, out):
     from prior_pipeline.simulations import load_simulation
     cfg = load_config(config)
     save = {}
-    for name, z, _ in SHMR_SIMS + SFMS_SIMS:
+    for name, z, *_ in SHMR_SIMS + SFMS_SIMS:
         spec = dict(cfg["simulations"][name])
         if "snapshots" in spec and isinstance(spec["snapshots"], list):     # ASTRID: read only the snapshot needed
             spec["snapshots"] = [min(spec["snapshots"], key=lambda s: abs(s["z"] - z))]
@@ -82,46 +87,75 @@ def percentiles(y, cdf, qs=(0.025, 0.16, 0.84, 0.975)):
     return {q: np.array([np.interp(q, c, y) for c in cdf]) for q in qs}
 
 
-def panel(fig, x, y, cdf, pdf, cond, sims, data, xlabel, ylabel, plabel, xlim, ylim, cmap, text=None):
+def sim_points(name, z, data):
+    """Snapshot of a simulation from the cluster npz, or from the catalogue file in the repo."""
+    if f"{name}_ms" in data:
+        return {k: data[f"{name}_{k}"] for k in ("z", "ms", "sfr", "mh") if f"{name}_{k}" in data}
+    if name in CATALOG_FILES:
+        from prior_pipeline.simulations import load_catalog_file
+        snap = min(load_catalog_file(name, CATALOG_FILES[name]).snapshots, key=lambda s: abs(s.z - z))
+        return dict(z=snap.z, ms=snap.ms, sfr=snap.sfr, mh=snap.mh)
+    return None
+
+
+def band_label(ax, x, yline, text, xpos):
+    """Label a band edge in place, rotated along the line."""
+    i = np.argmin(np.abs(x - xpos))
+    p0, p1 = ax.transData.transform([(x[i - 5], yline[i - 5]), (x[i + 5], yline[i + 5])])
+    ang = np.degrees(np.arctan2(p1[1] - p0[1], p1[0] - p0[0]))
+    ax.text(x[i], yline[i], text, rotation=ang, ha="center", va="center", fontsize=14,
+            bbox=dict(facecolor="white", edgecolor="none", pad=1), zorder=6)
+
+
+def panel(fig, x, y, cdf, pdf, cond, cond_colors, sims, data, xlabel, ylabel, plabel, xlim, ylim, text=None,
+          cap=None):
     gs = fig.add_gridspec(1, 2, width_ratios=[3, 1], wspace=0.08)
     ax, axc = fig.add_subplot(gs[0]), fig.add_subplot(gs[1])
     q = percentiles(y, cdf)
     ax.fill_between(x, q[0.025], q[0.975], color=C_95, alpha=0.6, lw=0)
     ax.fill_between(x, q[0.16], q[0.84], color=C_68, alpha=0.5, lw=0)
     for k in q:
-        ax.plot(x, q[k], color="k", lw=1.5)
-    for name, _, color in sims:
-        key = "mh" if sims is SHMR_SIMS else "ms"
-        if f"{name}_ms" not in data:
-            print(f"  {name} not in the simulation file, skipped")
+        ax.plot(x, q[k], color="k", lw=2)
+    if cap is not None:
+        ax.plot(x, cap, color="k", lw=2)
+    for name, z, color, alpha in sims:
+        d = sim_points(name, z, data)
+        if d is None:
+            print(f"  {name} not available, skipped")
             continue
-        xs = np.log10(data[f"{name}_{key}"])
-        ys = np.log10(data[f"{name}_ms" if key == "mh" else f"{name}_sfr"])
+        key = "mh" if sims is SHMR_SIMS else "ms"
+        with np.errstate(divide="ignore"):
+            xs = np.log10(d[key])
+            ys = np.log10(d["ms"] if key == "mh" else d["sfr"])
         ok = np.isfinite(xs) & np.isfinite(ys)
-        ax.scatter(xs[ok], ys[ok], color=color, alpha=0.4, s=18, edgecolor="none",
-                   label=rf"{SIM_LABEL[name]}, $z={float(data[f'{name}_z']):.0f}$")
+        ax.scatter(xs[ok], ys[ok], color=color, alpha=alpha, s=45, edgecolor="none",
+                   label=rf"{SIM_LABEL[name]}, $z={float(d['z']):.0f}$")
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xlabel(xlabel, fontsize=15)
-    ax.set_ylabel(ylabel, fontsize=15)
-    ax.tick_params(labelsize=14)
-    ax.legend(fontsize=10, loc="lower right")
+    ax.set_xlabel(xlabel, fontsize=FS_LABEL)
+    ax.set_ylabel(ylabel, fontsize=FS_LABEL)
+    ax.tick_params(labelsize=FS_TICK)
+    ax.legend(fontsize=13, loc="lower right")
     if text:
-        ax.text(0.05, 0.92, text, transform=ax.transAxes, fontsize=15, va="top")
+        ax.text(0.07, 0.92, text, transform=ax.transAxes, fontsize=FS_LABEL, va="top")
+    xl = xlim[0] + 0.72 * (xlim[1] - xlim[0])
+    band_label(ax, x, q[0.16], "68%", xl)
+    band_label(ax, x, q[0.025], "95%", xl)
+    if cap is not None:
+        band_label(ax, x, cap, r"$M_\ast=(\Omega_{\rm b}/\Omega_{\rm m})M_{\rm h}$", xlim[0] + 0.45 * (xlim[1] - xlim[0]))
 
-    colors = plt.get_cmap(cmap)(np.linspace(0.3, 0.9, len(cond)))
-    for xc, col in zip(cond, colors):
+    for xc, col in zip(cond, cond_colors):
         p = gaussian_filter1d(pdf[np.argmin(np.abs(x - xc))], 0.05 / (y[1] - y[0]))
         p = p / p.max()
-        axc.plot(p, y, color=col, lw=2)
-        axc.text(1.04, y[np.argmax(p)], f"{xc:g}", color=col, fontsize=10, va="center")
+        axc.plot(p, y, color=col, lw=3)
+        axc.text(1.04, y[np.argmax(p)], f"{xc:g}", color=col, fontsize=14, va="center", weight="bold")
     axc.set_ylim(ylim)
-    axc.set_xlim(0, 1.3)
+    axc.set_xlim(0, 1.35)
     axc.set_xticks([0, 1])
     axc.set_yticklabels([])
-    axc.tick_params(labelsize=14)
+    axc.tick_params(labelsize=FS_TICK)
     axc.grid(alpha=0.3)
-    axc.set_xlabel(plabel, fontsize=15)
+    axc.set_xlabel(plabel, fontsize=FS_LABEL)
 
 
 def main():
@@ -154,10 +188,10 @@ def main():
                    for f, a in zip(par["fstar_norm"], par["alpha_star_low"])])
     sig = np.repeat(par["sigma_SHMR"][:, None], len(lmh), axis=1)
     cdf, pdf = mixture(lmh, lms_y, mu, sig, upper=np.log10(FB) + lmh[None, :] + 0 * mu)
-    fig = plt.figure(figsize=(8, 4))
-    panel(fig, lmh, lms_y, cdf, pdf, SHMR_COND, SHMR_SIMS, data,
+    fig = plt.figure(figsize=(10, 4.8))
+    panel(fig, lmh, lms_y, cdf, pdf, SHMR_COND, SHMR_COND_COLORS, SHMR_SIMS, data,
           r"$\log M_{\rm h}\ [{\rm M_\odot}]$", r"$\log M_\ast\ [{\rm M_\odot}]$",
-          r"$p(\log M_\ast\mid\log M_{\rm h})$", (9, 12), (5, 11), "Reds")
+          r"$p(\log M_\ast\mid\log M_{\rm h})$", (9, 12), (4, 12), cap=np.log10(FB) + lmh)
     out = os.path.join(out_dir, "SHMR_posterior_with_cuts-1.pdf")
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
@@ -169,10 +203,10 @@ def main():
     sig = np.array([sigma_SFR_variable(10 ** lms, norm=s, a_sig_SFR=a)
                     for s, a in zip(par["sigma_SFMS_norm"], par["a_sig_SFR"])])
     cdf, pdf = mixture(lms, lsfr_y, mu, sig)
-    fig = plt.figure(figsize=(8, 4))
-    panel(fig, lms, lsfr_y, cdf, pdf, SFMS_COND, SFMS_SIMS, data,
+    fig = plt.figure(figsize=(10, 4.8))
+    panel(fig, lms, lsfr_y, cdf, pdf, SFMS_COND, SFMS_COND_COLORS, SFMS_SIMS, data,
           r"$\log M_\ast\ [{\rm M_\odot}]$", r"$\log {\rm SFR}_{100}\ [{\rm M_\odot\,yr^{-1}}]$",
-          r"$p(\log {\rm SFR}_{100}\mid\log M_\ast)$", (6, 10), (-3, 2), "magma", text=rf"$z={Z_SFMS:.0f}$")
+          r"$p(\log {\rm SFR}_{100}\mid\log M_\ast)$", (6, 10), (-3, 2), text=rf"$z={Z_SFMS:.0f}$")
     out = os.path.join(out_dir, "SFMS_posterior_with_cuts_conditional.pdf")
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
