@@ -126,7 +126,7 @@ def main():
     order = [labels.index(l) for l in ("posterior, 95% C.I.", "one galaxy per bin (Pérez-González+25)",
                                        "Castellano+25", "Pérez-González+25")]
     fig.legend([handles[i] for i in order], [labels[i] for i in order], loc="upper center",
-               bbox_to_anchor=(0.5, 0.0), ncol=2, fontsize=13, frameon=False)
+               bbox_to_anchor=(0.5, 0.0), ncol=2, fontsize=16, frameon=False)
     fig.subplots_adjust(wspace=0)
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
