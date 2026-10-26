@@ -5,6 +5,7 @@
                        uvlf_Donnan / uvlf_Whitler / uvlf_Harikane runs (faint end + ACF)
   corner_shmr.pdf      (Fig. corner_SHMR): main_uvlf and main_joint, SHMR parameters
   corner_sfms.pdf      (Fig. sfms_corner): main_joint, SFMS parameters
+  corner_full.pdf      (Fig. full_corner): main_uvlf and main_joint, all free parameters
 
 Prints the largest median shift of each run relative to main_joint, in units of
 the main_joint posterior sd, for the text.
@@ -22,7 +23,7 @@ import corner
 
 LABELS = {"fstar_norm": r"$\log f_{\ast,0}$", "sigma_SHMR": r"$\sigma_{\rm SHMR}$", "t_star": r"$t_\ast$",
           "alpha_star_low": r"$\alpha_\ast$", "sigma_SFMS_norm": r"$\sigma_{\rm SFMS,0}$",
-          "a_sig_SFR": r"$a_{\sigma,\rm SFMS}$"}
+          "a_sig_SFR": r"$a_{\sigma,\rm SFMS}$", "sigma_sfr_10": r"$\sigma_{\rm SFR,10}$"}
 
 FIGURES = {
     "hmf_models.pdf": dict(
@@ -47,6 +48,13 @@ FIGURES = {
     "corner_shmr.pdf": dict(
         params=["fstar_norm", "alpha_star_low", "sigma_SHMR"],
         ranges=[(-4.6, -1.6), (0, 1), (0, 1.6)],
+        levels=(0.68, 0.95), fill=True, ref="main_joint",
+        runs=[("main_uvlf", "UVLF only", "#4daf4a"),
+              ("main_joint", "UVLF + ACF", "#e41a1c")]),
+    # Fig. full_corner (App. D): same axis ranges as corner_shmr / corner_sfms
+    "corner_full.pdf": dict(
+        params=["fstar_norm", "sigma_SHMR", "t_star", "alpha_star_low", "sigma_SFMS_norm", "a_sig_SFR", "sigma_sfr_10"],
+        ranges=[(-4.6, -1.6), (0, 1.6), (0, 0.8), (0, 1), (0, 0.9), (-0.18, 0.1), (0, 0.4)],
         levels=(0.68, 0.95), fill=True, ref="main_joint",
         runs=[("main_uvlf", "UVLF only", "#4daf4a"),
               ("main_joint", "UVLF + ACF", "#e41a1c")]),

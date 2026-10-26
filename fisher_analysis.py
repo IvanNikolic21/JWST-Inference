@@ -34,13 +34,13 @@ from astropy.cosmology import Planck18 as cosmo
 from uvlf import ms_mh_flattening, SFMS, sigma_SFR_variable
 
 LABELS = {
-    "fstar_norm": r"$\log_{10} f_{\ast,0}$",
+    "fstar_norm": r"$\log f_{\ast,0}$",
     "sigma_SHMR": r"$\sigma_{\rm SHMR}$",
     "t_star": r"$t_{\ast}$",
     "alpha_star_low": r"$\alpha_{\ast}$",
     "sigma_SFMS_norm": r"$\sigma_{{\rm SFMS},0}$",
     "a_sig_SFR": r"$a_{\sigma,{\rm SFMS}}$",
-    "M_knee": r"$\log_{10} M_{\rm knee}$ (fixed)",
+    "M_knee": r"$\log M_{\rm knee}$ (fixed)",
     "sigma_sfr_10": r"$\sigma_{{\rm SFR},10}$",
 }
 ROW_ORDER = ["fstar_norm", "sigma_SHMR", "alpha_star_low", "M_knee",
@@ -144,7 +144,7 @@ def combine(jac, version, blocks):
     return sum(fisher(*jac[(version, b)][:2]) for b in blocks)
 
 
-def heatmap(S, rows, cols, fname, title, sep=None, group_labels=None):
+def heatmap(S, rows, cols, fname, title=None, sep=None, group_labels=None):
     fig, ax = plt.subplots(figsize=(1.35 * len(cols) + 3, 0.62 * len(rows) + 1.8))
     Sm = np.ma.masked_where(S <= 1e-6, S)
     cmap = plt.get_cmap("magma").copy()
@@ -171,8 +171,9 @@ def heatmap(S, rows, cols, fname, title, sep=None, group_labels=None):
         ax.text(x, 1.02, lab, transform=ax.get_xaxis_transform(), ha="center", va="bottom",
                 fontsize=12, fontweight="bold")
     cb = plt.colorbar(im, ax=ax)
-    cb.set_label(r"$S_i = \sigma_{{\rm prior},i}\sqrt{F_{ii}}$", fontsize=12)
-    ax.set_title(title, fontsize=13, pad=28 if group_labels else 8)
+    cb.set_label(r"$S^{(o)}_i = \sigma_{{\rm prior},i}\sqrt{F^{(o)}_{ii}}$", fontsize=12)
+    if title:                                    # the paper captions describe the figures
+        ax.set_title(title, fontsize=13, pad=28 if group_labels else 8)
     fig.tight_layout()
     fig.savefig(fname, bbox_inches="tight")
     plt.close(fig)
@@ -288,7 +289,7 @@ def main():
            [("ACF (all)", acb), ("UV LF + ACF", uvb + acb)]
     S = np.column_stack([np.sqrt(np.clip(np.diag(combine(jac, 0, bl)), 0, None))[ridx] * sref for _, bl in cols])
     heatmap(S, rows, [c for c, _ in cols], os.path.join(outdir, "fisher_sensitivity_data.pdf"),
-            "Sensitivity to the data used in the inference", sep=[len(uvb) + 0.5, len(uvb) + len(acb) + 1.5])
+            sep=[len(uvb) + 0.5, len(uvb) + len(acb) + 1.5])
     lines.append("\nS (data): " + " | ".join(c for c, _ in cols))
     for r, p in enumerate(rows):
         lines.append(f"  {p:16s} " + " ".join(f"{v:8.3f}" for v in S[r]))
@@ -297,7 +298,7 @@ def main():
     icol = ["UV LF", "ACF", "SHMR mean", "SFMS mean", "SHMR scatter", "SFMS scatter"]
     Si = np.column_stack([np.sqrt(np.clip(np.diag(combine(jac, 1, [b])), 0, None))[ridx] * sref for b in icol])
     heatmap(Si, rows, icol, os.path.join(outdir, "fisher_sensitivity_idealized.pdf"),
-            "Sensitivity for 20% measurements in 8 bins", sep=[1.5],
+            sep=[1.5],
             group_labels=[(0.5, "Observables"), (3.5, "Galaxy scalings")])
     lines.append("\nS (idealized 20%, 8 bins): " + " | ".join(icol))
     for r, p in enumerate(rows):
