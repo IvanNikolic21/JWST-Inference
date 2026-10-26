@@ -3,11 +3,12 @@
   hmf_models.pdf       (Fig. change_hmf): main_joint (Tinker+08) and the hmf_* runs
   corner_diff_obs.pdf  (Fig. uvlf_diff_inf): main_joint (Willott+24) and the
                        uvlf_Donnan / uvlf_Whitler / uvlf_Harikane runs (faint end + ACF)
+  corner_shmr.pdf      (Fig. corner_SHMR): main_uvlf and main_joint, SHMR parameters
 
 Prints the largest median shift of each run relative to main_joint, in units of
 the main_joint posterior sd, for the text.
 
-  python plot_corner_comparisons.py <best_prior_runs_v4>/ [--out_dir .]
+  python plot_corner_comparisons.py <best_prior_runs_v4>/ [--out_dir .] [--only corner_shmr.pdf]
 """
 import argparse
 import json
@@ -40,6 +41,13 @@ FIGURES = {
               ("uvlf_Donnan", "Donnan+24", "#e6a817"),
               ("uvlf_Whitler", "Whitler+25", "#2b6fdc"),
               ("uvlf_Harikane", "Harikane+24", "#e7298a")]),
+    # Fig. corner_SHMR: axes cover >99% of both posteriors (sigma_SHMR to 1.6)
+    "corner_shmr.pdf": dict(
+        params=["fstar_norm", "alpha_star_low", "sigma_SHMR"],
+        ranges=[(-4.6, -1.6), (0, 1), (0, 1.6)],
+        levels=(0.68, 0.95), fill=True, ref="main_joint",
+        runs=[("main_uvlf", "UVLF only", "#4daf4a"),
+              ("main_joint", "UVLF + ACF", "#e41a1c")]),
 }
 
 
@@ -53,9 +61,10 @@ def load(runs_dir, run, params):
 def make(runs_dir, name, spec, out_dir):
     params = spec["params"]
     samples = {run: load(runs_dir, run, params) for run, _, _ in spec["runs"]}
-    ref = samples["main_joint"]
-    print(name)
-    for run, label, _ in spec["runs"][1:]:
+    ref_run = spec.get("ref", spec["runs"][0][0])
+    ref = samples[ref_run]
+    print(name, f"(shifts relative to {ref_run})")
+    for run, label, _ in (r for r in spec["runs"] if r[0] != ref_run):
         shift = (np.median(samples[run], 0) - np.median(ref, 0)) / ref.std(0)
         width = samples[run].std(0) / ref.std(0)
         k = np.argmax(np.abs(shift))
@@ -92,9 +101,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("runs_dir")
     ap.add_argument("--out_dir", default=None)
+    ap.add_argument("--only", nargs="+", default=None, help="make only these figures (file names)")
     args = ap.parse_args()
     for name, spec in FIGURES.items():
-        make(args.runs_dir, name, spec, args.out_dir or args.runs_dir)
+        if args.only is None or name in args.only:
+            make(args.runs_dir, name, spec, args.out_dir or args.runs_dir)
 
 
 if __name__ == "__main__":
