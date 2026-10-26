@@ -4,6 +4,7 @@
   corner_diff_obs.pdf  (Fig. uvlf_diff_inf): main_joint (Willott+24) and the
                        uvlf_Donnan / uvlf_Whitler / uvlf_Harikane runs (faint end + ACF)
   corner_shmr.pdf      (Fig. corner_SHMR): main_uvlf and main_joint, SHMR parameters
+  corner_sfms.pdf      (Fig. sfms_corner): main_joint, SFMS parameters
 
 Prints the largest median shift of each run relative to main_joint, in units of
 the main_joint posterior sd, for the text.
@@ -20,7 +21,8 @@ from matplotlib.lines import Line2D
 import corner
 
 LABELS = {"fstar_norm": r"$\log f_{\ast,0}$", "sigma_SHMR": r"$\sigma_{\rm SHMR}$", "t_star": r"$t_\ast$",
-          "alpha_star_low": r"$\alpha_\ast$", "sigma_SFMS_norm": r"$\sigma_{\rm SFMS,0}$"}
+          "alpha_star_low": r"$\alpha_\ast$", "sigma_SFMS_norm": r"$\sigma_{\rm SFMS,0}$",
+          "a_sig_SFR": r"$a_{\sigma,\rm SFMS}$"}
 
 FIGURES = {
     "hmf_models.pdf": dict(
@@ -48,6 +50,12 @@ FIGURES = {
         levels=(0.68, 0.95), fill=True, ref="main_joint",
         runs=[("main_uvlf", "UVLF only", "#4daf4a"),
               ("main_joint", "UVLF + ACF", "#e41a1c")]),
+    # Fig. sfms_corner: a_sigma axis covers >99.5% of the posterior
+    "corner_sfms.pdf": dict(
+        params=["t_star", "sigma_SFMS_norm", "a_sig_SFR"],
+        ranges=[(0, 0.8), (0, 0.9), (-0.18, 0.1)],
+        levels=(0.68, 0.95), fill=True,
+        runs=[("main_joint", "UVLF + ACF", "#e41a1c")]),
 }
 
 
