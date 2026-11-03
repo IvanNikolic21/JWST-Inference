@@ -22,6 +22,9 @@ can be remade anywhere with --data.
 
   python plot_bad_acf_example.py <main_uvlf>/ --firstlight_db <FirstLight_database_DR3.1.dat>
   python plot_bad_acf_example.py --data bad_ang_example_data.npz [--out bad_ang_example.pdf]
+
+--sims scaling_sims.npz (plot_scaling_posteriors.py --build_sims) adds the
+ASTRID z = 10 galaxies to the SHMR and SFMS panels, next to First Light.
 """
 import argparse
 import os
@@ -43,6 +46,7 @@ FB = cosmo.Ob0 / cosmo.Om0
 
 C_MODEL = "#4daf4a"                           # UV-LF-only colour of Figs. UVLFs / clustering
 C_FL = "cornflowerblue"
+C_ASTRID = "darkorange"
 
 
 def select_sample(post, lnl_uv, acf, sample=None):
@@ -89,7 +93,7 @@ def errorbars(ax, data, **kw):
     ax.errorbar(m, phi, yerr=[sm, sp], fmt=kw.pop("marker", "o"), capsize=3, **kw)
 
 
-def plot(d, out):
+def plot(d, out, sims=None):
     par = dict(zip([str(n) for n in d["names"]], d["params"]))
     obs = Observations(True, True)
     fig, axes = plt.subplots(2, 2, figsize=(12, 6.6))
@@ -139,6 +143,10 @@ def plot(d, out):
     ax_shmr.plot(lmh, lms, color=C_MODEL, ls="--", lw=2.5, label="UVLF-only sample")
     ax_shmr.scatter(np.log10(d["fl_mh"]), np.log10(d["fl_ms"]), color=C_FL, alpha=0.4, s=15,
                     label=rf"First Light, $z={Z_SFMS:.0f}$")
+    if sims is not None:
+        with np.errstate(divide="ignore"):       # galaxies with M* = 0 are not drawn
+            ax_shmr.scatter(np.log10(sims["ASTRID_mh"]), np.log10(sims["ASTRID_ms"]), color=C_ASTRID, alpha=0.6,
+                            s=15, marker="s", label=rf"ASTRID, $z={float(sims['ASTRID_z']):.0f}$")
     ax_shmr.set_xlim(9, 11)
     ax_shmr.set_ylim(4, 9)
     ax_shmr.set_xlabel(r"$\log M_{\rm h}\ [{\rm M_\odot}]$", fontsize=fs)
@@ -153,6 +161,10 @@ def plot(d, out):
     ax_sfms.plot(lmsg, lsfr, color=C_MODEL, ls="--", lw=2.5, label="UVLF-only sample")
     ax_sfms.scatter(np.log10(d["fl_ms"]), np.log10(d["fl_sfr"]), color=C_FL, alpha=0.4, s=15,
                     label=rf"First Light, $z={Z_SFMS:.0f}$")
+    if sims is not None:
+        with np.errstate(divide="ignore"):
+            ax_sfms.scatter(np.log10(sims["ASTRID_ms"]), np.log10(sims["ASTRID_sfr"]), color=C_ASTRID, alpha=0.6,
+                            s=15, marker="s", label=rf"ASTRID, $z={float(sims['ASTRID_z']):.0f}$")
     ax_sfms.set_xlim(6, 9)
     ax_sfms.set_ylim(-3.5, 1.5)
     ax_sfms.set_xlabel(r"$\log M_\ast\ [{\rm M_\odot}]$", fontsize=fs)
@@ -173,6 +185,7 @@ def main():
     ap.add_argument("--sample", type=int, default=None, help="posterior row to show instead of the automatic choice")
     ap.add_argument("--data", default=None, help="replot from a saved bad_ang_example_data.npz")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--sims", default=None, help="scaling_sims.npz: also show ASTRID in the SHMR/SFMS panels")
     args = ap.parse_args()
 
     if args.data:
@@ -182,7 +195,7 @@ def main():
         d = build(args.run_dir, args.firstlight_db, args.sample)
         np.savez(os.path.join(args.run_dir, "bad_ang_example_data.npz"), **d)
         out = args.out or os.path.join(args.run_dir, "bad_ang_example.pdf")
-    plot(d, out)
+    plot(d, out, dict(np.load(args.sims)) if args.sims else None)
 
 
 if __name__ == "__main__":
