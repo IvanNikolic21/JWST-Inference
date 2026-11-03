@@ -75,18 +75,18 @@ def main():
         ax.text(0.735, 0.49, "increasing contribution", ha="center", va="bottom", fontsize=13, color="grey")
 
     ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1.04)
+    ax.set_ylim(0, 1.1)                      # headroom for the z label above the CDF = 1 plateau
+    ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.set_xlabel(r"Fraction of $\sigma_{\rm UV}$" if args.sigma else r"Fraction of $\sigma_{\rm UV}^2$", fontsize=18)
     ax.set_ylabel("CDF", fontsize=18)
     ax.tick_params(labelsize=18)
-    src = ax.legend(fontsize=14, frameon=False, loc="lower right", title="Fractional contribution of:",
-                    title_fontsize=13)
+    src = ax.legend(fontsize=14, frameon=False, loc="lower right")
     ax.add_artist(src)
     from matplotlib.lines import Line2D
     ax.legend([Line2D([], [], color="k", lw=2), Line2D([], [], color="k", lw=2, ls="--")],
-              [r"$M_{\rm UV}=-20$", r"$M_{\rm UV}=-18$"], fontsize=14, frameon=False,
-              loc="center right", bbox_to_anchor=(1.0, 0.7))
-    ax.text(0.1 if args.sigma else 0.27, 0.92 if args.sigma else 0.85, r"$z=10$", fontsize=15)
+              [r"$M_{\rm UV}=-20$", r"$M_{\rm UV}=-18$"], fontsize=13, frameon=False, handlelength=1.5,
+              loc="center right", bbox_to_anchor=(1.0, 0.37))
+    ax.text(0.02, 1.085, r"$z=10$", fontsize=15, va="top")
     fig.tight_layout()
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
