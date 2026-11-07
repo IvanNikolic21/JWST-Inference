@@ -69,11 +69,16 @@ def main():
     ax.add_patch(plt.Rectangle((z0, s0), z1 - z0, s1 - s0, color="peru", alpha=0.6, label="Ciesla+24"))
     ax.errorbar(0.5 * (z0 + z1), 0.5 * (s0 + s1), xerr=0.5 * (z1 - z0), yerr=0.5 * (s1 - s0),
                 color="peru", elinewidth=5, lw=0, marker=".", ms=20)
+    # estimates at fixed stellar mass: lower limits on sigma_UV at fixed halo mass
+    up = dict(arrowstyle="-|>", lw=2, mutation_scale=16)
+    for zi, si in zip(zc, lit.get_Carvajal_Bohorquez_25()[2]):
+        ax.annotate("", (zi, si + 0.2), (zi, si), arrowprops=dict(color="darkviolet", **up))
+    ax.annotate("", (0.5 * (z0 + z1), s1 + 0.2), (0.5 * (z0 + z1), s1), arrowprops=dict(color="peru", **up))
     (z0, z1), s = lit.get_Mason_23()
     ax.add_artist(Line2D((z0 - 0.3, z1), (s, s), color="olive", lw=5, label="Mason+23"))
     ax.legend(fontsize=10, loc="upper left", ncol=2, columnspacing=0.8, handlelength=1.6)
     ax.set_xlabel("redshift", fontsize=18)
-    ax.set_ylabel(r"$\sigma_{\rm UV}$", fontsize=18)
+    ax.set_ylabel(r"$\sigma_{\rm UV}$ [mag]", fontsize=18)
     ax.set_xlim(6, 12)
     ax.set_ylim(0.45, 2.75)                   # room for the legend above the band
     ax.tick_params(labelsize=18)

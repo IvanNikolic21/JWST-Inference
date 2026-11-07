@@ -505,6 +505,30 @@ class Observations():
         ) * 1e-5
         return Willot_Muvs, Willot_uvlf, (Willot_sig_p, Willot_sig_m)
 
+    def get_obs_uvlf_z12_Weibel25(self):
+        """Weibel+25 (arXiv:2507.06292) Table 1, z~13 dropouts (median z = 12.6).
+        The table gives log10(phi), so the errors are converted to linear ones."""
+        Weibel_Muvs = np.array([-21.29, -20.08, -18.87])
+        log_uvlf = np.array([-6.17, -5.56, -4.63])
+        log_sig_p = np.array([0.38, 0.40, 0.71])
+        log_sig_m = np.array([0.70, 0.37, 0.60])
+        Weibel_uvlf = 10**log_uvlf
+        Weibel_sig_p = 10**(log_uvlf + log_sig_p) - Weibel_uvlf
+        Weibel_sig_m = Weibel_uvlf - 10**(log_uvlf - log_sig_m)
+        return Weibel_Muvs, Weibel_uvlf, (Weibel_sig_p, Weibel_sig_m)
+
+    def get_obs_uvlf_z13_5_McLeod26(self):
+        """McLeod+26 (arXiv:2604.16666) Table 3, 12.5 < z < 14.5, measured bins."""
+        McLeod_Muvs = np.array([-20.825, -20.075, -19.450, -18.950, -18.325])
+        McLeod_uvlf = np.array([0.8, 2.8, 14.8, 37.6, 92.6]) * 1e-6
+        McLeod_sig_p = np.array([0.4, 1.4, 8.6, 18.6, 59.1]) * 1e-6
+        McLeod_sig_m = np.array([0.4, 1.2, 7.1, 15.8, 46.4]) * 1e-6
+        return McLeod_Muvs, McLeod_uvlf, (McLeod_sig_p, McLeod_sig_m)
+
+    def get_obs_uvlf_z13_5_McLeod26_limit(self):
+        """McLeod+26 Table 3, 12.5 < z < 14.5: upper limit in the brightest bin."""
+        return -21.700, 0.3e-6
+
     def get_obs_uvlf_z9_Finkelstein24(self):
         Fink_Muvs = np.array(
             [

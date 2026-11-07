@@ -49,7 +49,7 @@ C_68, C_95 = "#e41a1c", "#f4a6a6"      # UVLF + ACF colour of the other figures
 C_PRIOR = ("0.5", "0.83")               # prior: grey, as in the other figures
 # simulation, snapshot redshift, colour, alpha -- as in the prior figures (Figs. SHMR_prior, sfms_prior).
 # FIRE has no z = 10 snapshot in fire_catalog.json: z = 9 is the closest.
-SHMR_SIMS = [("FIRE", 9.0, "#800080", 0.15), ("SERRA", 12.0, "#1e90ff", 0.4)]
+SHMR_SIMS = [("FIRE", 9.0, "#800080", 0.15), ("SERRA", 12.0, "#ff8c00", 0.4)]
 SFMS_SIMS = [("FLARES", 10.0, "#2e8b57", 0.2), ("ASTRID", 10.0, "#1e90ff", 0.5)]
 SIM_LABEL = {"FIRE": "FIRE", "SERRA": "SERRA", "FirstLight": "First Light", "FLARES": "FLARES", "ASTRID": "ASTRID"}
 CATALOG_FILES = {"FIRE": "fire_catalog.json", "SERRA": "serra_catalog.json"}   # in prior_pipeline/data

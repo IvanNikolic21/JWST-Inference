@@ -9,11 +9,13 @@ weights dV/dz. Left panel z = 15-20, right panel z = 20-28 (Castellano+25
 ranges). Falls back to the old two-redshift files (z = 17, 23) if no grid
 run exists.
 
-Single-galaxy densities 1/(V_eff dM) for every Perez-Gonzalez+25 bin
-(dM = 0.75 mag, V_eff from their Table 3) are drawn as bars. Their ratio to
-the model averaged over the Perez-Gonzalez+25 redshift range (16-20, 24-26)
-gives the expected number of galaxies in that survey, N = sum_bins phi/phi_1gal;
-printed (median, 95% upper) with P(N >= 1) = 1 - exp(-N), for the caption.
+The ratio of the model, averaged over the Perez-Gonzalez+25 redshift range (16-20,
+24-26), to the single-galaxy density 1/(V_eff dM) of every bin (dM = 0.75 mag, V_eff
+from their Table 3) gives the expected number of galaxies in that survey,
+N = sum_bins phi/phi_1gal; printed (median, 95% upper) with P(N >= 1) = 1 - exp(-N).
+Those densities are not drawn: the Perez-Gonzalez+25 points are Monte Carlo averages
+that spread each candidate over bins, so phi V dM is only 0.3-1.3 and a single-galaxy
+level from their Table 3 can lie above their own points.
 
   python plot_highz_uvlf.py <main_joint>/ [--out diff_num_PG25_trunc.pdf]
 """
@@ -107,8 +109,6 @@ def main():
         em = np.where(np.isnan(pg["em"]), -1, phi - 10 ** (pg["logphi"] - pg["em"]))
         errorbars(ax, pg["muv"], phi, ep, em, PG_DM / 2, "brown", ">", "Pérez-González+25")
         one_gal = 1 / (pg["veff"] * PG_DM)
-        ax.hlines(one_gal, pg["muv"] - PG_DM / 2, pg["muv"] + PG_DM / 2, color="darkslategray", lw=3,
-                  label="one galaxy per bin (Pérez-González+25)")
 
         model_pg = z_average(z_s, uv, pg["zrange"])                       # (N, Nmuv)
         n_exp = np.sum(np.array([np.interp(pg["muv"], muv, u) for u in model_pg]) / one_gal, axis=1)
@@ -123,10 +123,9 @@ def main():
     axes[0].set_ylim(1e-10, 5e-4)
     axes[0].set_xlim(-23, -17)
     handles, labels = axes[0].get_legend_handles_labels()
-    order = [labels.index(l) for l in ("posterior, 95% C.I.", "one galaxy per bin (Pérez-González+25)",
-                                       "Castellano+25", "Pérez-González+25")]
+    order = [labels.index(l) for l in ("posterior, 95% C.I.", "Castellano+25", "Pérez-González+25")]
     fig.legend([handles[i] for i in order], [labels[i] for i in order], loc="upper center",
-               bbox_to_anchor=(0.5, 0.0), ncol=2, fontsize=16, frameon=False)
+               bbox_to_anchor=(0.5, 0.0), ncol=3, fontsize=16, frameon=False)
     fig.subplots_adjust(wspace=0)
     fig.savefig(out, bbox_inches="tight")
     print("saved", out)
