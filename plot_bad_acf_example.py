@@ -45,8 +45,8 @@ THETA_MIN = 0.005                             # deg, likelihood scale cut
 FB = cosmo.Ob0 / cosmo.Om0
 
 C_MODEL = "#4daf4a"                           # UV-LF-only colour of Figs. UVLFs / clustering
-C_FL = "cornflowerblue"
-C_ASTRID = "darkorange"
+C_FL = "#8b4513"                              # one colour per simulation, as in Fig. prior_corner
+C_ASTRID = "#1e90ff"
 
 
 def select_sample(post, lnl_uv, acf, sample=None):
@@ -106,7 +106,7 @@ def plot(d, out, sims=None):
     errorbars(ax_uv, obs.get_obs_uvlf_z12_5_Donnan24(), marker="<", label=r"Donnan+24, $z=12.5$", **grey)
     errorbars(ax_uv, obs.get_obs_uvlf_z12_8_Whitler25(), marker=">", label=r"Whitler+25, $z=12.8$", **grey)
     errorbars(ax_uv, obs.get_obs_uvlf_z12_Willot23(), marker="^", color="red", ms=11, zorder=5,
-              label=r"Willott+23, $z=12$")
+              label=r"Willott+24, $z=12$")
     ax_uv.set_yscale("log")
     ax_uv.set_xlim(-22, -17)
     ax_uv.set_ylim(1e-7, 3e-3)
